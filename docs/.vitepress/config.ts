@@ -1,4 +1,4 @@
-import { defineConfig } from 'vitepress'
+import {defineConfig, HeadConfig} from 'vitepress'
 
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
@@ -8,21 +8,32 @@ export default defineConfig({
     // https://vitepress.dev/reference/default-theme-config
     nav: [
       { text: 'Home', link: '/' },
-      { text: 'Examples', link: '/markdown-examples' }
+      { text: 'Products', link: '/products' },
+      { text: 'Docs', link: '/docs' },
     ],
 
     sidebar: [
       {
-        text: 'Examples',
+        text: 'sidebar',
         items: [
-          { text: 'Markdown Examples', link: '/markdown-examples' },
-          { text: 'Runtime API Examples', link: '/api-examples' }
+          { text: 'Docs', link: '/docs' },
+          { text: 'Products', link: '/products' }
         ]
       }
     ],
 
     socialLinks: [
-      { icon: 'github', link: 'https://github.com/vuejs/vitepress' }
+      { icon: 'github', link: 'https://github.com/hostsless' }
     ]
+  },
+  locales: {
+    root: {
+      label: 'English',
+      lang: 'en',
+    },
+    zh: {
+      label: '中文',
+      lang: 'zh-CN',
+    }
   }
 })

@@ -1,6 +1,6 @@
 ---
 # https://vitepress.dev/reference/default-theme-home-page
-layout: home
+layout: 首页
 
 hero:
   name: "hostsless"
@@ -9,17 +9,15 @@ hero:
 
 
 features:
-  - title: storage
+  - title: 存储 
     details: Lorem ipsum dolor sit amet
-  - title: compute
+  - title: 计算
     details: Lorem ipsum dolor sit amet
-  - title: gateway
+  - title: 访问控制 
     details: Lorem ipsum dolor sit amet
-  - title: identity
+  - title: 信任
     details: Lorem ipsum dolor sit amet
-  - title: trust
-    details: Lorem ipsum dolor sit amet
-  - title: docsless 
+  - title: 网关
     details: Lorem ipsum dolor sit amet
 ---
 
