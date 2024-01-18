@@ -4,6 +4,8 @@ import {defineConfig, HeadConfig} from 'vitepress'
 export default defineConfig({
   title: "hostsless",
   description: "A VitePress Site",
+  outDir: '../dist',
+  cacheDir: '../cache',
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
     nav: [
