@@ -4,11 +4,24 @@ layout: home
 
 hero:
   name: "hostsless"
-  text: "build your business without any physical hosts concerns"
-  tagline: hostsless the feature
-
+  text: "Full life cycle cross providers serverless application management for your fast-growing business"
+  tagline: Evolve the future with serverless
 
 features:
+  - title: huawei cloud
+    details: TBC
+  - title: aliyun cloud
+    details: TBC
+  - title: tencent cloud
+    details: Lorem ipsum dolor sit amet
+  - title: openFunction 
+    details: tbc
+  - title: aws
+    details: tbc
+  - title: .etc
+    details: tbc
+
+resources:
   - title: storage
     details: Lorem ipsum dolor sit amet
   - title: compute
