@@ -1,13 +1,19 @@
 {
-  "devDependencies": {
-    "vitepress": "^1.0.0-alpha.75"
-  },
+  "name": "hostsless-site",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
   "scripts": {
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs"
   },
+  "author": "geekfun <support@geekfun.club>",
+  "license": "Apache-2.0",
   "dependencies": {
-    "vue": "^3.2.47"
+    "vue": "^3.4.15"
+  },
+  "devDependencies": {
+    "vitepress": "^1.0.0-rc.40"
   }
 }
