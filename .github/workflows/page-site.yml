@@ -38,8 +38,6 @@ jobs:
             ${{ steps.changelog.outputs.compareurl }}
             
             ${{ steps.changelog.outputs.changelog }}
-            
-            Document Website: https://raw.githack.com/jaywcjlove/changelog-generator/${{ steps.changelog.outputs.gh-pages-short-hash }}/index.html
 
       - name: Publish to Cloudflare Pages
         uses: cloudflare/pages-action@v1
