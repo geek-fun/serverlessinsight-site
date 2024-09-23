@@ -4,7 +4,7 @@ layout: home
 
 hero:
   name: "ServerlessInsight"
-  text: ' 全栈Serverless应用平台'
+  text: '全栈Serverless应用平台'
   tagline: "构建全生命周期的跨供应商Serverless用程序管理，助力快速发展的业务。"
 
 features:
