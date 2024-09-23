@@ -3,35 +3,16 @@
 layout: home
 
 hero:
-  name: "hostsless"
-  text: "Full life cycle cross providers serverless application management for your fast-growing business"
-  tagline: Evolve the future with serverless
+  name: "ServerlessInsight"
+  text: ' 全栈Serverless应用平台'
+  tagline: "构建全生命周期的跨供应商Serverless用程序管理，助力快速发展的业务。"
 
 features:
-  - title: huawei cloud
+  - title: 阿里云
     details: TBC
-  - title: aliyun cloud
+  - title: 华为云
     details: TBC
-  - title: tencent cloud
+  - title: 腾讯云
     details: Lorem ipsum dolor sit amet
-  - title: openFunction 
-    details: tbc
-  - title: aws
-    details: tbc
-  - title: .etc
-    details: tbc
 
-resources:
-  - title: storage
-    details: Lorem ipsum dolor sit amet
-  - title: compute
-    details: Lorem ipsum dolor sit amet
-  - title: gateway
-    details: Lorem ipsum dolor sit amet
-  - title: identity
-    details: Lorem ipsum dolor sit amet
-  - title: trust
-    details: Lorem ipsum dolor sit amet
-  - title: docsless 
-    details: Lorem ipsum dolor sit amet
 ---
