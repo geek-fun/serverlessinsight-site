@@ -45,7 +45,7 @@ export default defineConfig({
             text: 'ServerlessInsight',
             items: [
               {text: 'ServerlessInsight介绍', link: 'introduction'},
-              {text: '快速入门', link: 'getting-started'},
+              {text: '快速开始', link: 'getting-started'},
               {text: '用户手册', link: 'reference'},
               {text: '命令行', link: 'cli'},
               {text: '支持服务', link: 'support'},

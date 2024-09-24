@@ -61,7 +61,7 @@ events:
 ```
 
 ## Concepts
-
+Please use only lowercase letters, numbers and hyphens. Also, keep Service names short, since they are added into the name of each cloud resource the Serverless Framework creates, and some cloud resources have character length restrictions in their names.
 ### Version
 
 The version of the ServerlessInsight Iac, the version is used to define the compatibility of the Iac with the
