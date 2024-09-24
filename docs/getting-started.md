@@ -177,5 +177,6 @@ Service hello-world-api deployed successfully
 si destory --stage dev <stackName>
 ```
 
-<span style="color: red;">**注意:**
-删除资源栈会删除所有申明的资源导致服务完全不可用且丢失有状态资源的数据，请确保相关数据、内容已备份或确认不再需要后执行该操作</span>
+<span style="color: red;">
+**注意:** 删除资源栈会删除所有申明的资源导致服务完全不可用且丢失有状态资源的数据，请确保相关数据、内容已备份或确认不再需要后执行该操作
+</span>
