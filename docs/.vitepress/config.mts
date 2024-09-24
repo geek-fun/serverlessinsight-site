@@ -38,6 +38,7 @@ export default defineConfig({
       themeConfig: {
         // https://vitepress.dev/reference/default-theme-config
         siteTitle: 'ServerlessInsight',
+        logo: icon,
         nav: [
           {text: '主页', link: '/'},
           {text: '文档', link: '/docs'},
@@ -91,6 +92,7 @@ export default defineConfig({
       themeConfig: {
         // https://vitepress.dev/reference/default-theme-config
         siteTitle: 'ServerlessInsight',
+        logo: icon,
         nav: [
           {text: 'Home', link: '/en'},
           {text: 'Docs', link: '/docs'},
