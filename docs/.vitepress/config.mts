@@ -33,6 +33,7 @@ export default defineConfig({
         ['meta', {name: 'twitter:title', content: titleZh}],
         ['meta', {name: 'twitter:description', content: descZh}],
         ['meta', {name: 'twitter:image', content: icon}],
+        ['meta', {name: 'baidu-site-verification', content: 'codeva-RxGXH1Uqch'}],
       ],
       themeConfig: {
         // https://vitepress.dev/reference/default-theme-config
@@ -85,6 +86,7 @@ export default defineConfig({
         ['meta', {name: 'twitter:title', content: titleEn}],
         ['meta', {name: 'twitter:description', content: descEn}],
         ['meta', {name: 'twitter:image', content: icon}],
+        ['meta', {name: 'baidu-site-verification', content: 'codeva-RxGXH1Uqch'}],
       ],
       themeConfig: {
         // https://vitepress.dev/reference/default-theme-config
