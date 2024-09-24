@@ -2,7 +2,7 @@
 
 本文档概述了ServerlessInsight的规范，详细介绍了IaC（基础设施即代码）的YAML定义。
 
-## serverlessinsight Yaml配置规范
+## ServerlessInsight Yaml配置规范
 
 ServerlessInsight的YAML配置文件是一个描述Serverless应用的资源的文件，它包含了Serverless应用的所有资源定义，如函数、API网关、事件等。以下是一个ServerlessInsight的YAML配置文件的示例：
 

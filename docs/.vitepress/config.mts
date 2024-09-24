@@ -36,7 +36,6 @@ export default defineConfig({
         siteTitle: 'ServerlessInsight',
         nav: [
           {text: '主页', link: '/'},
-          {text: '产品', link: '/products'},
           {text: '文档', link: '/docs'},
         ],
 
@@ -46,7 +45,7 @@ export default defineConfig({
             items: [
               {text: 'ServerlessInsight介绍', link: 'introduction'},
               {text: '快速开始', link: 'getting-started'},
-              {text: '用户手册', link: 'reference'},
+              {text: '配置手册', link: 'reference'},
               {text: '命令行', link: 'cli'},
               {text: '支持服务', link: 'support'},
               {text: '常见问题', link: 'faq'},
