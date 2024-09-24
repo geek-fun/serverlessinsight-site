@@ -35,7 +35,7 @@ ServerlessInsight支持多个Serverless供应商，包括阿里云、华为云�
 
 ### 开放生态
 
-ServerlessInsight提供了丰富且通用的cli，无任何对特定CI/CD工具的依赖，方便您快速集成到现有的开发工具链中，提升开发效率。
+ServerlessInsight坚持开源开放，且第一方也提供了丰富且通用的cli，无任何对特定CI/CD工具的依赖，方便您快速集成到现有的开发工具链中，提升开发效率。
 
 ## ServerlessInsight架构于原理
 

@@ -19,7 +19,7 @@ export default defineConfig({
         ['meta', {name: 'description', content: descZh}],
         ['meta', {
           name: 'keywords',
-          content: 'ServerlessInsight, serverless, serverless insight, 无服务器, serverless architecture, Serverless应用开发, Serverless应用部署，Serverless应用运维, 无服务器架构, 极客范,geekfun, 极客范开源社区, 开源软件, 软件可持续性,可持续软件项目'
+          content: 'ServerlessInsight, serverless 平台,serverless framework, 跨云 serverless 管理, serverless 应用开发, serverless 全生命周期管理, 基础设施即代码, ServerlessInsight 特性, 无服务器架构, Serverless Insight, 跨供应商 serverless 管理, 多云 serverless 部署, 极客范开源社区, serverless 开发工具, 云原生开发, 无服务器应用部署, 开源 serverless 软件, serverless CI/CD 集成, 开源 serverless 项目, 云原生 serverless 最佳实践, serverless 微服务架构, serverless 实时数据处理, API 后端 serverless 框架, serverless 事件驱动架构, 可持续软件开发,极客范,geekfun',
         }],
         ['meta', {property: 'og:title', content: titleZh}],
         ['meta', {property: 'og:description', content: descZh}],
@@ -55,7 +55,9 @@ export default defineConfig({
         ],
 
         socialLinks: [
-          {icon: 'github', link: 'https://github.com/geek-fun/serverlessinsight'}
+          {icon: 'github', link: 'https://github.com/geek-fun/serverlessinsight'},
+          {icon: 'twitter', link: 'https://x.com/Blankll31075'},
+          {icon: 'youtube', link: 'https://www.youtube.com/@geekfun-club'}
         ]
       },
     },
