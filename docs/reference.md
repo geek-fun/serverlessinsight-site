@@ -165,4 +165,14 @@ service: insight-poc-${stage}
       > required: true
     - **backend**: 事件的后端，通过方法的名称，指定后端的方法，请求最终有指定的方法进行处理
       > required: true
-
+- **custom_domain**: 事件的自定义域名
+  > required: false
+    - **domain_name**: 自定义域名
+      > required: true
+    - **certificate_name**: 证书名称
+      > required: true
+    - **certificate_private_key**: 证书私钥
+      > required: true
+    - **certificate_body**: 证书内容
+      > required: true
+      
