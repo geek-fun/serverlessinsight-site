@@ -10,7 +10,9 @@ ServerlessInsight的YAML配置文件是一个描述Serverless应用的资源的�
 
 ```yaml
 version: 0.1
-provider: aliyun
+provider:
+  name: aliyun
+  region: cn-chengdu
 
 vars:
   region: cn-hangzhou
@@ -64,11 +66,20 @@ version: 0.1
 
 ## provider
 
-`provider`字段指定了ServerlessInsight的提供商，包括`aliyun`、`huawei`、`tencent`等，目前只支持`aliyun`，其他提供商的支持正在开发中。
 
+`provider`字段指定了ServerlessInsight的提供商信息。
 ```yaml
-provider: aliyun
+provider:
+  name: aliyun
+  region: cn-chengdu
 ```
+`provider`支持的字段有:
+- **name**: 云提供商的名称，包括`aliyun`、`huawei`、`tencent`等，目前只支持`aliyun`，其他提供商的支持正在开发中
+  > 支持的云提供商的名称: aliyun, huawei, tencent  
+  > required: true
+- **region**: 云提供商服务部署目标地域
+  > 支持的运行时: 请参考云厂商所支持的地域  
+  > required: true
 
 ## vars
 
@@ -125,26 +136,31 @@ service: insight-poc-${stage}
 
 ## functions
 
-`functions`字段是一个对象，用于定义serverless方法。functions下的每一个子项都是一个方法的定义。function支持的字段有：
+`functions`字段是一个对象，用于定义serverless函数。functions下的每一个子项都是一个方法的定义。function支持的字段有：
 
-- **name**: serverless方法的名称
+- **name**: serverless函数的名称
   > 支持的字符集为`a-zA-Z0-9-_`,长度为1-64个字符
   > required: true
-- **runtime**: serverless方法的运行时
+- **runtime**: serverless函数的运行时
   > 支持的运行时:
   nodejs20,nodejs18,nodejs16,nodejs14,nodejs12,nodejs10,nodejs8,python3.10,python3.9,python3,PHP7.2,Java11,.NETCore3.1,Go1.x
-- **handler**: serverless方法的处理程序
+- **handler**: serverless函数的处理程序
   > required: true
-- **code**: serverless方法的代码包相对项根目录的路径
+- **code**: serverless函数的代码包相对项根目录的路径
   > 当前仅支持zip格式的代码包
   > required: true
-- **timeout**: serverless方法的超时时间
+- **timeout**: serverless函数的超时时间
   > 默认值: 15分钟
-- **memory**: serverless方法的内存大小
+- **memory**: serverless函数的内存大小
   > 默认值: 128MB
-- **environment**: serverless方法的环境变量
+- **environment**: serverless函数的环境变量
   > 支持的字符集为`a-zA-Z0-9-_`,长度为1-64个字符
   > required: false
+- **log**: serverless函数是否开启日志
+  > required: false  
+  > default: false  
+  > 注意: 由于阿里sls创建延迟问题，无法在创建时开启日志，需要stack第一次创建时关闭，等待1～2分钟后开启日志并重新部署。
+  
 
 ## events
 
@@ -176,3 +192,93 @@ service: insight-poc-${stage}
     - **certificate_body**: 证书内容
       > required: true
       
+
+## databases
+`databases`字段是一个对象，用于定义数据库。`databases`下的每一个子项都是一个数据库资源的定义。
+
+```yaml
+version: 0.0.1
+
+provider:
+  name: aliyun
+  region: cn-chengdu
+
+service: insight-es-poc
+
+tags:
+  owner: geek-fun
+
+databases:
+  insight_es_db:
+    name: insight-poc-es
+    type: ELASTICSEARCH_SERVERLESS
+    version: ES_SEARCH_7.10
+    cu:
+      min: 1
+      max: 6
+    storage:
+      min: 20
+    security:
+      basic_auth:
+        master_user: 'test-username'
+        password: 'U34I6InQ8elseTgqTWT2t2oFXpoqFg'
+
+```
+
+database支持的字段有:
+
+- **name**: 数据库的名称
+  > 类型: `string`  
+  > required: true
+
+- **type**: 数据库的类型
+  > 类型: `string`  
+  > 支持的类型: `ELASTICSEARCH_SERVERLESS`, `RDS_MYSQL_SERVERLESS`, `RDS_PGSQL_SERVERLESS`, `RDS_MSSQL_SERVERLESS`  
+  > required: true  
+
+- **version**: 数据库的版本
+  > 类型: `string`  
+  > 支持的版本: `MYSQL_5.7`, `MYSQL_8.0`, `MYSQL_HA_5.7`, `MYSQL_HA_8.0`, `PGSQL_14`, `PGSQL_15`, `PGSQL_16`, `PGSQL_HA_14`, `PGSQL_HA_15`, `PGSQL_HA_16`, `MSSQL_HA_2016`, `MSSQL_HA_2017`, `MSSQL_HA_2019`, `ES_SEARCH_7.10`, `ES_TIME_SERIES_7.10`  
+  > required: true
+
+- **cu**: 计算单元配置
+  > 类型: `object`
+  - **min**: 最小计算单元
+    >   类型: `integer`  
+    >   最小值: 0  
+    >   最大值: 32  
+  - **max**: 最大计算单元
+    >   类型: `integer`  
+    >   最小值: 1  
+    >   最大值: 32  
+
+- **storage**: 存储配置
+  > 类型: `object`
+  - **min**: 最小存储空间
+    >   类型: `integer`  
+    >   最小值: 20  
+    >   required: true
+
+- **security**: 安全配置
+  > 类型: `object`
+  >   required: true
+  - **basic_auth**: 基本认证
+      - **master_user**: 主用户
+        >   类型: `string`
+        >   required: true
+      - **password**: 密码
+        >   类型: `string`
+        >   required: true
+
+- **network**: 网络配置
+  > 类型: `object`
+    - **type**: 网络类型
+      > 类型: `string`  
+      > 支持的类型: `PUBLIC`, `PRIVATE`
+    - **ingress_rules**: 入站规则
+      > 类型: `array`  
+      > 项目类型: `string`
+    - **public**: 是否公开
+      > 类型: `boolean`
+
+每个数据库定义必须包含`name`、`type`、`version`和`security`字段。
