@@ -66,14 +66,16 @@ version: 0.1
 
 ## provider
 
-
 `provider`字段指定了ServerlessInsight的提供商信息。
+
 ```yaml
 provider:
   name: aliyun
   region: cn-chengdu
 ```
+
 `provider`支持的字段有:
+
 - **name**: 云提供商的名称，包括`aliyun`、`huawei`、`tencent`等，目前只支持`aliyun`，其他提供商的支持正在开发中
   > 支持的云提供商的名称: aliyun, huawei, tencent  
   > required: true
@@ -160,7 +162,6 @@ service: insight-poc-${stage}
   > required: false  
   > default: false  
   > 注意: 由于阿里sls创建延迟问题，无法在创建时开启日志，需要stack第一次创建时关闭，等待1～2分钟后开启日志并重新部署。
-  
 
 ## events
 
@@ -191,9 +192,9 @@ service: insight-poc-${stage}
       > required: true
     - **certificate_body**: 证书内容
       > required: true
-      
 
 ## databases
+
 `databases`字段是一个对象，用于定义数据库。`databases`下的每一个子项都是一个数据库资源的定义。
 
 ```yaml
@@ -234,41 +235,43 @@ database支持的字段有:
 - **type**: 数据库的类型
   > 类型: `string`  
   > 支持的类型: `ELASTICSEARCH_SERVERLESS`, `RDS_MYSQL_SERVERLESS`, `RDS_PGSQL_SERVERLESS`, `RDS_MSSQL_SERVERLESS`  
-  > required: true  
+  > required: true
 
 - **version**: 数据库的版本
   > 类型: `string`  
-  > 支持的版本: `MYSQL_5.7`, `MYSQL_8.0`, `MYSQL_HA_5.7`, `MYSQL_HA_8.0`, `PGSQL_14`, `PGSQL_15`, `PGSQL_16`, `PGSQL_HA_14`, `PGSQL_HA_15`, `PGSQL_HA_16`, `MSSQL_HA_2016`, `MSSQL_HA_2017`, `MSSQL_HA_2019`, `ES_SEARCH_7.10`, `ES_TIME_SERIES_7.10`  
+  > 支持的版本: `MYSQL_5.7`, `MYSQL_8.0`, `MYSQL_HA_5.7`, `MYSQL_HA_8.0`, `PGSQL_14`, `PGSQL_15`, `PGSQL_16`,
+  `PGSQL_HA_14`, `PGSQL_HA_15`, `PGSQL_HA_16`, `MSSQL_HA_2016`, `MSSQL_HA_2017`, `MSSQL_HA_2019`, `ES_SEARCH_7.10`,
+  `ES_TIME_SERIES_7.10`  
   > required: true
 
 - **cu**: 计算单元配置
   > 类型: `object`
-  - **min**: 最小计算单元
-    >   类型: `integer`  
-    >   最小值: 0  
-    >   最大值: 32  
-  - **max**: 最大计算单元
-    >   类型: `integer`  
-    >   最小值: 1  
-    >   最大值: 32  
+    - **min**: 最小计算单元
+      > 类型: `integer`  
+      >   最小值: 0  
+      >   最大值: 32
+    - **max**: 最大计算单元
+      > 类型: `integer`  
+      >   最小值: 1  
+      >   最大值: 32
 
 - **storage**: 存储配置
   > 类型: `object`
-  - **min**: 最小存储空间
-    >   类型: `integer`  
-    >   最小值: 20  
-    >   required: true
+    - **min**: 最小存储空间
+      > 类型: `integer`  
+      >   最小值: 20  
+      >   required: true
 
 - **security**: 安全配置
   > 类型: `object`
-  >   required: true
-  - **basic_auth**: 基本认证
-      - **master_user**: 主用户
-        >   类型: `string`
-        >   required: true
-      - **password**: 密码
-        >   类型: `string`
-        >   required: true
+  > required: true
+    - **basic_auth**: 基本认证
+        - **master_user**: 主用户
+          > 类型: `string`
+          >   required: true
+        - **password**: 密码
+          > 类型: `string`
+          >   required: true
 
 - **network**: 网络配置
   > 类型: `object`
@@ -282,3 +285,44 @@ database支持的字段有:
       > 类型: `boolean`
 
 每个数据库定义必须包含`name`、`type`、`version`和`security`字段。
+
+## buckets
+
+`buckets`字段是一个对象，用于定义对象存储。`buckets`下的每一个子项都是一个对象存储桶(Bucket🪣)资源的定义。
+
+```yaml
+version: 0.0.1
+
+provider:
+  name: aliyun
+  region: cn-chengdu
+
+service: insight-bucket-poc
+
+tags:
+  owner: geek-fun
+
+buckets:
+  insight_bucket:
+    name: insight-poc-bucket
+    storage:
+      class: STANDARD
+    versioning:
+      status: ENABLED
+      lifecycle:
+        rule:
+          id: rule1
+          status: ENABLED
+          expiration:
+          days: 30
+    security:
+      force_delete: false
+      sse_algorithm: KMS
+      sse_kms_master_key_id: 1234567890
+    website:
+      code: artifacts/frontend.zip
+      index: index.html
+      error_page: 404.html
+      error_code: 404
+
+```
