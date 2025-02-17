@@ -66,14 +66,16 @@ version: 0.1
 
 ## provider
 
-
 `provider`字段指定了ServerlessInsight的提供商信息。
+
 ```yaml
 provider:
   name: aliyun
   region: cn-chengdu
 ```
+
 `provider`支持的字段有:
+
 - **name**: 云提供商的名称，包括`aliyun`、`huawei`、`tencent`等，目前只支持`aliyun`，其他提供商的支持正在开发中
   > 支持的云提供商的名称: aliyun, huawei, tencent  
   > required: true
@@ -160,7 +162,6 @@ service: insight-poc-${stage}
   > required: false  
   > default: false  
   > 注意: 由于阿里sls创建延迟问题，无法在创建时开启日志，需要stack第一次创建时关闭，等待1～2分钟后开启日志并重新部署。
-  
 
 ## events
 
@@ -191,9 +192,9 @@ service: insight-poc-${stage}
       > required: true
     - **certificate_body**: 证书内容
       > required: true
-      
 
 ## databases
+
 `databases`字段是一个对象，用于定义数据库。`databases`下的每一个子项都是一个数据库资源的定义。
 
 ```yaml
@@ -234,41 +235,43 @@ database支持的字段有:
 - **type**: 数据库的类型
   > 类型: `string`  
   > 支持的类型: `ELASTICSEARCH_SERVERLESS`, `RDS_MYSQL_SERVERLESS`, `RDS_PGSQL_SERVERLESS`, `RDS_MSSQL_SERVERLESS`  
-  > required: true  
+  > required: true
 
 - **version**: 数据库的版本
   > 类型: `string`  
-  > 支持的版本: `MYSQL_5.7`, `MYSQL_8.0`, `MYSQL_HA_5.7`, `MYSQL_HA_8.0`, `PGSQL_14`, `PGSQL_15`, `PGSQL_16`, `PGSQL_HA_14`, `PGSQL_HA_15`, `PGSQL_HA_16`, `MSSQL_HA_2016`, `MSSQL_HA_2017`, `MSSQL_HA_2019`, `ES_SEARCH_7.10`, `ES_TIME_SERIES_7.10`  
+  > 支持的版本: `MYSQL_5.7`, `MYSQL_8.0`, `MYSQL_HA_5.7`, `MYSQL_HA_8.0`, `PGSQL_14`, `PGSQL_15`, `PGSQL_16`,
+  `PGSQL_HA_14`, `PGSQL_HA_15`, `PGSQL_HA_16`, `MSSQL_HA_2016`, `MSSQL_HA_2017`, `MSSQL_HA_2019`, `ES_SEARCH_7.10`,
+  `ES_TIME_SERIES_7.10`  
   > required: true
 
 - **cu**: 计算单元配置
   > 类型: `object`
-  - **min**: 最小计算单元
-    >   类型: `integer`  
-    >   最小值: 0  
-    >   最大值: 32  
-  - **max**: 最大计算单元
-    >   类型: `integer`  
-    >   最小值: 1  
-    >   最大值: 32  
+    - **min**: 最小计算单元
+      > 类型: `integer`  
+      >   最小值: 0  
+      >   最大值: 32
+    - **max**: 最大计算单元
+      > 类型: `integer`  
+      >   最小值: 1  
+      >   最大值: 32
 
 - **storage**: 存储配置
   > 类型: `object`
-  - **min**: 最小存储空间
-    >   类型: `integer`  
-    >   最小值: 20  
-    >   required: true
+    - **min**: 最小存储空间
+      > 类型: `integer`  
+      >   最小值: 20  
+      >   required: true
 
 - **security**: 安全配置
   > 类型: `object`
-  >   required: true
-  - **basic_auth**: 基本认证
-      - **master_user**: 主用户
-        >   类型: `string`
-        >   required: true
-      - **password**: 密码
-        >   类型: `string`
-        >   required: true
+  > required: true
+    - **basic_auth**: 基本认证
+        - **master_user**: 主用户
+          > 类型: `string`
+          >   required: true
+        - **password**: 密码
+          > 类型: `string`
+          >   required: true
 
 - **network**: 网络配置
   > 类型: `object`
@@ -282,3 +285,110 @@ database支持的字段有:
       > 类型: `boolean`
 
 每个数据库定义必须包含`name`、`type`、`version`和`security`字段。
+
+## buckets
+
+`buckets`字段是一个对象，用于定义对象存储。`buckets`下的每一个子项都是一个对象存储桶(Bucket🪣)资源的定义。
+
+```yaml
+version: 0.0.1
+
+provider:
+  name: aliyun
+  region: cn-chengdu
+
+service: insight-bucket-poc
+
+tags:
+  owner: geek-fun
+
+buckets:
+  insight_bucket:
+    name: insight-poc-bucket
+    storage:
+      class: STANDARD
+    security:
+      access: PRIVATE
+      force_delete: false
+      sse_algorithm: KMS
+      sse_kms_master_key_id: 1234567890
+    website:
+      code: dist/
+      domain: example.com
+      index: index.html
+      error_page: 404.html
+      error_code: 404
+    versioning: ENABLED
+    lifecycle:
+      rule:
+        id: rule1
+        expiration:
+        days: 30
+```
+
+bucket支持的字段有:
+
+- **name**: 存储桶的名称
+
+> 类型: `string`  
+> required: true  
+> 支持的字符集为`a-zA-Z0-9-_`,长度为1-64个字符
+>
+
+- **storage**: 存储配置
+- **class**: 存储类型
+  > 类型: `string`  
+  > required: true
+  > 支持的存储类型: `STANDARD`, `IA`, `ARCHIVE`, `COLD`
+- **versioning**: 版本控制配置
+- **status**: 版本控制状态
+  > 类型: `string`  
+  > required: true
+  > 支持的状态: `ENABLED`, `DISABLED`
+
+- **website**: 用于配置静态网站托,使得存储桶可以托管静态网站
+  > 注意⚠️：
+  > - 配置静态网站托管时，如果想要运行公网用户访问，需要将存储桶的访问权限设置为公共读
+  > - website中的配置项出了`code`外，其他配置项都无法在存储桶创建后修改，如果需要修改，需要删除website配置项后重新配置
+
+    - **code**: 网站代码包相对项根目录的路径
+      > 类型: `string`  
+      > required: true
+    - **domain**: 静态网页自定义域名,只有配置域名才能正常显示静态网页，否则通过存储桶的默认域名访问会转为下载文件
+      > 类型: `string`  
+      > required: false  
+      > 默认值: null
+    - **index**: 默认首页
+      > 类型: `string`  
+      > required: false  
+      > 默认值: `index.html`
+    - **error_page**: 错误页
+      > 类型: `string`  
+      > required: false  
+      > 默认值: `404.html`
+    - **error_code**: 错误码
+      > 类型: `integer`  
+      > required: false  
+      > 默认值: `404`
+
+- **lifecycle**: 生命周期配置
+- **rule**: 生命周期规则
+
+- security: bucket安全相关配置
+  - **acl**: 访问控制，配置bucket的访问权限
+    > 类型: `string`  
+    > required: false  
+    > 默认值: `PRIVATE`  
+    > 支持的访问控制: `PRIVATE`, `PUBLIC_READ`, `PUBLIC_READ_WRITE`
+  - **force_delete**: 强制删除
+    > 类型: `boolean`  
+    > required: false  
+    > 默认值: false  
+    > 注意: 强制删除后无法恢复
+  - **sse_algorithm**: 加密算法
+  - **sse_kms_master_key_id**: 加密密钥ID
+    > 类型: `string`  
+    > required: false  
+    > 默认值: null  
+    > 注意: 如果未指定加密密钥ID，则使用默认密钥
+
