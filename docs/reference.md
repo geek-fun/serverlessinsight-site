@@ -307,22 +307,88 @@ buckets:
     name: insight-poc-bucket
     storage:
       class: STANDARD
-    versioning:
-      status: ENABLED
-      lifecycle:
-        rule:
-          id: rule1
-          status: ENABLED
-          expiration:
-          days: 30
     security:
+      access: PRIVATE
       force_delete: false
       sse_algorithm: KMS
       sse_kms_master_key_id: 1234567890
     website:
-      code: artifacts/frontend.zip
+      code: dist/
+      domain: example.com
       index: index.html
       error_page: 404.html
       error_code: 404
-
+    versioning: ENABLED
+    lifecycle:
+      rule:
+        id: rule1
+        expiration:
+        days: 30
 ```
+
+bucket支持的字段有:
+
+- **name**: 存储桶的名称
+
+> 类型: `string`  
+> required: true  
+> 支持的字符集为`a-zA-Z0-9-_`,长度为1-64个字符
+>
+
+- **storage**: 存储配置
+- **class**: 存储类型
+  > 类型: `string`  
+  > required: true
+  > 支持的存储类型: `STANDARD`, `IA`, `ARCHIVE`, `COLD`
+- **versioning**: 版本控制配置
+- **status**: 版本控制状态
+  > 类型: `string`  
+  > required: true
+  > 支持的状态: `ENABLED`, `DISABLED`
+
+- **website**: 用于配置静态网站托,使得存储桶可以托管静态网站
+  > 注意⚠️：
+  > - 配置静态网站托管时，如果想要运行公网用户访问，需要将存储桶的访问权限设置为公共读
+  > - website中的配置项出了`code`外，其他配置项都无法在存储桶创建后修改，如果需要修改，需要删除website配置项后重新配置
+
+    - **code**: 网站代码包相对项根目录的路径
+      > 类型: `string`  
+      > required: true
+    - **domain**: 静态网页自定义域名,只有配置域名才能正常显示静态网页，否则通过存储桶的默认域名访问会转为下载文件
+      > 类型: `string`  
+      > required: false  
+      > 默认值: null
+    - **index**: 默认首页
+      > 类型: `string`  
+      > required: false  
+      > 默认值: `index.html`
+    - **error_page**: 错误页
+      > 类型: `string`  
+      > required: false  
+      > 默认值: `404.html`
+    - **error_code**: 错误码
+      > 类型: `integer`  
+      > required: false  
+      > 默认值: `404`
+
+- **lifecycle**: 生命周期配置
+- **rule**: 生命周期规则
+
+- security: bucket安全相关配置
+  - **acl**: 访问控制，配置bucket的访问权限
+    > 类型: `string`  
+    > required: false  
+    > 默认值: `PRIVATE`  
+    > 支持的访问控制: `PRIVATE`, `PUBLIC_READ`, `PUBLIC_READ_WRITE`
+  - **force_delete**: 强制删除
+    > 类型: `boolean`  
+    > required: false  
+    > 默认值: false  
+    > 注意: 强制删除后无法恢复
+  - **sse_algorithm**: 加密算法
+  - **sse_kms_master_key_id**: 加密密钥ID
+    > 类型: `string`  
+    > required: false  
+    > 默认值: null  
+    > 注意: 如果未指定加密密钥ID，则使用默认密钥
+
