@@ -25,6 +25,11 @@ si deploy --stage dev <stackName>
 - **--stage/-s**: 指定部署的环境，默认值为`default`。
 - **--parameter/-p**: 传递变量值并覆盖默认值。
 - **--file/-f**: 指定部署的配置文件，默认值为`serverlessinsight.yml`。
+- **--region/-r**: 指定部署的区域，默认值为`cn-hangzhou`。
+- **--provider/-pr**: 指定部署的云厂商，默认值为`aliyun`。
+- **--accessKeyId/-ak**: 指定部署的云厂商的AccessKeyId。
+- **--accessKeySecret/-as**: 指定部署的云厂商的AccessKeySecret。
+- **--securityToken/-at**: 指定部署的云厂商的SecurityToken。
 
 ## destroy 销毁Serverless应用
 

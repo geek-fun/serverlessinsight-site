@@ -31,9 +31,10 @@ tags:
 functions:
   insight_poc_fn:
     name: insight-poc-fn
-    runtime: nodejs18
-    handler: ${vars.handler}
-    code: artifacts/artifact.zip
+    code: 
+      runtime: nodejs18
+      handler: ${vars.handler}
+      path: artifacts/artifact.zip
     memory: 512
     timeout: 10
     environment:
@@ -138,30 +139,100 @@ service: insight-poc-${stage}
 
 ## functions
 
-`functions`字段是一个对象，用于定义serverless函数。functions下的每一个子项都是一个方法的定义。function支持的字段有：
+`functions`字段是一个对象，用于定义serverless函数。functions下的每一个子项都是一个方法的定义。
+
+```yaml
+functions:
+  insight_poc_fn:
+    name: insight-poc-fn
+    code:
+      path: artifacts/artifact.zip
+      handler: index.handler
+      runtime: nodejs14
+    container:
+      image: registry.cn-hangzhou.aliyuncs.com/aliyunfc/runtime/nodejs14:1.0.0
+      cmd: npm start
+      port: 9000
+    memory: 512
+    timeout: 10
+    gpu: TESLA_8
+    storage:
+      disk: 512
+      nas:
+        - mount_path: /mnt/nas
+          storage_class: standard
+          vpc_id: vpc-123456
+          subnet_ids: subnet-123456
+    environment:
+      NODE_ENV: production
+      TEST_VAR: ${vars.testv}
+      TEST_VAR_EXTRA: abcds-${vars.testv}-andyou
+
+```
+
+function支持的字段有：
 
 - **name**: serverless函数的名称
   > 支持的字符集为`a-zA-Z0-9-_`,长度为1-64个字符
   > required: true
-- **runtime**: serverless函数的运行时
-  > 支持的运行时:
-  nodejs20,nodejs18,nodejs16,nodejs14,nodejs12,nodejs10,nodejs8,python3.10,python3.9,python3,PHP7.2,Java11,.NETCore3.1,Go1.x
-- **handler**: serverless函数的处理程序
-  > required: true
-- **code**: serverless函数的代码包相对项根目录的路径
-  > 当前仅支持zip格式的代码包
-  > required: true
+- **code**: serverless函数通过源码部署的相关配置(⚠️code和container只能存在一个)
+  > required: false
+  > - **path**: 压缩后的代码路径, 当前仅支持zip格式的代码包
+      > required: true
+  > - **handler**: serverless函数的处理程序
+      > required: true
+  > - **runtime**: 函数运行时
+      > required: true
+      >  支持的运行时:
+      `nodejs20`,`nodejs18`,`nodejs16`,`nodejs14`,`nodejs12`,`nodejs10`,`nodejs8`,`python3.10`,`python3.9`,`python3`,`PHP7.2`,`Java11`,`.NETCore3.1`,`Go1.x`
+- **container**: serverless函数通过容器部署的相关配置(⚠️code和container只能存在一个)
+  > 阿里云仅支镜像为同账户下的ACR镜像，不支持部署如dockerhub等公共镜像
+  > required: false
+  >  - **image**: 容器镜像
+       > 遵循格式: `registry.{{region}}.aliyuncs.com/xxx:tag`(阿里云)
+  >  - **cmd**: 容器启动命令
+  >    required: false
+  >    default: 默认为构建镜像的dockerfile中指定的cmd和entrypoint
+  >  - **port**: 容器对外提供服务的端口
+  >    required: true
+
+
 - **timeout**: serverless函数的超时时间
   > 默认值: 15分钟
 - **memory**: serverless函数的内存大小
   > 默认值: 128MB
+- **gpu**: serverless函数的GPU配置
+  > 类型: `enum`  
+  > required: false  
+  > 支持的GPU配置: `TESLA_8`, `TESLA_12`,`TESLA_16`, `AMPERE_8`, `AMPERE_12`, `AMPERE_16`,`AMPERE_24`, `ADA_48`(GPU 的配置通过`_`分割型号和内存，前面是GPU的型号，后面是GPU的内存大小)  
+  > 注意⚠️：阿里云不支持将一个已存在的函数配置为GPU类型，如果需要使用GPU类型的函数，需要删除原有函数并重新创建。 
+
 - **environment**: serverless函数的环境变量
-  > 支持的字符集为`a-zA-Z0-9-_`,长度为1-64个字符
+  > 支持的字符集为`a-zA-Z0-9-_`,长度为1-64个字符  
   > required: false
 - **log**: serverless函数是否开启日志
   > required: false  
   > default: false  
-  > 注意: 由于阿里sls创建延迟问题，无法在创建时开启日志，需要stack第一次创建时关闭，等待1～2分钟后开启日志并重新部署。
+  > 注意⚠️: 由于阿里sls创建延迟问题，无法在创建时开启日志，需要stack第一次创建时关闭，等待1～2分钟后开启日志并重新部署。
+- **network**: 网络配置
+  > 类型: `object`  
+  > required: false
+    - **vpc_id**: 指定serverless函数的VPC ID
+      > 类型: `string`  
+      > required: true
+    - **subnet_ids**: 交换机列表,即serverless函数所在的子网
+      > 类型: `array`  
+      > required: true
+    - **security_group**: 安全组规则
+      > 类型: `object`  
+      > required: true
+      >   - **ingress**: 入站规则
+            > 类型: `array`  
+            > required: true  
+            > 格式为: `协议:IP范围:端口范围` 如`TCP:0.0.0.0/0:80`,`TCP:0.0.0.0/0:1028/1030`。  
+            > 协议列表: `TCP`, `UDP`, `ICMP`, `ALL`
+      >   - **egress**: 出站规则, 与入站规则遵循相同的格式,但出站规则为可选项，默认允许所有出站流量
+
 
 ## events
 
@@ -182,7 +253,7 @@ service: insight-poc-${stage}
       > required: true
     - **backend**: 事件的后端，通过方法的名称，指定后端的方法，请求最终有指定的方法进行处理
       > required: true
-- **custom_domain**: 事件的自定义域名
+- **domain**: 事件的自定义域名
   > required: false
     - **domain_name**: 自定义域名
       > required: true
@@ -314,16 +385,11 @@ buckets:
       sse_kms_master_key_id: 1234567890
     website:
       code: dist/
-      domain: example.com
+      domain: adminui.example.com
       index: index.html
       error_page: 404.html
       error_code: 404
-    versioning: ENABLED
-    lifecycle:
-      rule:
-        id: rule1
-        expiration:
-        days: 30
+
 ```
 
 bucket支持的字段有:
@@ -375,20 +441,20 @@ bucket支持的字段有:
 - **rule**: 生命周期规则
 
 - security: bucket安全相关配置
-  - **acl**: 访问控制，配置bucket的访问权限
-    > 类型: `string`  
-    > required: false  
-    > 默认值: `PRIVATE`  
-    > 支持的访问控制: `PRIVATE`, `PUBLIC_READ`, `PUBLIC_READ_WRITE`
-  - **force_delete**: 强制删除
-    > 类型: `boolean`  
-    > required: false  
-    > 默认值: false  
-    > 注意: 强制删除后无法恢复
-  - **sse_algorithm**: 加密算法
-  - **sse_kms_master_key_id**: 加密密钥ID
-    > 类型: `string`  
-    > required: false  
-    > 默认值: null  
-    > 注意: 如果未指定加密密钥ID，则使用默认密钥
+    - **acl**: 访问控制，配置bucket的访问权限
+      > 类型: `string`  
+      > required: false  
+      > 默认值: `PRIVATE`  
+      > 支持的访问控制: `PRIVATE`, `PUBLIC_READ`, `PUBLIC_READ_WRITE`
+    - **force_delete**: 强制删除
+      > 类型: `boolean`  
+      > required: false  
+      > 默认值: false  
+      > 注意: 强制删除后无法恢复
+    - **sse_algorithm**: 加密算法
+    - **sse_kms_master_key_id**: 加密密钥ID
+      > 类型: `string`  
+      > required: false  
+      > 默认值: null  
+      > 注意: 如果未指定加密密钥ID，则使用默认密钥
 
