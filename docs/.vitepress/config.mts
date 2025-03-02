@@ -54,7 +54,7 @@ export default defineConfig({
               {text: '命令行', link: 'cli'},
               {text: '支持服务', link: 'support'},
               {text: '常见问题', link: 'faq'},
-              {text: '实战案例', link: 'case-study'},
+              {text: '实践案例', link: 'case-study'},
             ]
           }
         ],

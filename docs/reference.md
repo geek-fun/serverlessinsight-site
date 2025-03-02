@@ -156,18 +156,29 @@ functions:
     memory: 512
     timeout: 10
     gpu: TESLA_8
+    network:
+      vpc_id: vpc-test-vpc
+      subnet_ids:
+        - vsw-test01
+        - vsw-test02
+      security_group:
+        name: insight-poc-g-sg
+        ingress:
+          - TCP:0.0.0.0/0:80
+          - TCP:0.0.0.0/0:443
+          - TCP:0.0.0.0/0:22/22
+          - ICMP:0.0.0.0/0:ALL
+        egress:
+          - ALL:0.0.0.0/0:ALL
     storage:
       disk: 512
       nas:
         - mount_path: /mnt/nas
           storage_class: standard
-          vpc_id: vpc-123456
-          subnet_ids: subnet-123456
     environment:
       NODE_ENV: production
       TEST_VAR: ${vars.testv}
       TEST_VAR_EXTRA: abcds-${vars.testv}-andyou
-
 ```
 
 function支持的字段有：
@@ -195,7 +206,6 @@ function支持的字段有：
   >    default: 默认为构建镜像的dockerfile中指定的cmd和entrypoint
   >  - **port**: 容器对外提供服务的端口
   >    required: true
-
 
 - **timeout**: serverless函数的超时时间
   > 默认值: 15分钟
@@ -233,6 +243,25 @@ function支持的字段有：
             > 协议列表: `TCP`, `UDP`, `ICMP`, `ALL`
       >   - **egress**: 出站规则, 与入站规则遵循相同的格式,但出站规则为可选项，默认允许所有出站流量
 
+- **storage**: 函数的存储相关配置，包括函数的临时硬盘空间，挂载NAS存储以及对象存储
+  > 类型: `object`  
+  > required: false  
+  > - **disk**: 函数的临时硬盘空间, 单位为MB  
+      > 类型: `integer`  
+      > required: false  
+      > default: 512  
+  > - **nas**: 挂载NAS存储到函数上  
+      > 类型: `object`  
+      > required: false  
+      > 注意⚠️：访问NAS需要函数所在的VPC和NAS在同一VPC下，且只能通过VPC内网访问，因此当指定了NAS时，需要同时指定`network`下的VPC和`subnet_ids`相关配置  
+      >   - **mount_path**: 挂载到函数实例的路径  
+            > 类型: `string`  
+            > required: true  
+      >   - **storage_class**: NAS存储类型  
+            > 类型: `enum`  
+            > required: true  
+            > 支持的存储类型: `STANDARD_CAPACITY`, `STANDARD_PERFORMANCE`, `EXTREME_STANDARD`, `EXTREME_ADVANCE`  
+  
 
 ## events
 
@@ -258,11 +287,11 @@ function支持的字段有：
     - **domain_name**: 自定义域名
       > required: true
     - **certificate_name**: 证书名称
-      > required: true
+      > required: false
     - **certificate_private_key**: 证书私钥
-      > required: true
+      > required: false
     - **certificate_body**: 证书内容
-      > required: true
+      > required: false
 
 ## databases
 
