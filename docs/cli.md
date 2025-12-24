@@ -12,7 +12,7 @@ si validate
 
 ![validate校验成功示例](/cli-validate-success.png)
 
-## deploy 部署Serverless应用
+## deploy 部署 Serverless 应用
 
 `deploy`命令用于部署Serverless应用到指定的Serverless供应商中。
 
@@ -40,3 +40,14 @@ si destroy --stage dev <stackName>
 ```
 
 - **--stage/-s**: 指定部署的环境，默认值为`default`。
+
+## run-local 本地运行 Serverless 应用
+
+`run-local` 命令用于在本地运行 Serverless 应用，方便开发人员进行调试。
+
+```bash
+si local --stage dev <stackName>
+```
+- **--stage/-s**: 指定运行的环境，默认值为`default`。
+- **--debug/-d**: 启用调试模式，默认值为`false`。
+- **--watch/-w**: 启用文件监视模式，默认值为`true`。

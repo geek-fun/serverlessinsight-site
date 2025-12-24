@@ -1,0 +1,23 @@
+version: 0.0.1
+
+provider:
+  name: aliyun
+  region: ap-southeast-1
+
+
+service: serverlessinsight-site
+
+tags:
+  owner: wentsen
+
+buckets:
+  si_spa_site_bucket:
+    name: serverlessinsight-site-bucket-${ctx.stage}
+    security:
+      acl: PUBLIC_READ
+    website:
+      code: dist
+      index: index.html
+      error_page: 404.html
+      error_code: 404
+      domain: www.serverlessinsight.com

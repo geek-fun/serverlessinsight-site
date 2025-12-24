@@ -1,10 +1,10 @@
 # 用户手册
 
-本文档概述了ServerlessInsight的规范，详细介绍了IaC（基础设施即代码）的YAML定义。
+本文档概述了 ServerlessInsight 的规范，详细介绍了 IaC（基础设施即代码）的YAML定义。
 
 ## ServerlessInsight Yaml配置规范
 
-ServerlessInsight的YAML配置文件是一个描述Serverless应用的资源的文件，它包含了Serverless应用的所有资源定义，如函数、API网关、事件等。以下是一个ServerlessInsight的YAML配置文件的示例：
+ServerlessInsight 的 YAML 配置文件是一个描述 Serverless 应用的资源的文件，它包含了 Serverless 应用的所有资源定义，如函数、API网关、事件等。以下是一个 ServerlessInsight 的 YAML 配置文件的示例：
 
 > stack.yml
 
@@ -31,7 +31,7 @@ tags:
 functions:
   insight_poc_fn:
     name: insight-poc-fn
-    code: 
+    code:
       runtime: nodejs18
       handler: ${vars.handler}
       path: artifacts/artifact.zip
@@ -81,7 +81,12 @@ provider:
   > 支持的云提供商的名称: aliyun, huawei, tencent  
   > required: true
 - **region**: 云提供商服务部署目标地域
-  > 支持的运行时: 请参考云厂商所支持的地域  
+  > 当 provider.name 为 `aliyun` 时，支持的区域包括:
+  > - 中国大陆: `cn-qingdao`, `cn-beijing`, `cn-zhangjiakou`, `cn-huhehaote`, `cn-wulanchabu`, `cn-hangzhou`, `cn-shanghai`, `cn-shenzhen`, `cn-heyuan`, `cn-guangzhou`, `cn-chengdu`
+  > - 亚太地区: `cn-hongkong`, `ap-southeast-1`, `ap-southeast-3`, `ap-southeast-5`, `ap-southeast-6`, `ap-southeast-7`, `ap-northeast-1`, `ap-northeast-2`
+  > - 欧洲&美洲: `eu-central-1`, `eu-west-1`, `us-east-1`, `us-west-1`, `na-south-1`
+  > - 中东: `me-east-1`, `me-central-1`
+  >
   > required: true
 
 ## vars
@@ -128,10 +133,10 @@ stages:
 `<service>-<stage>`。
 
 ```yaml
-service: insight-poc-${stage}
+service: insight-poc-${ctx.stage}
 ```
 
-> 注意，${stage}是ServerlessInsight提供的全局预定义变量，表示当前部署的stage，值为命令行中指定的stage或默认值`default`。
+> 注意，${ctx.stage}是 ServerlessInsight 提供的全局预定义变量，表示当前部署的stage，值为命令行--stage所指定，默认值为 `default`。
 
 ## tags
 
@@ -195,17 +200,18 @@ function支持的字段有：
   > - **runtime**: 函数运行时
       > required: true
       >  支持的运行时:
-      `nodejs20`,`nodejs18`,`nodejs16`,`nodejs14`,`nodejs12`,`nodejs10`,`nodejs8`,`python3.10`,`python3.9`,`python3`,`PHP7.2`,`Java11`,`.NETCore3.1`,`Go1.x`
+      `nodejs20`,`nodejs18`,`nodejs16`,`nodejs14`,`nodejs12`,`nodejs10`,`nodejs8`,`python3.10`,`python3.9`,`python3`,
+      `PHP7.2`,`Java11`,`.NETCore3.1`,`Go1.x`
 - **container**: serverless函数通过容器部署的相关配置(⚠️code和container只能存在一个)
   > 阿里云仅支镜像为同账户下的ACR镜像，不支持部署如dockerhub等公共镜像
   > required: false
   >  - **image**: 容器镜像
        > 遵循格式: `registry.{{region}}.aliyuncs.com/xxx:tag`(阿里云)
   >  - **cmd**: 容器启动命令
-  >    required: false
-  >    default: 默认为构建镜像的dockerfile中指定的cmd和entrypoint
+       > required: false
+       > default: 默认为构建镜像的dockerfile中指定的cmd和entrypoint
   >  - **port**: 容器对外提供服务的端口
-  >    required: true
+       > required: true
 
 - **timeout**: serverless函数的超时时间
   > 默认值: 15分钟
@@ -214,8 +220,9 @@ function支持的字段有：
 - **gpu**: serverless函数的GPU配置
   > 类型: `enum`  
   > required: false  
-  > 支持的GPU配置: `TESLA_8`, `TESLA_12`,`TESLA_16`, `AMPERE_8`, `AMPERE_12`, `AMPERE_16`,`AMPERE_24`, `ADA_48`(GPU 的配置通过`_`分割型号和内存，前面是GPU的型号，后面是GPU的内存大小)  
-  > 注意⚠️：阿里云不支持将一个已存在的函数配置为GPU类型，如果需要使用GPU类型的函数，需要删除原有函数并重新创建。 
+  > 支持的GPU配置: `TESLA_8`, `TESLA_12`,`TESLA_16`, `AMPERE_8`, `AMPERE_12`, `AMPERE_16`,`AMPERE_24`, `ADA_48`(GPU
+  的配置通过`_`分割型号和内存，前面是GPU的型号，后面是GPU的内存大小)  
+  > 注意⚠️：阿里云不支持将一个已存在的函数配置为GPU类型，如果需要使用GPU类型的函数，需要删除原有函数并重新创建。
 
 - **environment**: serverless函数的环境变量
   > 支持的字符集为`a-zA-Z0-9-_`,长度为1-64个字符  
@@ -245,23 +252,23 @@ function支持的字段有：
 
 - **storage**: 函数的存储相关配置，包括函数的临时硬盘空间，挂载NAS存储以及对象存储
   > 类型: `object`  
-  > required: false  
+  > required: false
   > - **disk**: 函数的临时硬盘空间, 单位为MB  
       > 类型: `integer`  
       > required: false  
-      > default: 512  
+      > default: 512
   > - **nas**: 挂载NAS存储到函数上  
       > 类型: `object`  
       > required: false  
-      > 注意⚠️：访问NAS需要函数所在的VPC和NAS在同一VPC下，且只能通过VPC内网访问，因此当指定了NAS时，需要同时指定`network`下的VPC和`subnet_ids`相关配置  
+      > 注意⚠️：访问NAS需要函数所在的VPC和NAS在同一VPC下，且只能通过VPC内网访问，因此当指定了NAS时，需要同时指定`network`
+      下的VPC和`subnet_ids`相关配置  
       >   - **mount_path**: 挂载到函数实例的路径  
-            > 类型: `string`  
-            > required: true  
+      > 类型: `string`  
+      > required: true  
       >   - **storage_class**: NAS存储类型  
-            > 类型: `enum`  
-            > required: true  
-            > 支持的存储类型: `STANDARD_CAPACITY`, `STANDARD_PERFORMANCE`, `EXTREME_STANDARD`, `EXTREME_ADVANCE`  
-  
+      > 类型: `enum`  
+      > required: true  
+      > 支持的存储类型: `STANDARD_CAPACITY`, `STANDARD_PERFORMANCE`, `EXTREME_STANDARD`, `EXTREME_ADVANCE`
 
 ## events
 
@@ -386,6 +393,137 @@ database支持的字段有:
 
 每个数据库定义必须包含`name`、`type`、`version`和`security`字段。
 
+## tables
+
+`tables` 字段是一个对象，用于定义相关表格数据库如阿里云tbleStore，AWS DynamoDB等。`tables`下的每一个子项都是一个表格数据库资源的定义。
+
+```yaml
+tables:
+  insight_poc_table:
+    collection:
+      name: store_or_instance_name
+      id: store_or_instance_id
+    name: insight-poc-table
+    type: TABLE_STORE_C
+    network:
+      type: 'PRIVATE'
+      ingress_rules:
+        - TCP:0.0.0.0/0:80
+        - TCP:0.0.0.0/0:443
+    throughput:
+      reserved:
+        read: 2
+        write: 10
+      on_demand:
+        read: 100
+        write: 100
+    key_schema:
+      - name: id
+        type: HASH
+    attributes:
+      - name: id
+        type: string
+
+```
+
+table 支持的字段有:
+
+- **collection**：用来指定表所属的单元，通过name来指定新的集合或实例（serverlessInsight会在创建table时自动创它），或指定id来使用已存在的集合或实例。
+    - **name**：集合或实例名称，serverlessInsight会在创建表时自动创建一个新的集合或实例。
+      > 类型: `string`  
+      >   支持的字符集为`a-zA-Z0-9-_`,长度为1-64个字符  
+      >   required: false
+    - **id**：集合或实例 ID，table 将在该集合或实例中创建。
+      > 类型: `string`  
+      >   支持的字符集为`a-zA-Z0-9-_`,长度为1-64个字符  
+      >   required: false
+
+  > - 如果指定了`name`，则会创建一个新的集合或实例。
+  > - 如果指定了`id`，则会使用已存在的集合或实例。
+  >
+  > 注意⚠️：不同云厂商的表格存储概念不同
+  > - 阿里云: 在阿里云表格存储中，表格存储被归类到一个实例中，
+  > - 华为云: 在华为云 KVS 中，表格存储被归类到一个存储仓（Store）中。
+  > - AWS:AWS 的 DynamoDB 中则没有这一概念，DynamoDB table即为表格数据库的最顶层单元
+  >
+  > required: true(aliyun和huawei云) | false(aws)- 或通过id来指定已存在的集合或实例。
+
+- **name**：表名
+  > 类型: `string`  
+  > required: true
+- **type**：表类型
+  > 类型: `ENUM`  
+  > 支持的类型: `TABLE_STORE_C`, `TABLE_STORE_G`  
+  > required: true
+
+- **network**：网络配置
+  > 类型: `object`  
+  > required: false
+    - **type**：网络类型
+      > 类型: `string`  
+      > 支持的类型: `PUBLIC`, `PRIVATE`  
+      > required: true
+    - **ingress_rules**：入站规则, 格式为`协议:IP范围:端口范围`，如`TCP:0.0.0.0/0:80`
+      > 类型: `array`  
+      > 项目类型: `string`  
+      > required: false
+
+- **throughput**：配置表的吞吐量，包括预留吞吐量和按需吞吐量
+  > 类型: `object`  
+  > required: false
+    - **reserved**：预留吞吐量
+      > 类型: `object`  
+      > required: false
+        - **read**：预留读的 CU 数
+          > 类型: `integer`  
+          >   最小值: 1  
+          >   最大值: 10000  
+          > required: true
+        - **write**：预留写的 CU 数
+          > 类型: `integer`  
+          >   最小值: 1  
+          >   最大值: 10000  
+          > required: true
+
+    - **on_demand**：指定最大动态按需吞吐量
+      > 类型: `object`  
+      > required: false  
+      > 注意⚠️: 该配置仅AWS DynamoDB 支持
+        - **read**：动态按需读的最大允许 CU 数
+          > 类型: `integer`  
+          >   最小值: 1  
+          >   最大值: 10000  
+          > required: true
+        - **write**：动态按需写的最大允许 CU 数
+          > 类型: `integer`  
+          >   最小值: 1  
+          >   最大值: 10000  
+          > required: true
+
+- **key_schema**：主键结构定义
+  > 类型: `array`  
+  > required: true
+    - **name**：键的名称
+      > 类型: `string`
+      > required: true
+    - **type**：键的类型
+      > 类型: `ENUM`  
+      > required: true
+      > 支持值：`HASH`，`RANGE`
+
+- **attributes**：表的属性定义
+  > 类型: `array`  
+  > required: true
+    - **name**：属性名称
+      > 类型: `string`  
+      > required: true
+    - **type**：属性类型
+      > 类型: `ENUM`  
+      > required: true。
+      > 支持值：`STRING`, `NUMBER`, `BOOLEAN`, `BINARY`, `MAP`, `LIST`
+
+每个表定义必须包含 `collection`、`name`、`type`、`key_schema` 和 `attributes` 字段。key_schema 中声明的键必须同时在attributes 中声明其数据类型。
+
 ## buckets
 
 `buckets`字段是一个对象，用于定义对象存储。`buckets`下的每一个子项都是一个对象存储桶(Bucket🪣)资源的定义。
@@ -421,7 +559,7 @@ buckets:
 
 ```
 
-bucket支持的字段有:
+bucket 支持的字段有:
 
 - **name**: 存储桶的名称
 
@@ -487,3 +625,7 @@ bucket支持的字段有:
       > 默认值: null  
       > 注意: 如果未指定加密密钥ID，则使用默认密钥
 
+
+## localStack
+在 ServerlessInsight 的 YML 文件中定义的资源支持在本地直接启动，极大的方便了无服务应用的开发，开发者无需将代码部署到云端即可快速测试其功能。
+我们可以使用以下字段来定义本地启动的细节：

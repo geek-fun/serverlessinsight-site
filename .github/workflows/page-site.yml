@@ -19,6 +19,8 @@ jobs:
         with:
           node-version: 20.x
           cache: 'npm'
+      - name: Install ServerlessInsight
+        run: npm install -g @geek-fun/serverlessinsight
       - run: npm ci
       - run: npm run docs:build
       - name: Generate changelog
@@ -51,3 +53,15 @@ jobs:
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
           branch: main
           environment: production
+      - name: Deploy to Aliyun By ServerlessInsight
+        if: steps.tag_release.outputs.successful == 'true'
+        run: |
+          si deploy serverlessInsight-site-prod --stage prod
+        env:
+          ACCESS_KEY_ID: ${{ secrets.ALIYUN_ACCESS_KEY_ID_PROD }}
+          ACCESS_KEY_SECRET: ${{ secrets.ALIYUN_ACCESS_KEY_SECRET_PROD }}
+          REGION: singapore
+
+
+
+

@@ -20,6 +20,12 @@ ServerlessInsight需要获得目标云厂商的访问权限包括云供应商的
 将对应的秘钥export到全局环境变量中，如阿里云的`ALIYUN_ACCESS_KEY_ID`, `ALIYUN_ACCESS_KEY_SECRET`以及服务部署的目标区域
 `ALIYUN_REGION`。
 
+> **支持的阿里云区域:**
+> - 中国大陆: `cn-qingdao`, `cn-beijing`, `cn-zhangjiakou`, `cn-huhehaote`, `cn-wulanchabu`, `cn-hangzhou`, `cn-shanghai`, `cn-shenzhen`, `cn-heyuan`, `cn-guangzhou`, `cn-chengdu`
+> - 亚太地区: `cn-hongkong`, `ap-southeast-1`, `ap-southeast-3`, `ap-southeast-5`, `ap-southeast-6`, `ap-southeast-7`, `ap-northeast-1`, `ap-northeast-2`
+> - 欧洲&美洲: `eu-central-1`, `eu-west-1`, `us-east-1`, `us-west-1`, `na-south-1`
+> - 中东: `me-east-1`, `me-central-1`
+
 ![阿里云AccessKey生成示意](/aliyun-access-key.png)
 
 > 请您务必妥善保管您的秘钥信息，不要通过任何方式（e.g. GitHub）将AccessKey 公开到外部渠道，以避免被他人利用而造成 安全威胁 。
