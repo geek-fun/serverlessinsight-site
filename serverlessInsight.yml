@@ -11,7 +11,7 @@ backend:
   state_manager:
     type: BUCKET_STORE
     bucket: wentsen-serverless-insight-state-prod
-    key: frog-coo/frog-coo-api/state.json
+    key: serverlessinsight-site/state.json
 
 tags:
   owner: wentsen
