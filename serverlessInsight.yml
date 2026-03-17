@@ -4,11 +4,18 @@ provider:
   name: aliyun
   region: ap-southeast-1
 
-
+app: serverlessinsight
 service: serverlessinsight-site
+
+backend:
+  state_manager:
+    type: BUCKET_STORE
+    bucket: wentsen-serverless-insight-state-prod
+    key: frog-coo/frog-coo-api/state.json
 
 tags:
   owner: wentsen
+  group: serverlessinsight
 
 buckets:
   si_spa_site_bucket:

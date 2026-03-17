@@ -56,7 +56,7 @@ jobs:
       - name: Deploy to Aliyun By ServerlessInsight
         if: steps.tag_release.outputs.successful == 'true'
         run: |
-          si deploy serverlessInsight-site-prod --stage prod
+          si deploy --stage prod
         env:
           ACCESS_KEY_ID: ${{ secrets.ALIYUN_ACCESS_KEY_ID_PROD }}
           ACCESS_KEY_SECRET: ${{ secrets.ALIYUN_ACCESS_KEY_SECRET_PROD }}
