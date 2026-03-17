@@ -1,324 +1,464 @@
-# 用户手册
+# 配置手册
 
-本文档概述了 ServerlessInsight 的规范，详细介绍了 IaC（基础设施即代码）的YAML定义。
+本文档详细介绍了 ServerlessInsight 的配置规范，包括基础设施即代码 (IaC) 的 YAML 定义语法和所有可用的资源类型。
 
-## ServerlessInsight Yaml配置规范
+## 目录
 
-ServerlessInsight 的 YAML 配置文件是一个描述 Serverless 应用的资源的文件，它包含了 Serverless 应用的所有资源定义，如函数、API网关、事件等。以下是一个 ServerlessInsight 的 YAML 配置文件的示例：
+- [快速示例](#快速示例)
+- [核心配置](#核心配置)
+  - [version](#version)
+  - [provider](#provider)
+  - [vars](#vars)
+  - [stages](#stages)
+  - [service](#service)
+  - [tags](#tags)
+- [资源类型](#资源类型)
+  - [functions](#functions)
+  - [events](#events)
+  - [databases](#databases)
+  - [tables](#tables)
+  - [buckets](#buckets)
+- [变量引用](#变量引用)
+- [本地开发](#本地开发)
 
-> stack.yml
+## 快速示例
+
+以下是一个完整的 `serverlessinsight.yml` 配置示例：
 
 ```yaml
-version: 0.1
+version: 0.1.0
 provider:
   name: aliyun
-  region: cn-chengdu
+  region: cn-hangzhou
 
 vars:
   region: cn-hangzhou
   account_id: 1234567890
+  memory_size: 512
 
 stages:
   dev:
-    region: ${vars:region}
-    account_id: ${vars:account_id}
+    region: ${vars.region}
+    memory: 512
+  prod:
+    region: ${vars.region}
+    memory: 1024
 
-service: insight-poc
+app: my-app
+service: my-app-service
 
 tags:
   owner: geek-fun
+  project: my-app
 
 functions:
-  insight_poc_fn:
-    name: insight-poc-fn
+  api_function:
+    name: my-api-function
     code:
       runtime: nodejs18
-      handler: ${vars.handler}
-      path: artifacts/artifact.zip
-    memory: 512
-    timeout: 10
+      handler: index.handler
+      path: artifacts/function.zip
+    memory: ${stages.memory}
+    timeout: 30
     environment:
       NODE_ENV: production
-      TEST_VAR: ${vars.testv}
-      TEST_VAR_EXTRA: abcds-${vars.testv}-andyou
+      DB_HOST: ${vars.db_host}
 
 events:
-  gateway_event:
+  api_gateway:
     type: API_GATEWAY
-    name: insight-poc-gateway
+    name: my-api-gateway
     triggers:
       - method: GET
-        path: /api/hello
-        backend: insight-poc-fn
-
+        path: /api/*
+        backend: api_function
+      - method: POST
+        path: /api/*
+        backend: api_function
 ```
 
-如上，一个典型的ServerlessInsight定义包含了`version`、`provider`、`vars`、`stages`、`service`、`tags`、`functions`和`events`
-字段。我们来逐个解释一下这个YAML文件的各个部分：
+## 核心配置
 
-## version
+### version
 
-`version`字段指定了ServerlessInsight的YAML配置文件的版本，目前只支持`0.1`版本。
-注意主版本之间可能会有不兼容的变化，所以请确保您的配置文件与ServerlessInsight的版本兼容。
+指定 ServerlessInsight YAML 配置文件的版本。
 
 ```yaml
-version: 0.1
+version: 0.1.0
 ```
 
-## provider
+> ⚠️ **注意**: 当前仅支持 `0.1` 版本。主版本之间可能存在不兼容的变更，请确保配置文件与 ServerlessInsight CLI 版本兼容。
 
-`provider`字段指定了ServerlessInsight的提供商信息。
+### provider
+
+配置云供应商信息。
 
 ```yaml
 provider:
   name: aliyun
-  region: cn-chengdu
+  region: cn-hangzhou
 ```
 
-`provider`支持的字段有:
+**支持的字段:**
 
-- **name**: 云提供商的名称，包括`aliyun`、`huawei`、`tencent`等，目前只支持`aliyun`，其他提供商的支持正在开发中
-  > 支持的云提供商的名称: aliyun, huawei, tencent  
-  > required: true
-- **region**: 云提供商服务部署目标地域
-  > 当 provider.name 为 `aliyun` 时，支持的区域包括:
-  > - 中国大陆: `cn-qingdao`, `cn-beijing`, `cn-zhangjiakou`, `cn-huhehaote`, `cn-wulanchabu`, `cn-hangzhou`, `cn-shanghai`, `cn-shenzhen`, `cn-heyuan`, `cn-guangzhou`, `cn-chengdu`
-  > - 亚太地区: `cn-hongkong`, `ap-southeast-1`, `ap-southeast-3`, `ap-southeast-5`, `ap-southeast-6`, `ap-southeast-7`, `ap-northeast-1`, `ap-northeast-2`
-  > - 欧洲&美洲: `eu-central-1`, `eu-west-1`, `us-east-1`, `us-west-1`, `na-south-1`
-  > - 中东: `me-east-1`, `me-central-1`
-  >
-  > required: true
+| 字段 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `name` | string | ✅ | 云供应商名称：`aliyun`, `huawei`, `tencent` |
+| `region` | string | ✅ | 服务部署区域 |
 
-## vars
+**阿里云支持的区域:**
 
-`vars`字段是一个对象，用于定义一些变量，这些变量可以在其他地方引用。在部署时，可以通过`--parameter key=var`或`-p key=var`
-传递变量值并覆盖默认值。
-变量可以通过`${vars.var_name}`的方式在模版中进行引用。
+**中国大陆:**
+- `cn-qingdao`, `cn-beijing`, `cn-zhangjiakou`, `cn-huhehaote`, `cn-wulanchabu`
+- `cn-hangzhou`, `cn-shanghai`, `cn-shenzhen`, `cn-heyuan`, `cn-guangzhou`, `cn-chengdu`
+
+**亚太地区:**
+- `cn-hongkong`, `ap-southeast-1`, `ap-southeast-3`, `ap-southeast-5`
+- `ap-southeast-6`, `ap-southeast-7`, `ap-northeast-1`, `ap-northeast-2`
+
+**欧洲&美洲:**
+- `eu-central-1`, `eu-west-1`, `us-east-1`, `us-west-1`, `na-south-1`
+
+**中东:**
+- `me-east-1`, `me-central-1`
+
+> 💡 **提示**: 目前仅完整支持阿里云，华为云和腾讯云正在开发中。
+
+### vars
+
+定义可重用的变量，可在配置文件中通过 `${vars.variableName}` 引用。
 
 ```yaml
 vars:
-  bucket_name: my-bucket
-  domain_name: my-domain
+  region: cn-hangzhou
+  account_id: 1234567890
+  memory_size: 512
+  db_host: db.example.com
 ```
 
-## stages
+**变量引用示例:**
 
-`stages`字段是一个对象，用于定义不同stage下的的配置项的值。最佳实践是将部署环境相关的配置项放在`stages`
-字段下，使得不同环境下相同的配置项可以被赋予不同的值，如:
+```yaml
+functions:
+  my_function:
+    memory: ${vars.memory_size}
+    environment:
+      REGION: ${vars.region}
+```
+
+**命令行覆盖:**
+
+部署时可通过 `--parameter` 或 `-p` 参数覆盖变量默认值：
+
+```bash
+si deploy --stage prod -p memory_size=1024
+```
+
+### stages
+
+定义不同部署环境的配置。通过 `--stage` 或 `-s` 参数指定使用的环境。
 
 ```yaml
 stages:
   default:
-    domain_name: my-domain-dev.com
-    database_name: my-database-dev
-  local:
-    domain_name: localhost
-    database_name: localhost
+    domain_name: my-domain.com
+    database_name: my-database
   dev:
-    domain_name: my-domain-dev.com
+    domain_name: dev.my-domain.com
     database_name: my-database-dev
+    memory: 512
   prod:
-    domain_name: my-domain-prod.com
+    domain_name: my-domain.com
     database_name: my-database-prod
+    memory: 2048
 ```
 
-在stages中的变量可以通过`${stages.domain_name}`的方式在模版中进行引用,无需指定stage, 在部署/启动服务时，通过`--stage`或
-`-s`参数指定部署的环境，如`si deploy --stage prod`，模版便会引用对于stage的变量值。如果不指定stage，默认使用`default`。
-
-## service
-
-`service`字段指定了Serverless应用的名称。`service`
-字段是一个全局唯一的标识符，用于区分不同的Serverless应用。不同于命令行中传递的 \<stackName\>
-参数，service的值将作为隐形创建资源的ID以及资源名称前缀，且service需要区分部署的stage，所以最佳实践是将service命名为
-`<service>-<stage>`。
+**使用示例:**
 
 ```yaml
-service: insight-poc-${ctx.stage}
+app: my-app
+service: my-app-service
+
+functions:
+  api_function:
+    memory: ${stages.memory}
 ```
 
-> 注意，${ctx.stage}是 ServerlessInsight 提供的全局预定义变量，表示当前部署的stage，值为命令行--stage所指定，默认值为 `default`。
+**部署命令:**
 
-## tags
+```bash
+# 部署到开发环境
+si deploy --stage dev
 
-`tags`字段是一个对象，用于定义一些标签。在这个例子中，我们定义了`owner`标签。
+# 部署到生产环境
+si deploy --stage prod
 
-## functions
+# 不指定 stage 时，默认使用 default
+si deploy
+```
 
-`functions`字段是一个对象，用于定义serverless函数。functions下的每一个子项都是一个方法的定义。
+> 💡 **提示**: `${ctx.stage}` 是 ServerlessInsight 提供的全局预定义变量，表示当前部署的 stage。
+
+### service
+
+指定 Serverless 应用的名称。该名称将作为资源 ID 和资源名称的前缀。
+
+```yaml
+app: my-app
+service: my-app-service
+```
+
+**命名建议:**
+
+- 使用小写字母、数字和连字符（`-`）
+- 保持名称简短（资源名称会附加此服务名）
+- 必须为静态字符串，不能使用变量
+
+> ⚠️ **注意**: 
+> - `app` 和 `service` 都是必填字段，且必须为静态字符串
+> - `service` 与命令行中的 `<stackName>` 不同。`service` 用于资源命名，`stackName` 是部署时指定的资源栈标识。
+
+### tags
+
+定义资源标签，用于资源管理、成本分摊等。
+
+```yaml
+tags:
+  owner: geek-fun
+  project: my-app
+  environment: ${ctx.stage}
+```
+
+所有创建的资源都会自动附加这些标签。
+
+## 资源类型
+
+### functions
+
+定义 Serverless 函数计算资源。
+
+**完整示例:**
 
 ```yaml
 functions:
-  insight_poc_fn:
-    name: insight-poc-fn
+  my_function:
+    name: my-function
+    # 代码部署方式（二选一）
     code:
-      path: artifacts/artifact.zip
+      runtime: nodejs18
       handler: index.handler
-      runtime: nodejs14
+      path: artifacts/function.zip
+    # 或容器部署方式
     container:
-      image: registry.cn-hangzhou.aliyuncs.com/aliyunfc/runtime/nodejs14:1.0.0
+      image: registry.cn-hangzhou.aliyuncs.com/myrepo/myimage:latest
       cmd: npm start
       port: 9000
+    # 资源配置
     memory: 512
-    timeout: 10
+    timeout: 30
     gpu: TESLA_8
+    # 网络配置
     network:
-      vpc_id: vpc-test-vpc
+      vpc_id: vpc-my-vpc
       subnet_ids:
-        - vsw-test01
-        - vsw-test02
+        - vsw-subnet1
+        - vsw-subnet2
       security_group:
-        name: insight-poc-g-sg
+        name: my-sg
         ingress:
           - TCP:0.0.0.0/0:80
           - TCP:0.0.0.0/0:443
-          - TCP:0.0.0.0/0:22/22
-          - ICMP:0.0.0.0/0:ALL
         egress:
           - ALL:0.0.0.0/0:ALL
+    # 存储配置
     storage:
       disk: 512
       nas:
         - mount_path: /mnt/nas
-          storage_class: standard
+          storage_class: STANDARD_CAPACITY
+    # 环境变量
     environment:
       NODE_ENV: production
-      TEST_VAR: ${vars.testv}
-      TEST_VAR_EXTRA: abcds-${vars.testv}-andyou
+      API_KEY: ${vars.api_key}
 ```
 
-function支持的字段有：
+**字段说明:**
 
-- **name**: serverless函数的名称
-  > 支持的字符集为`a-zA-Z0-9-_`,长度为1-64个字符
-  > required: true
-- **code**: serverless函数通过源码部署的相关配置(⚠️code和container只能存在一个)
-  > required: false
-  > - **path**: 压缩后的代码路径, 当前仅支持zip格式的代码包
-      > required: true
-  > - **handler**: serverless函数的处理程序
-      > required: true
-  > - **runtime**: 函数运行时
-      > required: true
-      >  支持的运行时:
-      `nodejs20`,`nodejs18`,`nodejs16`,`nodejs14`,`nodejs12`,`nodejs10`,`nodejs8`,`python3.10`,`python3.9`,`python3`,
-      `PHP7.2`,`Java11`,`.NETCore3.1`,`Go1.x`
-- **container**: serverless函数通过容器部署的相关配置(⚠️code和container只能存在一个)
-  > 阿里云仅支镜像为同账户下的ACR镜像，不支持部署如dockerhub等公共镜像
-  > required: false
-  >  - **image**: 容器镜像
-       > 遵循格式: `registry.{{region}}.aliyuncs.com/xxx:tag`(阿里云)
-  >  - **cmd**: 容器启动命令
-       > required: false
-       > default: 默认为构建镜像的dockerfile中指定的cmd和entrypoint
-  >  - **port**: 容器对外提供服务的端口
-       > required: true
+| 字段 | 类型 | 必填 | 默认值 | 说明 |
+|------|------|------|--------|------|
+| `name` | string | ✅ | - | 函数名称（a-zA-Z0-9-_，1-64 字符） |
+| `code` | object | ⚠️ | - | 代码部署配置（与 `container` 二选一） |
+| `container` | object | ⚠️ | - | 容器部署配置（与 `code` 二选一） |
+| `memory` | integer | ❌ | 128MB | 内存大小（MB） |
+| `timeout` | integer | ❌ | 15 分钟 | 超时时间（秒） |
+| `gpu` | enum | ❌ | - | GPU 配置 |
+| `network` | object | ❌ | - | 网络配置 |
+| `storage` | object | ❌ | - | 存储配置 |
+| `environment` | object | ❌ | - | 环境变量 |
 
-- **timeout**: serverless函数的超时时间
-  > 默认值: 15分钟
-- **memory**: serverless函数的内存大小
-  > 默认值: 128MB
-- **gpu**: serverless函数的GPU配置
-  > 类型: `enum`  
-  > required: false  
-  > 支持的GPU配置: `TESLA_8`, `TESLA_12`,`TESLA_16`, `AMPERE_8`, `AMPERE_12`, `AMPERE_16`,`AMPERE_24`, `ADA_48`(GPU
-  的配置通过`_`分割型号和内存，前面是GPU的型号，后面是GPU的内存大小)  
-  > 注意⚠️：阿里云不支持将一个已存在的函数配置为GPU类型，如果需要使用GPU类型的函数，需要删除原有函数并重新创建。
+#### code - 代码部署
 
-- **environment**: serverless函数的环境变量
-  > 支持的字符集为`a-zA-Z0-9-_`,长度为1-64个字符  
-  > required: false
-- **log**: serverless函数是否开启日志
-  > required: false  
-  > default: false  
-  > 注意⚠️: 由于阿里sls创建延迟问题，无法在创建时开启日志，需要stack第一次创建时关闭，等待1～2分钟后开启日志并重新部署。
-- **network**: 网络配置
-  > 类型: `object`  
-  > required: false
-    - **vpc_id**: 指定serverless函数的VPC ID
-      > 类型: `string`  
-      > required: true
-    - **subnet_ids**: 交换机列表,即serverless函数所在的子网
-      > 类型: `array`  
-      > required: true
-    - **security_group**: 安全组规则
-      > 类型: `object`  
-      > required: true
-      >   - **ingress**: 入站规则
-            > 类型: `array`  
-            > required: true  
-            > 格式为: `协议:IP范围:端口范围` 如`TCP:0.0.0.0/0:80`,`TCP:0.0.0.0/0:1028/1030`。  
-            > 协议列表: `TCP`, `UDP`, `ICMP`, `ALL`
-      >   - **egress**: 出站规则, 与入站规则遵循相同的格式,但出站规则为可选项，默认允许所有出站流量
+| 字段 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `runtime` | string | ✅ | 运行时环境 |
+| `handler` | string | ✅ | 函数处理程序入口 |
+| `path` | string | ✅ | 代码包路径（zip 格式） |
 
-- **storage**: 函数的存储相关配置，包括函数的临时硬盘空间，挂载NAS存储以及对象存储
-  > 类型: `object`  
-  > required: false
-  > - **disk**: 函数的临时硬盘空间, 单位为MB  
-      > 类型: `integer`  
-      > required: false  
-      > default: 512
-  > - **nas**: 挂载NAS存储到函数上  
-      > 类型: `object`  
-      > required: false  
-      > 注意⚠️：访问NAS需要函数所在的VPC和NAS在同一VPC下，且只能通过VPC内网访问，因此当指定了NAS时，需要同时指定`network`
-      下的VPC和`subnet_ids`相关配置  
-      >   - **mount_path**: 挂载到函数实例的路径  
-      > 类型: `string`  
-      > required: true  
-      >   - **storage_class**: NAS存储类型  
-      > 类型: `enum`  
-      > required: true  
-      > 支持的存储类型: `STANDARD_CAPACITY`, `STANDARD_PERFORMANCE`, `EXTREME_STANDARD`, `EXTREME_ADVANCE`
+**支持的运行时:**
+- Node.js: `nodejs20`, `nodejs18`, `nodejs16`, `nodejs14`, `nodejs12`, `nodejs10`, `nodejs8`
+- Python: `python3.10`, `python3.9`, `python3`
+- PHP: `PHP7.2`
+- Java: `Java11`
+- .NET: `.NETCore3.1`
+- Go: `Go1.x`
 
-## events
+#### container - 容器部署
 
-`events`字段是一个对象，用于定义事件。事件是发起函数调用的触发器。可以是一个来自用户的通过api gateway转发的http请求
-也可以是来自消息队列，数据库状态改变的事件等，events下的每一个子项都是一个事件的定义。event支持的字段有：
+> ⚠️ **注意**: 阿里云仅支持同一账户下的 ACR 镜像，不支持 Docker Hub 等公共镜像。
 
-- **type**: 事件的类型（目前仅支持 API_GATEWAY）
-  > 支持的事件类型有：API_GATEWAY,SQS,S3,HTTP,Timer等
-  > required: true
-- **name**: 事件的名称
-  > required: true
-- **triggers**: 事件的触发器
-  > required: true
-    - **method**: 事件的方法
-      > required: true
-      >   支持的方法有：GET,POST,PUT,DELETE,PATCH,HEAD,OPTIONS 以及ANY
-    - **path**: 事件的路径
-      > required: true
-    - **backend**: 事件的后端，通过方法的名称，指定后端的方法，请求最终有指定的方法进行处理
-      > required: true
-- **domain**: 事件的自定义域名
-  > required: false
-    - **domain_name**: 自定义域名
-      > required: true
-    - **certificate_name**: 证书名称
-      > required: false
-    - **certificate_private_key**: 证书私钥
-      > required: false
-    - **certificate_body**: 证书内容
-      > required: false
+| 字段 | 类型 | 必填 | 默认值 | 说明 |
+|------|------|------|--------|------|
+| `image` | string | ✅ | - | 容器镜像地址 |
+| `cmd` | string | ❌ | Dockerfile 中的配置 | 容器启动命令 |
+| `port` | integer | ✅ | - | 容器服务端口 |
 
-## databases
+**镜像格式:**
+```yaml
+image: registry.cn-hangzhou.aliyuncs.com/namespace/image:tag
+```
 
-`databases`字段是一个对象，用于定义数据库。`databases`下的每一个子项都是一个数据库资源的定义。
+#### gpu - GPU 配置
+
+支持的 GPU 类型（格式：型号_显存）:
+
+- `TESLA_8`, `TESLA_12`, `TESLA_16`
+- `AMPERE_8`, `AMPERE_12`, `AMPERE_16`, `AMPERE_24`
+- `ADA_48`
+
+> ⚠️ **注意**: 阿里云不支持将已存在的函数修改为 GPU 类型。如需使用 GPU，需删除原函数后重新创建。
+
+#### network - 网络配置
+
+| 字段 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `vpc_id` | string | ✅ | VPC ID |
+| `subnet_ids` | array | ✅ | 子网 ID 列表 |
+| `security_group` | object | ✅ | 安全组配置 |
+
+**安全组规则格式:**
 
 ```yaml
-version: 0.0.1
+security_group:
+  name: my-security-group
+  ingress:
+    - TCP:0.0.0.0/0:80          # 允许所有 IPv4 的 TCP 80 端口
+    - TCP:0.0.0.0/0:1028/1030   # 允许端口范围
+    - ICMP:0.0.0.0/0:ALL        # 允许 ICMP
+  egress:
+    - ALL:0.0.0.0/0:ALL         # 允许所有出站流量
+```
 
-provider:
-  name: aliyun
-  region: cn-chengdu
+**规则格式:** `协议:IP 范围：端口范围`
 
-service: insight-es-poc
+**支持的协议:** `TCP`, `UDP`, `ICMP`, `ALL`
 
-tags:
-  owner: geek-fun
+#### storage - 存储配置
 
+| 字段 | 类型 | 必填 | 默认值 | 说明 |
+|------|------|------|--------|------|
+| `disk` | integer | ❌ | 512MB | 临时磁盘空间（MB） |
+| `nas` | array | ❌ | - | NAS 挂载配置 |
+
+**NAS 配置:**
+
+> ⚠️ **注意**: NAS 必须与函数在同一 VPC 下，且仅支持内网访问。配置 NAS 时必须同时配置 `network`。
+
+```yaml
+nas:
+  - mount_path: /mnt/nas
+    storage_class: STANDARD_CAPACITY
+```
+
+**支持的 NAS 类型:**
+- `STANDARD_CAPACITY` - 标准容量型
+- `STANDARD_PERFORMANCE` - 标准性能型
+- `EXTREME_STANDARD` - 极速标准型
+- `EXTREME_ADVANCE` - 极速高级型
+
+### events
+
+定义事件触发器，用于触发函数执行。
+
+**完整示例:**
+
+```yaml
+events:
+  api_gateway:
+    type: API_GATEWAY
+    name: my-api-gateway
+    triggers:
+      - method: GET
+        path: /api/users
+        backend: user_function
+      - method: POST
+        path: /api/users
+        backend: user_function
+    domain:
+      domain_name: api.example.com
+      certificate_name: my-cert
+      certificate_private_key: |
+        -----BEGIN PRIVATE KEY-----
+        ...
+      certificate_body: |
+        -----BEGIN CERTIFICATE-----
+        ...
+```
+
+**字段说明:**
+
+| 字段 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `type` | string | ✅ | 事件类型（当前仅支持 `API_GATEWAY`） |
+| `name` | string | ✅ | 事件名称 |
+| `triggers` | array | ✅ | 触发器配置列表 |
+| `domain` | object | ❌ | 自定义域名配置 |
+
+#### triggers - 触发器配置
+
+| 字段 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `method` | string | ✅ | HTTP 方法 |
+| `path` | string | ✅ | 请求路径 |
+| `backend` | string | ✅ | 后端函数名称 |
+
+**支持的 HTTP 方法:**
+`GET`, `POST`, `PUT`, `DELETE`, `PATCH`, `HEAD`, `OPTIONS`, `ANY`
+
+**其他支持的事件类型（开发中）:**
+- `SQS` - 消息队列
+- `S3` - 对象存储事件
+- `HTTP` - HTTP 触发器
+- `Timer` - 定时触发器
+
+#### domain - 自定义域名
+
+| 字段 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `domain_name` | string | ✅ | 自定义域名 |
+| `certificate_name` | string | ❌ | SSL 证书名称 |
+| `certificate_private_key` | string | ❌ | 证书私钥 |
+| `certificate_body` | string | ❌ | 证书内容 |
+
+### databases
+
+定义数据库资源。
+
+**完整示例:**
+
+```yaml
 databases:
-  insight_es_db:
-    name: insight-poc-es
+  my_database:
+    name: my-app-db
     type: ELASTICSEARCH_SERVERLESS
     version: ES_SEARCH_7.10
     cu:
@@ -328,91 +468,64 @@ databases:
       min: 20
     security:
       basic_auth:
-        master_user: 'test-username'
-        password: 'U34I6InQ8elseTgqTWT2t2oFXpoqFg'
-
+        master_user: admin
+        password: SecurePassword123
+    network:
+      type: PRIVATE
+      public: false
 ```
 
-database支持的字段有:
+**字段说明:**
 
-- **name**: 数据库的名称
-  > 类型: `string`  
-  > required: true
+| 字段 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `name` | string | ✅ | 数据库名称 |
+| `type` | string | ✅ | 数据库类型 |
+| `version` | string | ✅ | 数据库版本 |
+| `cu` | object | ❌ | 计算单元配置 |
+| `storage` | object | ❌ | 存储配置 |
+| `security` | object | ✅ | 安全配置 |
+| `network` | object | ❌ | 网络配置 |
 
-- **type**: 数据库的类型
-  > 类型: `string`  
-  > 支持的类型: `ELASTICSEARCH_SERVERLESS`, `RDS_MYSQL_SERVERLESS`, `RDS_PGSQL_SERVERLESS`, `RDS_MSSQL_SERVERLESS`  
-  > required: true
+**支持的数据库类型:**
+- `ELASTICSEARCH_SERVERLESS` - Elasticsearch Serverless
+- `RDS_MYSQL_SERVERLESS` - MySQL Serverless
+- `RDS_PGSQL_SERVERLESS` - PostgreSQL Serverless
+- `RDS_MSSQL_SERVERLESS` - SQL Server Serverless
 
-- **version**: 数据库的版本
-  > 类型: `string`  
-  > 支持的版本: `MYSQL_5.7`, `MYSQL_8.0`, `MYSQL_HA_5.7`, `MYSQL_HA_8.0`, `PGSQL_14`, `PGSQL_15`, `PGSQL_16`,
-  `PGSQL_HA_14`, `PGSQL_HA_15`, `PGSQL_HA_16`, `MSSQL_HA_2016`, `MSSQL_HA_2017`, `MSSQL_HA_2019`, `ES_SEARCH_7.10`,
-  `ES_TIME_SERIES_7.10`  
-  > required: true
+**支持的数据库版本:**
+- MySQL: `MYSQL_5.7`, `MYSQL_8.0`, `MYSQL_HA_5.7`, `MYSQL_HA_8.0`
+- PostgreSQL: `PGSQL_14`, `PGSQL_15`, `PGSQL_16`, `PGSQL_HA_14`, `PGSQL_HA_15`, `PGSQL_HA_16`
+- SQL Server: `MSSQL_HA_2016`, `MSSQL_HA_2017`, `MSSQL_HA_2019`
+- Elasticsearch: `ES_SEARCH_7.10`, `ES_TIME_SERIES_7.10`
 
-- **cu**: 计算单元配置
-  > 类型: `object`
-    - **min**: 最小计算单元
-      > 类型: `integer`  
-      >   最小值: 0  
-      >   最大值: 32
-    - **max**: 最大计算单元
-      > 类型: `integer`  
-      >   最小值: 1  
-      >   最大值: 32
+**CU 配置:**
 
-- **storage**: 存储配置
-  > 类型: `object`
-    - **min**: 最小存储空间
-      > 类型: `integer`  
-      >   最小值: 20  
-      >   required: true
+| 字段 | 类型 | 必填 | 范围 |
+|------|------|------|------|
+| `min` | integer | ❌ | 0-32 |
+| `max` | integer | ❌ | 1-32 |
 
-- **security**: 安全配置
-  > 类型: `object`
-  > required: true
-    - **basic_auth**: 基本认证
-        - **master_user**: 主用户
-          > 类型: `string`
-          >   required: true
-        - **password**: 密码
-          > 类型: `string`
-          >   required: true
+### tables
 
-- **network**: 网络配置
-  > 类型: `object`
-    - **type**: 网络类型
-      > 类型: `string`  
-      > 支持的类型: `PUBLIC`, `PRIVATE`
-    - **ingress_rules**: 入站规则
-      > 类型: `array`  
-      > 项目类型: `string`
-    - **public**: 是否公开
-      > 类型: `boolean`
+定义表格存储资源（如阿里云 Table Store、AWS DynamoDB）。
 
-每个数据库定义必须包含`name`、`type`、`version`和`security`字段。
-
-## tables
-
-`tables` 字段是一个对象，用于定义相关表格数据库如阿里云tbleStore，AWS DynamoDB等。`tables`下的每一个子项都是一个表格数据库资源的定义。
+**完整示例:**
 
 ```yaml
 tables:
-  insight_poc_table:
-    collection:
-      name: store_or_instance_name
-      id: store_or_instance_id
-    name: insight-poc-table
+  my_table:
+    collection: my-instance  # 或使用已存在实例的 ID
+    name: my-app-table
     type: TABLE_STORE_C
     network:
-      type: 'PRIVATE'
+      type: PRIVATE
       ingress_rules:
         - TCP:0.0.0.0/0:80
         - TCP:0.0.0.0/0:443
     throughput:
       reserved:
-        read: 2
+        read: 5
         write: 10
       on_demand:
         read: 100
@@ -420,212 +533,313 @@ tables:
     key_schema:
       - name: id
         type: HASH
+      - name: created_at
+        type: RANGE
     attributes:
       - name: id
-        type: string
-
+        type: STRING
+      - name: created_at
+        type: INTEGER
+      - name: data
+        type: BINARY
 ```
 
-table 支持的字段有:
+**字段说明:**
 
-- **collection**：用来指定表所属的单元，通过name来指定新的集合或实例（serverlessInsight会在创建table时自动创它），或指定id来使用已存在的集合或实例。
-    - **name**：集合或实例名称，serverlessInsight会在创建表时自动创建一个新的集合或实例。
-      > 类型: `string`  
-      >   支持的字符集为`a-zA-Z0-9-_`,长度为1-64个字符  
-      >   required: false
-    - **id**：集合或实例 ID，table 将在该集合或实例中创建。
-      > 类型: `string`  
-      >   支持的字符集为`a-zA-Z0-9-_`,长度为1-64个字符  
-      >   required: false
+| 字段 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `collection` | object | ⚠️ | 所属实例/存储仓 |
+| `name` | string | ✅ | 表名 |
+| `type` | enum | ✅ | 表类型 |
+| `network` | object | ❌ | 网络配置 |
+| `throughput` | object | ❌ | 吞吐量配置 |
+| `key_schema` | array | ✅ | 主键结构 |
+| `attributes` | array | ✅ | 属性定义 |
 
-  > - 如果指定了`name`，则会创建一个新的集合或实例。
-  > - 如果指定了`id`，则会使用已存在的集合或实例。
-  >
-  > 注意⚠️：不同云厂商的表格存储概念不同
-  > - 阿里云: 在阿里云表格存储中，表格存储被归类到一个实例中，
-  > - 华为云: 在华为云 KVS 中，表格存储被归类到一个存储仓（Store）中。
-  > - AWS:AWS 的 DynamoDB 中则没有这一概念，DynamoDB table即为表格数据库的最顶层单元
-  >
-  > required: true(aliyun和huawei云) | false(aws)- 或通过id来指定已存在的集合或实例。
+**collection 配置:**
 
-- **name**：表名
-  > 类型: `string`  
-  > required: true
-- **type**：表类型
-  > 类型: `ENUM`  
-  > 支持的类型: `TABLE_STORE_C`, `TABLE_STORE_G`  
-  > required: true
+| 字段 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `name` | string | ❌ | 新建实例/存储仓名称 |
+| `id` | string | ❌ | 已存在实例/存储仓 ID |
 
-- **network**：网络配置
-  > 类型: `object`  
-  > required: false
-    - **type**：网络类型
-      > 类型: `string`  
-      > 支持的类型: `PUBLIC`, `PRIVATE`  
-      > required: true
-    - **ingress_rules**：入站规则, 格式为`协议:IP范围:端口范围`，如`TCP:0.0.0.0/0:80`
-      > 类型: `array`  
-      > 项目类型: `string`  
-      > required: false
+> 💡 **说明**: 不同云厂商的表格存储概念不同：
+> - **阿里云**: 表格存储属于实例 (Instance)
+> - **华为云**: 表格存储属于存储仓 (Store)
+> - **AWS**: DynamoDB 表为顶层单元，无需 collection
 
-- **throughput**：配置表的吞吐量，包括预留吞吐量和按需吞吐量
-  > 类型: `object`  
-  > required: false
-    - **reserved**：预留吞吐量
-      > 类型: `object`  
-      > required: false
-        - **read**：预留读的 CU 数
-          > 类型: `integer`  
-          >   最小值: 1  
-          >   最大值: 10000  
-          > required: true
-        - **write**：预留写的 CU 数
-          > 类型: `integer`  
-          >   最小值: 1  
-          >   最大值: 10000  
-          > required: true
+**支持的表类型:**
+- `TABLE_STORE_C` - 容量型
+- `TABLE_STORE_G` - 性能型
 
-    - **on_demand**：指定最大动态按需吞吐量
-      > 类型: `object`  
-      > required: false  
-      > 注意⚠️: 该配置仅AWS DynamoDB 支持
-        - **read**：动态按需读的最大允许 CU 数
-          > 类型: `integer`  
-          >   最小值: 1  
-          >   最大值: 10000  
-          > required: true
-        - **write**：动态按需写的最大允许 CU 数
-          > 类型: `integer`  
-          >   最小值: 1  
-          >   最大值: 10000  
-          > required: true
+**吞吐量配置:**
 
-- **key_schema**：主键结构定义
-  > 类型: `array`  
-  > required: true
-    - **name**：键的名称
-      > 类型: `string`
-      > required: true
-    - **type**：键的类型
-      > 类型: `ENUM`  
-      > required: true
-      > 支持值：`HASH`，`RANGE`
+| 字段 | 类型 | 必填 | 范围 | 说明 |
+|------|------|------|------|------|
+| `reserved.read` | integer | ❌ | 1-10000 | 预留读 CU |
+| `reserved.write` | integer | ❌ | 1-10000 | 预留写 CU |
+| `on_demand.read` | integer | ❌ | 1-10000 | 按需读最大 CU（仅 AWS 支持） |
+| `on_demand.write` | integer | ❌ | 1-10000 | 按需写最大 CU（仅 AWS 支持） |
 
-- **attributes**：表的属性定义
-  > 类型: `array`  
-  > required: true
-    - **name**：属性名称
-      > 类型: `string`  
-      > required: true
-    - **type**：属性类型
-      > 类型: `ENUM`  
-      > required: true。
-      > 支持值：`STRING`, `NUMBER`, `BOOLEAN`, `BINARY`, `MAP`, `LIST`
+**主键类型:**
+- `HASH` - 分区键
+- `RANGE` - 排序键
 
-每个表定义必须包含 `collection`、`name`、`type`、`key_schema` 和 `attributes` 字段。key_schema 中声明的键必须同时在attributes 中声明其数据类型。
+**属性数据类型:**
+- `STRING` - 字符串
+- `NUMBER` - 数字
+- `BOOLEAN` - 布尔值
+- `BINARY` - 二进制
+- `MAP` - 映射
+- `LIST` - 列表
 
-## buckets
+> ⚠️ **注意**: `key_schema` 中声明的键必须在 `attributes` 中声明其数据类型。
 
-`buckets`字段是一个对象，用于定义对象存储。`buckets`下的每一个子项都是一个对象存储桶(Bucket🪣)资源的定义。
+### buckets
+
+定义对象存储桶资源（如阿里云 OSS、AWS S3）。
+
+**完整示例:**
 
 ```yaml
-version: 0.0.1
-
-provider:
-  name: aliyun
-  region: cn-chengdu
-
-service: insight-bucket-poc
-
-tags:
-  owner: geek-fun
-
 buckets:
-  insight_bucket:
-    name: insight-poc-bucket
+  my_bucket:
+    name: my-app-bucket
     storage:
       class: STANDARD
+    versioning:
+      status: ENABLED
     security:
-      access: PRIVATE
+      acl: PRIVATE
       force_delete: false
       sse_algorithm: KMS
       sse_kms_master_key_id: 1234567890
     website:
       code: dist/
-      domain: adminui.example.com
+      domain: www.example.com
       index: index.html
       error_page: 404.html
       error_code: 404
-
 ```
 
-bucket 支持的字段有:
+**字段说明:**
 
-- **name**: 存储桶的名称
+| 字段 | 类型 | 必填 | 默认值 | 说明 |
+|------|------|------|--------|------|
+| `name` | string | ✅ | - | 存储桶名称（a-zA-Z0-9-_，1-64 字符） |
+| `storage` | object | ❌ | - | 存储配置 |
+| `versioning` | object | ❌ | - | 版本控制配置 |
+| `security` | object | ❌ | - | 安全配置 |
+| `website` | object | ❌ | - | 静态网站托管配置 |
 
-> 类型: `string`  
-> required: true  
-> 支持的字符集为`a-zA-Z0-9-_`,长度为1-64个字符
->
+**存储类型:**
+- `STANDARD` - 标准存储
+- `IA` - 低频访问
+- `ARCHIVE` - 归档存储
+- `COLD` - 冷存储
 
-- **storage**: 存储配置
-- **class**: 存储类型
-  > 类型: `string`  
-  > required: true
-  > 支持的存储类型: `STANDARD`, `IA`, `ARCHIVE`, `COLD`
-- **versioning**: 版本控制配置
-- **status**: 版本控制状态
-  > 类型: `string`  
-  > required: true
-  > 支持的状态: `ENABLED`, `DISABLED`
+**版本控制:**
 
-- **website**: 用于配置静态网站托,使得存储桶可以托管静态网站
-  > 注意⚠️：
-  > - 配置静态网站托管时，如果想要运行公网用户访问，需要将存储桶的访问权限设置为公共读
-  > - website中的配置项出了`code`外，其他配置项都无法在存储桶创建后修改，如果需要修改，需要删除website配置项后重新配置
+| 字段 | 类型 | 必填 | 选项 |
+|------|------|------|------|
+| `status` | string | ✅ | `ENABLED`, `DISABLED` |
 
-    - **code**: 网站代码包相对项根目录的路径
-      > 类型: `string`  
-      > required: true
-    - **domain**: 静态网页自定义域名,只有配置域名才能正常显示静态网页，否则通过存储桶的默认域名访问会转为下载文件
-      > 类型: `string`  
-      > required: false  
-      > 默认值: null
-    - **index**: 默认首页
-      > 类型: `string`  
-      > required: false  
-      > 默认值: `index.html`
-    - **error_page**: 错误页
-      > 类型: `string`  
-      > required: false  
-      > 默认值: `404.html`
-    - **error_code**: 错误码
-      > 类型: `integer`  
-      > required: false  
-      > 默认值: `404`
+**安全配置:**
 
-- **lifecycle**: 生命周期配置
-- **rule**: 生命周期规则
+| 字段 | 类型 | 必填 | 默认值 | 说明 |
+|------|------|------|--------|------|
+| `acl` | string | ❌ | PRIVATE | 访问控制：`PRIVATE`, `PUBLIC_READ`, `PUBLIC_READ_WRITE` |
+| `force_delete` | boolean | ❌ | false | 强制删除（删除后不可恢复） |
+| `sse_algorithm` | string | ❌ | - | 加密算法：`AES256`, `KMS` |
+| `sse_kms_master_key_id` | string | ❌ | - | KMS 密钥 ID |
 
-- security: bucket安全相关配置
-    - **acl**: 访问控制，配置bucket的访问权限
-      > 类型: `string`  
-      > required: false  
-      > 默认值: `PRIVATE`  
-      > 支持的访问控制: `PRIVATE`, `PUBLIC_READ`, `PUBLIC_READ_WRITE`
-    - **force_delete**: 强制删除
-      > 类型: `boolean`  
-      > required: false  
-      > 默认值: false  
-      > 注意: 强制删除后无法恢复
-    - **sse_algorithm**: 加密算法
-    - **sse_kms_master_key_id**: 加密密钥ID
-      > 类型: `string`  
-      > required: false  
-      > 默认值: null  
-      > 注意: 如果未指定加密密钥ID，则使用默认密钥
+**静态网站托管:**
 
+> ⚠️ **注意**: 
+> - 公网访问需要将 `acl` 设置为 `PUBLIC_READ`
+> - 除 `code` 外，其他配置创建后无法修改
 
-## localStack
-在 ServerlessInsight 的 YML 文件中定义的资源支持在本地直接启动，极大的方便了无服务应用的开发，开发者无需将代码部署到云端即可快速测试其功能。
-我们可以使用以下字段来定义本地启动的细节：
+| 字段 | 类型 | 必填 | 默认值 | 说明 |
+|------|------|------|--------|------|
+| `code` | string | ✅ | - | 网站代码包路径 |
+| `domain` | string | ❌ | - | 自定义域名 |
+| `index` | string | ❌ | index.html | 默认首页 |
+| `error_page` | string | ❌ | 404.html | 错误页面 |
+| `error_code` | integer | ❌ | 404 | 错误码 |
+
+## 变量引用
+
+ServerlessInsight 支持多种变量引用方式：
+
+### 1. vars 变量
+
+```yaml
+vars:
+  region: cn-hangzhou
+  memory: 512
+
+functions:
+  my_function:
+    memory: ${vars.memory}
+    environment:
+      REGION: ${vars.region}
+```
+
+### 2. stages 变量
+
+```yaml
+stages:
+  dev:
+    memory: 512
+  prod:
+    memory: 2048
+
+functions:
+  my_function:
+    memory: ${stages.memory}
+```
+
+### 3. 上下文变量
+
+```yaml
+app: my-app
+service: my-app-service
+```
+
+**预定义的上下文变量:**
+- `${ctx.stage}` - 当前部署的 stage 名称
+
+> ⚠️ **注意**: `app` 和 `service` 必须为静态字符串，不能使用变量。其他配置可以使用 `${ctx.stage}` 等变量。
+
+## 本地开发
+
+ServerlessInsight 支持在本地启动所有定义的资源，方便开发调试。
+
+**本地运行命令:**
+
+```bash
+# 基本本地运行
+si local --stage dev
+
+# 启用调试模式
+si local --stage dev --debug
+
+# 启用文件监视模式（代码变更自动重载）
+si local --stage dev --watch
+```
+
+**本地开发优势:**
+- ✅ 无需配置本地云资源
+- ✅ 开发环境与线上环境一致
+- ✅ 支持热重载，提高开发效率
+- ✅ 快速调试和测试
+
+## 最佳实践
+
+### 1. 环境隔离
+
+使用 `stages` 管理不同环境：
+
+```yaml
+stages:
+  dev:
+    region: cn-hangzhou
+    memory: 512
+  test:
+    region: cn-shanghai
+    memory: 1024
+  prod:
+    region: cn-beijing
+    memory: 2048
+```
+
+### 2. 变量复用
+
+将常用配置提取为 `vars`：
+
+```yaml
+vars:
+  regions:
+    dev: cn-hangzhou
+    prod: cn-beijing
+  memory:
+    dev: 512
+    prod: 2048
+```
+
+### 3. 资源命名
+
+使用有意义的命名并包含环境信息：
+
+```yaml
+app: my-app
+service: my-app-service
+
+functions:
+  user_api:
+    name: user-api-${ctx.stage}
+```
+
+> ⚠️ **注意**: `app` 和 `service` 必须为静态字符串，但资源名称（如 `name` 字段）可以使用变量。
+
+### 4. 标签管理
+
+为所有资源添加标签便于管理：
+
+```yaml
+tags:
+  owner: team-name
+  project: project-name
+  environment: ${ctx.stage}
+  cost-center: cc-12345
+```
+
+### 5. 安全配置
+
+- 使用环境变量管理敏感信息
+- 为生产环境配置 VPC 和安全组
+- 启用存储桶版本控制和加密
+
+## 常见问题
+
+### Q: 如何切换不同的云供应商？
+
+修改 `provider.name` 并调整相应的区域配置：
+
+```yaml
+provider:
+  name: aliyun  # 或 huawei, tencent
+  region: cn-hangzhou
+```
+
+### Q: 如何更新已部署的函数？
+
+修改配置或代码后重新部署：
+
+```bash
+# 重新打包代码
+./scripts/package.sh
+
+# 重新部署（更新现有资源）
+si deploy --stage dev
+```
+
+### Q: 如何删除资源？
+
+使用 `destroy` 命令：
+
+```bash
+si destroy --stage dev
+```
+
+> ⚠️ **警告**: 这会删除所有相关资源，请谨慎操作。
+
+### Q: 配置文件验证失败怎么办？
+
+使用 `validate` 命令检查配置：
+
+```bash
+si validate
+```
+
+根据错误提示修复配置问题。

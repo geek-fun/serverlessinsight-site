@@ -8,7 +8,7 @@ Code), and the runtime API for the ServerlessInsight.
 > stack.yml
 
 ```yaml
-version: 0.1
+version: 0.1.0
 provider: aliyun
 
 vars:
