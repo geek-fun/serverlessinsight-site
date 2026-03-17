@@ -144,7 +144,7 @@ We welcome contributions from the community:
 - 📝 Improve documentation
 - 🔧 Submit code changes
 
-Please see our [Contributing Guide](CONTRIBUTING.md) for more information.
+Please see our [Contributing Guide](/CONTRIBUTING) for more information.
 
 ## Community
 

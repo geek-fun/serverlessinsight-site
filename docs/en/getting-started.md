@@ -131,7 +131,7 @@ events:
     triggers:
       - method: GET
         path: /api/*
-        backend: hello-world-fn
+        backend: ${functions.hello_world_fn}
 ```
 
 ### Configuration Explanation
