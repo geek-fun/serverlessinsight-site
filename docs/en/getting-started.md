@@ -98,7 +98,7 @@ hello-world-proj/
 Create a `serverlessinsight.yml` file in the project root:
 
 ```yaml
-version: 0.1
+version: 0.1.0
 provider: aliyun
 
 vars:
@@ -108,6 +108,7 @@ stages:
   dev:
     region: ${vars.region}
 
+app: hello-world
 service: hello-world-api
 
 tags:
@@ -294,12 +295,11 @@ If the configuration is correct, you'll see a success message similar to:
 Deploy the service to Alibaba Cloud using:
 
 ```bash
-si deploy --stage dev hello-world-stack
+si deploy --stage dev
 ```
 
 **Parameters:**
 - `--stage dev`: Specify deployment environment as development (corresponds to `stages.dev` in config)
-- `hello-world-stack`: Stack name (resource group name in cloud provider)
 
 After successful deployment, you'll see output similar to:
 
@@ -330,13 +330,13 @@ ServerlessInsight supports running and debugging your application locally:
 
 ```bash
 # Basic local run
-si local --stage dev hello-world-stack
+si local --stage dev
 
 # Enable debug mode
-si local --stage dev hello-world-stack --debug
+si local --stage dev --debug
 
 # Enable file watch mode (auto-reload on code changes)
-si local --stage dev hello-world-stack --watch
+si local --stage dev --watch
 ```
 
 The local development environment automatically starts all defined resources without configuring any local cloud services.
@@ -346,7 +346,7 @@ The local development environment automatically starts all defined resources wit
 If you no longer need the application, clean up all resources using:
 
 ```bash
-si destroy --stage dev hello-world-stack
+si destroy --stage dev
 ```
 
 > ⚠️ **Warning**
@@ -384,10 +384,10 @@ Use the `--stage` parameter to specify different environments:
 
 ```bash
 # Deploy to test environment
-si deploy --stage test hello-world-stack
+si deploy --stage test
 
 # Deploy to production environment
-si deploy --stage prod hello-world-stack
+si deploy --stage prod
 ```
 
 Define environment-specific variables in your configuration:
@@ -411,7 +411,7 @@ Re-package and redeploy after modifying code:
 ./scripts/package.sh
 
 # Re-deploy (updates existing resources)
-si deploy --stage dev hello-world-stack
+si deploy --stage dev
 ```
 
 ### Q: Which runtimes are supported?

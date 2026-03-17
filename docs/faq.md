@@ -65,11 +65,11 @@ npm install -g @geek-fun/serverlessinsight@latest
 
 ```bash
 # 指定配置文件
-si deploy -f config/prod.yml my-stack
+si deploy -f config/prod.yml
 
 # 使用环境变量
 export SI_CONFIG_FILE="config/prod.yml"
-si deploy my-stack
+si deploy
 ```
 
 ### Q: 如何管理多个项目的配置？
@@ -122,19 +122,19 @@ si deploy my-stack
    git checkout HEAD~1 serverlessinsight.yml
    
    # 重新部署
-   si deploy --stage dev my-stack
+   si deploy --stage dev
    ```
 
 2. **手动删除失败的资源栈**
    ```bash
-   si destroy --stage dev my-stack
+   si destroy --stage dev
    ```
 
 3. **从备份恢复**
    ```bash
    # 如果有配置备份
    cp serverlessinsight.yml.backup serverlessinsight.yml
-   si deploy --stage dev my-stack
+   si deploy --stage dev
    ```
 
 ### Q: 如何部署到不同的区域？
@@ -149,13 +149,13 @@ si deploy my-stack
    beijing:
      region: cn-beijing
    
-   si deploy --stage hangzhou my-stack
-   si deploy --stage beijing my-stack
+   si deploy --stage hangzhou
+   si deploy --stage beijing
    ```
 
 2. **使用命令行参数覆盖**
    ```bash
-   si deploy --region cn-beijing my-stack
+   si deploy --region cn-beijing
    ```
 
 ### Q: 部署时间过长怎么办？
@@ -182,13 +182,13 @@ si deploy my-stack
 #!/bin/bash
 
 # 部署服务 A
-si deploy --stage dev service-a-stack
+si deploy --stage dev
 
 # 部署服务 B
-si deploy --stage dev service-b-stack
+si deploy --stage dev
 
 # 部署服务 C
-si deploy --stage dev service-c-stack
+si deploy --stage dev
 ```
 
 ---
@@ -200,7 +200,7 @@ si deploy --stage dev service-c-stack
 **A:** 指定其他端口：
 
 ```bash
-si local --stage dev --port 8080 my-stack
+si local --stage dev --port 8080
 ```
 
 或者停止占用端口的进程：
@@ -218,7 +218,7 @@ kill -9 <PID>
 **A:** 使用调试模式：
 
 ```bash
-si local --stage dev --debug my-stack
+si local --stage dev --debug
 ```
 
 配合 IDE 进行断点调试：
@@ -248,7 +248,7 @@ si local --stage dev --debug my-stack
 
 1. **显式启用 watch 模式**
    ```bash
-   si local --stage dev --watch my-stack
+   si local --stage dev --watch
    ```
 
 2. **检查文件变化**
@@ -258,7 +258,7 @@ si local --stage dev --debug my-stack
 3. **重启本地环境**
    ```bash
    # Ctrl+C 停止
-   si local --stage dev my-stack
+   si local --stage dev
    ```
 
 ### Q: 本地环境与线上环境行为不一致？
@@ -307,7 +307,7 @@ si local --stage dev --debug my-stack
 ```bash
 # 修改代码后
 ./scripts/package.sh
-si deploy --stage dev my-stack
+si deploy --stage dev
 ```
 
 ServerlessInsight 会检测到代码变化并更新函数。
@@ -414,11 +414,11 @@ functions:
 
 ```bash
 # 命令行参数
-si deploy --stage dev --debug my-stack
+si deploy --stage dev --debug
 
 # 或环境变量
 export SI_DEBUG=true
-si deploy --stage dev my-stack
+si deploy --stage dev
 ```
 
 ### Q: 部署卡在某个步骤不动

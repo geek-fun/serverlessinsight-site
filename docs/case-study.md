@@ -51,6 +51,14 @@ ServerlessInsight 是一个全栈 Serverless 应用开发运维平台，提供�
 
 **架构亮点**:
 ```yaml
+version: 0.1.0
+provider:
+  name: aliyun
+  region: cn-hangzhou
+
+app: deepseek
+service: deepseek-inference
+
 functions:
   deepseek_inference:
     container:
@@ -90,6 +98,14 @@ functions:
 
 **架构**:
 ```yaml
+version: 0.1.0
+provider:
+  name: aliyun
+  region: cn-hangzhou
+
+app: ecommerce
+service: ecommerce-api
+
 functions:
   user_service:
     runtime: nodejs18
@@ -135,6 +151,14 @@ databases:
 
 **架构**:
 ```yaml
+version: 0.1.0
+provider:
+  name: aliyun
+  region: cn-hangzhou
+
+app: iot-platform
+service: iot-data-processing
+
 functions:
   data_ingestion:
     runtime: python3.9
@@ -187,6 +211,14 @@ events:
 
 **架构**:
 ```yaml
+version: 0.1.0
+provider:
+  name: aliyun
+  region: cn-hangzhou
+
+app: media-platform
+service: media-processing
+
 functions:
   video_transcode:
     container:
@@ -203,14 +235,9 @@ functions:
 
 buckets:
   media_bucket:
+    name: media-platform-bucket
     storage:
       class: STANDARD
-    lifecycle:
-      rules:
-        - id: expire-temp-files
-          prefix: temp/
-          expiration:
-            days: 7
 ```
 
 **成果**:
@@ -236,6 +263,14 @@ buckets:
 
 **架构**:
 ```yaml
+version: 0.1.0
+provider:
+  name: aliyun
+  region: cn-hangzhou
+
+app: fintech
+service: risk-assessment
+
 functions:
   risk_assessment:
     runtime: java11

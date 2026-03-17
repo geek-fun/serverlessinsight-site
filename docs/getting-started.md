@@ -98,7 +98,7 @@ hello-world-proj/
 在项目根目录创建 `serverlessinsight.yml` 文件：
 
 ```yaml
-version: 0.1
+version: 0.1.0
 provider: aliyun
 
 vars:
@@ -108,6 +108,7 @@ stages:
   dev:
     region: ${vars.region}
 
+app: hello-world
 service: hello-world-api
 
 tags:
@@ -294,12 +295,11 @@ si validate
 使用以下命令将服务部署到阿里云：
 
 ```bash
-si deploy --stage dev hello-world-stack
+si deploy --stage dev
 ```
 
 **参数说明：**
 - `--stage dev`: 指定部署环境为开发环境（对应配置文件中的 `stages.dev`）
-- `hello-world-stack`: 资源栈名称（在云供应商处的资源组名称）
 
 部署成功后，您将看到类似以下输出：
 
@@ -330,13 +330,13 @@ ServerlessInsight 支持在本地运行和调试您的应用：
 
 ```bash
 # 基本本地运行
-si local --stage dev hello-world-stack
+si local --stage dev
 
 # 启用调试模式
-si local --stage dev hello-world-stack --debug
+si local --stage dev --debug
 
 # 启用文件监视模式（代码变更自动重载）
-si local --stage dev hello-world-stack --watch
+si local --stage dev --watch
 ```
 
 本地开发环境会自动启动所有定义的资源，无需配置任何本地云服务。
@@ -346,7 +346,7 @@ si local --stage dev hello-world-stack --watch
 如果您不再需要该应用，可以使用以下命令清理所有资源：
 
 ```bash
-si destroy --stage dev hello-world-stack
+si destroy --stage dev
 ```
 
 > ⚠️ **警告**
@@ -384,10 +384,10 @@ si destroy --stage dev hello-world-stack
 
 ```bash
 # 部署到测试环境
-si deploy --stage test hello-world-stack
+si deploy --stage test
 
 # 部署到生产环境
-si deploy --stage prod hello-world-stack
+si deploy --stage prod
 ```
 
 在配置文件中定义不同环境的变量：
@@ -411,7 +411,7 @@ stages:
 ./scripts/package.sh
 
 # 重新部署（会更新现有资源）
-si deploy --stage dev hello-world-stack
+si deploy --stage dev
 ```
 
 ### Q: 支持哪些运行时？

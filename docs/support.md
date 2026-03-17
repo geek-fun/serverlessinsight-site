@@ -196,7 +196,7 @@ ServerlessInsight 提供多种支持渠道，帮助您解决使用过程中遇�
 export SI_DEBUG=true
 
 # 或添加命令行参数
-si deploy --stage dev --debug my-stack
+si deploy --stage dev --debug
 ```
 
 ### 3. 保护敏感信息
@@ -221,7 +221,7 @@ si deploy --stage dev --debug my-stack
 > - 云供应商：阿里云 cn-hangzhou
 > 
 > 问题描述:
-> 执行 `si deploy --stage dev my-stack` 时，函数创建失败，报错 "Insufficient permissions"
+> 执行 `si deploy --stage dev` 时，函数创建失败，报错 "Insufficient permissions"
 > 
 > 已尝试:
 > 1. 确认 RAM 用户有 AliyunFCFullAccess 权限

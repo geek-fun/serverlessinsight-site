@@ -75,14 +75,8 @@ Error: functions.hello_world_fn.memory must be an integer
 ### 使用方法
 
 ```bash
-si deploy [选项] <stackName>
+si deploy [选项]
 ```
-
-### 参数
-
-| 参数 | 必填 | 说明 |
-|------|------|------|
-| `<stackName>` | ✅ | 资源栈名称（在云供应商处的资源组标识） |
 
 ### 选项
 
@@ -101,23 +95,22 @@ si deploy [选项] <stackName>
 
 ```bash
 # 部署到默认环境
-si deploy my-stack
+si deploy
 
 # 部署到开发环境
-si deploy --stage dev my-stack
+si deploy --stage dev
 
 # 部署到生产环境并覆盖内存配置
-si deploy --stage prod -p memory_size=2048 my-stack
+si deploy --stage prod -p memory_size=2048
 
 # 指定配置文件和区域
-si deploy -f config/prod.yml -r cn-beijing my-stack
+si deploy -f config/prod.yml -r cn-beijing
 
 # 使用临时安全令牌部署
 si deploy --stage prod \
   -ak $ACCESS_KEY_ID \
   -as $ACCESS_KEY_SECRET \
-  -at $SECURITY_TOKEN \
-  my-stack
+  -at $SECURITY_TOKEN
 ```
 
 ### 部署流程
@@ -149,14 +142,8 @@ Function ARN: fc.cn-hangzhou.aliyuncs.com/001234567890/hello-world-fn
 ### 使用方法
 
 ```bash
-si destroy [选项] <stackName>
+si destroy [选项]
 ```
-
-### 参数
-
-| 参数 | 必填 | 说明 |
-|------|------|------|
-| `<stackName>` | ✅ | 要销毁的资源栈名称 |
 
 ### 选项
 
@@ -170,13 +157,13 @@ si destroy [选项] <stackName>
 
 ```bash
 # 销毁开发环境资源
-si destroy --stage dev my-stack
+si destroy --stage dev
 
 # 强制销毁（不提示确认）
-si destroy --stage dev --force my-stack
+si destroy --stage dev --force
 
 # 指定配置文件销毁
-si destroy -f config/prod.yml my-stack
+si destroy -f config/prod.yml
 ```
 
 ### ⚠️ 警告
@@ -212,14 +199,8 @@ Deleting resource stack...
 ### 使用方法
 
 ```bash
-si local [选项] <stackName>
+si local [选项]
 ```
-
-### 参数
-
-| 参数 | 必填 | 说明 |
-|------|------|------|
-| `<stackName>` | ✅ | 要运行的资源栈名称 |
 
 ### 选项
 
@@ -235,19 +216,19 @@ si local [选项] <stackName>
 
 ```bash
 # 基本本地运行
-si local --stage dev my-stack
+si local --stage dev
 
 # 启用调试模式
-si local --stage dev --debug my-stack
+si local --stage dev --debug
 
 # 启用文件监视模式
-si local --stage dev --watch my-stack
+si local --stage dev --watch
 
 # 指定端口
-si local --stage dev --port 8080 my-stack
+si local --stage dev --port 8080
 
 # 组合使用
-si local --stage dev --debug --watch --port 8080 my-stack
+si local --stage dev --debug --watch --port 8080
 ```
 
 ### 本地开发特性
@@ -343,13 +324,13 @@ ALIYUN_REGION=cn-hangzhou
 
 ```bash
 # 开发环境
-si deploy --stage dev my-stack
+si deploy --stage dev
 
 # 测试环境
-si deploy --stage test my-stack
+si deploy --stage test
 
 # 生产环境
-si deploy --stage prod my-stack
+si deploy --stage prod
 ```
 
 ### 3. 部署前验证配置
@@ -359,7 +340,7 @@ si deploy --stage prod my-stack
 si validate
 
 # 再部署
-si deploy --stage dev my-stack
+si deploy --stage dev
 ```
 
 ### 4. 使用参数覆盖灵活配置
@@ -368,15 +349,14 @@ si deploy --stage dev my-stack
 # 部署时动态调整配置
 si deploy --stage prod \
   -p memory_size=2048 \
-  -p timeout=60 \
-  my-stack
+  -p timeout=60
 ```
 
 ### 5. 本地开发使用 watch 模式
 
 ```bash
 # 自动重载，提高开发效率
-si local --stage dev --watch my-stack
+si local --stage dev --watch
 ```
 
 ## 常见问题
@@ -397,7 +377,7 @@ echo $ALIYUN_ACCESS_KEY_SECRET
 使用 `--verbose` 或设置 `SI_DEBUG=true`：
 
 ```bash
-SI_DEBUG=true si deploy --stage dev my-stack
+SI_DEBUG=true si deploy --stage dev
 ```
 
 ### Q: 本地运行端口被占用？
@@ -405,7 +385,7 @@ SI_DEBUG=true si deploy --stage dev my-stack
 指定其他端口：
 
 ```bash
-si local --stage dev --port 8080 my-stack
+si local --stage dev --port 8080
 ```
 
 ### Q: 如何清理本地环境？
@@ -426,7 +406,7 @@ ServerlessInsight 目前不支持自动回滚。建议：
 ```bash
 # 回滚到上一个版本
 git checkout HEAD~1 serverlessinsight.yml
-si deploy --stage dev my-stack
+si deploy --stage dev
 ```
 
 ## 命令速查表
@@ -436,13 +416,13 @@ si deploy --stage dev my-stack
 si validate
 
 # 部署应用
-si deploy --stage <env> <stackName>
+si deploy --stage <env>
 
 # 销毁应用
-si destroy --stage <env> <stackName>
+si destroy --stage <env>
 
 # 本地运行
-si local --stage <env> [--debug] [--watch] <stackName>
+si local --stage <env> [--debug] [--watch]
 
 # 查看帮助
 si -h

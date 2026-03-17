@@ -18,8 +18,13 @@ New to ServerlessInsight? Start here:
 Define your serverless resources declaratively in `serverlessinsight.yml`. ServerlessInsight handles resource creation and management automatically.
 
 ```yaml
-version: 0.1
-provider: aliyun
+version: 0.1.0
+provider:
+  name: aliyun
+  region: cn-hangzhou
+
+app: my-app
+service: my-service
 
 functions:
   my_function:
@@ -52,10 +57,10 @@ stages:
 
 ```bash
 # Deploy to development
-si deploy --stage dev my-stack
+si deploy --stage dev
 
 # Deploy to production
-si deploy --stage prod my-stack
+si deploy --stage prod
 ```
 
 ### Resource Types
@@ -97,13 +102,13 @@ npm install -g @geek-fun/serverlessinsight
 si validate
 
 # Deploy application
-si deploy --stage dev my-stack
+si deploy --stage dev
 
 # Run locally
-si local --stage dev my-stack
+si local --stage dev
 
 # Destroy resources
-si destroy --stage dev my-stack
+si destroy --stage dev
 ```
 
 ## Learning Resources

@@ -26,7 +26,7 @@
 以下是一个完整的 `serverlessinsight.yml` 配置示例：
 
 ```yaml
-version: 0.1
+version: 0.1.0
 provider:
   name: aliyun
   region: cn-hangzhou
@@ -44,7 +44,8 @@ stages:
     region: ${vars.region}
     memory: 1024
 
-service: my-app-${ctx.stage}
+app: my-app
+service: my-app-service
 
 tags:
   owner: geek-fun
@@ -83,7 +84,7 @@ events:
 指定 ServerlessInsight YAML 配置文件的版本。
 
 ```yaml
-version: 0.1
+version: 0.1.0
 ```
 
 > ⚠️ **注意**: 当前仅支持 `0.1` 版本。主版本之间可能存在不兼容的变更，请确保配置文件与 ServerlessInsight CLI 版本兼容。
@@ -150,7 +151,7 @@ functions:
 部署时可通过 `--parameter` 或 `-p` 参数覆盖变量默认值：
 
 ```bash
-si deploy --stage prod -p memory_size=1024 my-stack
+si deploy --stage prod -p memory_size=1024
 ```
 
 ### stages
@@ -175,7 +176,8 @@ stages:
 **使用示例:**
 
 ```yaml
-service: my-app-${ctx.stage}
+app: my-app
+service: my-app-service
 
 functions:
   api_function:
@@ -186,13 +188,13 @@ functions:
 
 ```bash
 # 部署到开发环境
-si deploy --stage dev my-stack
+si deploy --stage dev
 
 # 部署到生产环境
-si deploy --stage prod my-stack
+si deploy --stage prod
 
 # 不指定 stage 时，默认使用 default
-si deploy my-stack
+si deploy
 ```
 
 > 💡 **提示**: `${ctx.stage}` 是 ServerlessInsight 提供的全局预定义变量，表示当前部署的 stage。
@@ -202,16 +204,19 @@ si deploy my-stack
 指定 Serverless 应用的名称。该名称将作为资源 ID 和资源名称的前缀。
 
 ```yaml
-service: my-app-${ctx.stage}
+app: my-app
+service: my-app-service
 ```
 
 **命名建议:**
 
 - 使用小写字母、数字和连字符（`-`）
 - 保持名称简短（资源名称会附加此服务名）
-- 建议包含 stage 信息以区分不同环境
+- 必须为静态字符串，不能使用变量
 
-> ⚠️ **注意**: `service` 与命令行中的 `<stackName>` 不同。`service` 用于资源命名，`stackName` 是部署时指定的资源栈标识。
+> ⚠️ **注意**: 
+> - `app` 和 `service` 都是必填字段，且必须为静态字符串
+> - `service` 与命令行中的 `<stackName>` 不同。`service` 用于资源命名，`stackName` 是部署时指定的资源栈标识。
 
 ### tags
 
@@ -478,7 +483,7 @@ databases:
 | `type` | string | ✅ | 数据库类型 |
 | `version` | string | ✅ | 数据库版本 |
 | `cu` | object | ❌ | 计算单元配置 |
-| `storage` | object | ✅ | 存储配置 |
+| `storage` | object | ❌ | 存储配置 |
 | `security` | object | ✅ | 安全配置 |
 | `network` | object | ❌ | 网络配置 |
 
@@ -510,8 +515,7 @@ databases:
 ```yaml
 tables:
   my_table:
-    collection:
-      name: my-instance  # 或使用 id: existing-instance-id
+    collection: my-instance  # 或使用已存在实例的 ID
     name: my-app-table
     type: TABLE_STORE_C
     network:
@@ -535,9 +539,9 @@ tables:
       - name: id
         type: STRING
       - name: created_at
-        type: NUMBER
+        type: INTEGER
       - name: data
-        type: MAP
+        type: BINARY
 ```
 
 **字段说明:**
@@ -616,13 +620,6 @@ buckets:
       index: index.html
       error_page: 404.html
       error_code: 404
-    lifecycle:
-      rules:
-        - id: expire-old-files
-          prefix: logs/
-          status: Enabled
-          expiration:
-            days: 30
 ```
 
 **字段说明:**
@@ -634,7 +631,6 @@ buckets:
 | `versioning` | object | ❌ | - | 版本控制配置 |
 | `security` | object | ❌ | - | 安全配置 |
 | `website` | object | ❌ | - | 静态网站托管配置 |
-| `lifecycle` | object | ❌ | - | 生命周期配置 |
 
 **存储类型:**
 - `STANDARD` - 标准存储
@@ -706,11 +702,14 @@ functions:
 ### 3. 上下文变量
 
 ```yaml
-service: my-app-${ctx.stage}
+app: my-app
+service: my-app-service
 ```
 
 **预定义的上下文变量:**
 - `${ctx.stage}` - 当前部署的 stage 名称
+
+> ⚠️ **注意**: `app` 和 `service` 必须为静态字符串，不能使用变量。其他配置可以使用 `${ctx.stage}` 等变量。
 
 ## 本地开发
 
@@ -720,13 +719,13 @@ ServerlessInsight 支持在本地启动所有定义的资源，方便开发调�
 
 ```bash
 # 基本本地运行
-si local --stage dev my-stack
+si local --stage dev
 
 # 启用调试模式
-si local --stage dev my-stack --debug
+si local --stage dev --debug
 
 # 启用文件监视模式（代码变更自动重载）
-si local --stage dev my-stack --watch
+si local --stage dev --watch
 ```
 
 **本地开发优势:**
@@ -773,12 +772,15 @@ vars:
 使用有意义的命名并包含环境信息：
 
 ```yaml
-service: my-app-${ctx.stage}
+app: my-app
+service: my-app-service
 
 functions:
   user_api:
     name: user-api-${ctx.stage}
 ```
+
+> ⚠️ **注意**: `app` 和 `service` 必须为静态字符串，但资源名称（如 `name` 字段）可以使用变量。
 
 ### 4. 标签管理
 
@@ -819,7 +821,7 @@ provider:
 ./scripts/package.sh
 
 # 重新部署（更新现有资源）
-si deploy --stage dev my-stack
+si deploy --stage dev
 ```
 
 ### Q: 如何删除资源？
@@ -827,7 +829,7 @@ si deploy --stage dev my-stack
 使用 `destroy` 命令：
 
 ```bash
-si destroy --stage dev my-stack
+si destroy --stage dev
 ```
 
 > ⚠️ **警告**: 这会删除所有相关资源，请谨慎操作。
