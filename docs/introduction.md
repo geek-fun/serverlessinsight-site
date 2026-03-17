@@ -1,73 +1,126 @@
 # ServerlessInsight 介绍
 
-## 什么是ServerlessInsight
+## 什么是 ServerlessInsight
 
 ![ServerlessInsight 组件](/si.drawio.png)
 
-ServerlessInsight是一个全栈Serverless应用平台，它可以帮助您构建全生命周期的跨供应商Serverless用程序管理，助力快速发展的业务。ServerlessInsight的目标在于屏蔽底层Serverless供应商的差异,结合cloud
-native和serverless的业内最佳实践，以其为础设计出一套全栈serverless系统开发框架，帮助您快速构建Serverless应用，提升开发效率，降低运维成本。
+ServerlessInsight 是一个全栈 Serverless 应用开发运维平台，致力于提供全生命周期的跨云供应商 Serverless 应用管理。通过屏蔽底层云供应商的差异，结合 Cloud Native 和 Serverless 的业内最佳实践，ServerlessInsight 帮助开发者快速构建、部署和优化 Serverless 应用，提升开发效率，降低运维成本。
 
-## 为什么选择ServerlessInsight
+### 核心理念
 
-ServerlessInsight聚焦于赋能全生命周期的全Serverless应用管理，通过基础设施即代码(Infrastructure As Code)
-提供了一站式的Serverless应用开发、部署、运维、监控、调优等功能，帮助您快速构建Serverless应用，提升开发效率，降低运维成本。我们从一下几个方面来看看ServerlessInsight的优势：
+ServerlessInsight 的核心理念是**基础设施即代码 (Infrastructure as Code, IaC)**。开发者只需在 `serverlessinsight.yml` 文件中声明式地定义所需的云资源，ServerlessInsight 会自动处理资源的创建、配置和管理，让开发者能够专注于业务逻辑的实现。
 
-### 基础设施即代码
+## 为什么选择 ServerlessInsight
 
-通过ServerlessInsight，开发者只需要在`serverlessinsight.yml`
-中定义Serverless应用的资源，ServerlessInsight会自动根据定义的资源生成对应的Serverless应用代码，无需开发者手动申请或创建资源，提升开发效率。
+### 🏗️ 基础设施即代码
 
-### 全生命周期管理
+通过 `serverlessinsight.yml` 配置文件，开发者可以声明式地定义 Serverless 应用所需的所有资源。ServerlessInsight 会根据配置自动生成对应的云资源，无需手动申请或创建。
 
-ServerlessInsight提供了全生命周期的Serverless应用管理，包括开发、部署、监控、调优等功能，帮助您快速构建Serverless应用，提升开发效率，降低运维成本。
+**优势：**
+- 版本控制：配置文件可纳入 Git 版本管理，便于协作和审计
+- 可重复性：同一配置可在不同环境重复部署，保证一致性
+- 自动化：与 CI/CD 流程无缝集成，实现自动化部署
 
-**开发:** ServerlessInsight提供了本地开发功能，支持本地启动所有定义的Serverless应用，开发人员无需配置任何本地资源&环境，一行命令即即可在本地启动所有定义在
-`serverlessinsight.yml`中的资源，开发环境与线上环境无缝连接， 方便开发人员在本地调试Serverless应用。
+### 🔄 全生命周期管理
 
-**部署:** ServerlessInsight提供了一键部署功能，支持一键部署所有定义的Serverless应用，无需手动配置任何资源，一行命令即可将所有定义在
-`serverlessinsight.yml`中的资源部署到指定的Serverless供应商中。
+ServerlessInsight 提供从开发到运维的全生命周期管理：
 
-**监控(开发中):** ServerlessInsight提供了丰富的监控功能，支持监控Serverless应用的性能、稳定性、可用性等指标，帮助您及时发现问题，提升用户体验。
+#### 开发阶段
+- **本地开发**：一键启动本地开发环境，无需配置本地资源
+- **热重载**：支持文件监视模式，代码变更自动重载
+- **调试支持**：提供调试模式，方便问题排查
+- **环境一致性**：开发环境与线上环境无缝连接
 
-### 跨供应商
+#### 部署阶段
+- **一键部署**：单命令部署所有定义的资源
+- **多环境支持**：通过 stages 管理不同环境（dev/test/prod）
+- **参数覆盖**：支持命令行参数覆盖默认配置
+- **回滚能力**：支持快速回滚到历史版本
 
-ServerlessInsight支持多个Serverless供应商，包括阿里云、华为云、腾讯云等，帮助您更好的选择Serverless供应商，降低供应商锁定风险。
+#### 监控阶段 (开发中)
+- **性能监控**：实时监控函数执行性能
+- **日志聚合**：集中管理应用日志
+- **告警通知**：异常情况及时告警
 
-### 开放生态
+#### 优化阶段
+- **成本分析**：分析资源使用情况，优化成本
+- **性能调优**：提供性能优化建议
+- **容量规划**：根据流量预测进行容量规划
 
-ServerlessInsight坚持开源开放，且第一方也提供了丰富且通用的cli，无任何对特定CI/CD工具的依赖，方便您快速集成到现有的开发工具链中，提升开发效率。
+### ☁️ 跨云供应商支持
 
-## ServerlessInsight架构于原理
+ServerlessInsight 支持多个主流云供应商，帮助您灵活选择最适合的云服务商：
 
-ServerlessInsight依托云厂商提供的Serverless服务和基础设施即代码(Infrastructure As Code)
-服务，屏蔽底层细节，构建高层抽象，结合业内最佳实践，提出ServerlessInsight的全栈serverless开发实践，使用ServerlessInsight并依托其开发实践，让开发者无需关心底层Serverless供应商的差异，复杂的serverless运维等细节，只需专注于业务逻辑的开发，并按需申明资源即可，简单高效。
-![ServerlessInsight架构于原理图](/si-archtecture.drawio.png)
+**已支持：**
+- ✅ **阿里云 (Aliyun)** - 完整支持函数计算 FC、API 网关、RDS、OSS 等服务
+- 🚧 **华为云 (Huawei Cloud)** - 开发中
+- 🚧 **腾讯云 (Tencent Cloud)** - 开发中
 
-## ServerlessInsight适用场景
+**规划中：**
+- AWS Lambda & API Gateway
+- Google Cloud Functions
+- Azure Functions
 
-ServerlessInsight全生命周期赋能Serverless应用，任何基于Serverless架构的应用都可以使用ServerlessInsight来提升开发效率，降低运维负载，Serverless架构适用于以下场景：
+通过统一的配置语法，您可以轻松在不同云供应商之间切换，降低供应商锁定风险。
 
-1. **事件驱动的应用程序**  
-   Serverless适合处理事件驱动的场景，如用户请求、文件上传、数据库操作等。每个事件都会触发相应的函数进行处理。这种架构可以在高峰期动态扩展，处理不确定的流量。
+### 🔧 开放生态
 
-2. **不定期的流量**  
-   如果应用的流量波动较大，传统的服务器可能在流量低时浪费资源，而Serverless可以根据实际需求自动缩放，按实际使用付费，因此在不定期流量场景下非常适合，比如营销活动、社交媒体热点等。
+ServerlessInsight 坚持开源开放的原则：
 
-3. **快速开发与迭代**  
-   Serverless让开发者无需担心服务器的维护和管理，专注于业务逻辑，适合需要快速开发、部署并频繁更新的应用场景，如初创项目或实验性产品。
+- **开源许可**：采用 Apache 2.0 开源许可证
+- **通用 CLI**：提供功能强大的命令行工具，无特定 CI/CD 工具依赖
+- **易于集成**：可快速集成到现有的开发工具链中
+- **社区驱动**：欢迎社区贡献，共同完善生态
 
-4. **批处理和任务队列**  
-   Serverless非常适合处理周期性的批处理任务或后台的任务队列，比如定时生成报告、数据处理、日志分析等。这类任务通常是事件触发的，利用Serverless的按需运行特性，避免了持续运行服务器的成本。
+## 架构与原理
 
-5. **微服务架构**  
-   在微服务架构中，应用被拆分成多个独立的服务，Serverless可以轻松支持这种架构。每个服务可以根据其自身的资源需求动态扩展，减少资源浪费。
+![ServerlessInsight 架构与原理](/si-archtecture.drawio.png)
 
-6. **API后端服务**  
-   Serverless架构可以轻松构建RESTful API或GraphQL API。它与API Gateway等服务结合，能够根据请求流量进行自动扩展，并减少维护成本。
+ServerlessInsight 依托云厂商提供的 Serverless 服务和基础设施即代码能力，通过以下层次实现：
 
-7. **物联网（IoT）应用**  
-   IoT设备通常会发送大量小型请求，Serverless可以处理这些请求，动态扩展并处理高并发，是物联网场景中的理想选择。
+1. **配置层**：`serverlessinsight.yml` 定义应用所需资源
+2. **解析层**：解析配置文件，生成资源依赖图
+3. **适配层**：屏蔽不同云供应商的 API 差异
+4. **执行层**：调用云供应商 API 创建和管理资源
+5. **运行时**：提供本地开发环境和调试工具
 
-8. **实时数据处理**  
-   适用于需要处理大量实时数据流的场景，例如实时监控、日志处理、数据分析、点击流分析等。Serverless可以根据数据流量自动扩展处理能力。
+这种分层架构让开发者无需关心底层云供应商的差异和复杂的运维细节，只需专注于业务逻辑的开发。
 
+## 适用场景
+
+ServerlessInsight 适用于以下场景：
+
+### 1. 事件驱动的应用程序
+处理用户请求、文件上传、数据库操作等事件驱动的场景。每个事件触发相应的函数进行处理，在高峰期可动态扩展。
+
+### 2. 流量波动大的应用
+传统服务器在流量低时浪费资源，而 Serverless 可根据实际需求自动缩放，按实际使用付费。适合营销活动、社交媒体热点等场景。
+
+### 3. 快速开发与迭代
+无需担心服务器维护和管理，专注于业务逻辑。适合初创项目、实验性产品或需要频繁更新的应用。
+
+### 4. 批处理和任务队列
+处理周期性批处理任务或后台任务队列，如定时生成报告、数据处理、日志分析等。按需运行，避免持续运行服务器的成本。
+
+### 5. 微服务架构
+将应用拆分为多个独立服务，每个服务可根据自身资源需求动态扩展，减少资源浪费。
+
+### 6. API 后端服务
+轻松构建 RESTful API 或 GraphQL API。与 API Gateway 等服务结合，根据请求流量自动扩展，减少维护成本。
+
+### 7. 物联网 (IoT) 应用
+处理 IoT 设备发送的大量小型请求，动态扩展并处理高并发。
+
+### 8. 实时数据处理
+处理大量实时数据流，如实时监控、日志处理、数据分析、点击流分析等。
+
+## 快速上手
+
+准备好开始了吗？访问 [快速开始](/getting-started) 指南，5 分钟内构建您的第一个 Serverless 应用！
+
+## 学习资源
+
+- [配置手册](/reference) - 详细的 YAML 配置说明
+- [命令行工具](/cli) - CLI 命令参考
+- [实践案例](/case-study) - 真实应用场景分享
+- [常见问题](/faq) - 常见问题解答
