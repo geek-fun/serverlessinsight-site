@@ -59,8 +59,7 @@ jobs:
         run: npm install -g @geek-fun/serverlessinsight
 
       - name: Deploy to Aliyun By ServerlessInsight
-        run: |
-          si deploy --stage prod
+        run: si deploy --stage prod --auto-approve
         env:
           ALIYUN_ACCESS_KEY_ID: ${{ secrets.ALIYUN_ACCESS_KEY_ID_PROD }}
           ALIYUN_ACCESS_KEY_SECRET: ${{ secrets.ALIYUN_ACCESS_KEY_SECRET_PROD }}
