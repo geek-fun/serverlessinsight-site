@@ -46,6 +46,15 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Use Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+          cache: 'npm'
+
+      - run: npm ci
+      - run: npm run docs:build
+
       - name: Install ServerlessInsight
         run: npm install -g @geek-fun/serverlessinsight
 
