@@ -1,12 +1,41 @@
 name: generate page site
 on:
   push:
-    branches:  [master]
+    branches: [master]
   pull_request:
-    branches:  [master]
+    branches: [master]
 
 jobs:
-  publish:
+  # Job 1: Build and validate
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      should_release: ${{ steps.version_check.outputs.should_release }}
+      tag_name: ${{ steps.version_check.outputs.tag_name }}
+      version: ${{ steps.version_check.outputs.version }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Use Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+          cache: 'npm'
+
+      - run: npm ci
+      - run: npm run docs:build
+
+      - name: Check for version change
+        id: version_check
+        run: ./scripts/check-version.sh . v
+
+  # Job 2: Deploy (only if version changed and on master)
+  deploy:
+    needs: build
+    if: github.ref == 'refs/heads/master' && needs.build.outputs.should_release == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -14,47 +43,13 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Use Node.js 20.x
-        uses: actions/setup-node@v4
         with:
-          node-version: 20.x
-          cache: 'npm'
+          fetch-depth: 0
+
       - name: Install ServerlessInsight
         run: npm install -g @geek-fun/serverlessinsight
-      - run: npm ci
-      - run: npm run docs:build
-      - name: Generate changelog
-        uses: jaywcjlove/changelog-generator@main
-        if: ${{ github.ref == 'refs/heads/master' }}
-        id: changelog
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Build Release
-        uses: jaywcjlove/create-tag-action@main
-        if: ${{ github.ref == 'refs/heads/master' }}
-        id: tag_release
-        with:
-          release: true
-          token: ${{ secrets.GITHUB_TOKEN }}
-          body: |
-            ${{ steps.changelog.outputs.compareurl }}
-            
-            ${{ steps.changelog.outputs.changelog }}
 
-      - name: Publish to Cloudflare Pages
-        uses: cloudflare/pages-action@v1
-        if: steps.tag_release.outputs.successful == 'true'
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId:  ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          projectName: serverlessinsight-site
-          directory: dist
-          # Optional: Enable this if you want to have GitHub Deployments triggered
-          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
-          branch: main
-          environment: production
       - name: Deploy to Aliyun By ServerlessInsight
-        if: steps.tag_release.outputs.successful == 'true'
         run: |
           si deploy --stage prod
         env:
@@ -62,6 +57,65 @@ jobs:
           ALIYUN_ACCESS_KEY_SECRET: ${{ secrets.ALIYUN_ACCESS_KEY_SECRET_PROD }}
           ALIYUN_REGION: singapore
 
+      - name: Publish to Cloudflare Pages
+        uses: cloudflare/pages-action@v1
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          projectName: serverlessinsight-site
+          directory: dist
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+          branch: main
+          environment: production
 
+  # Job 3: Create Release (only after successful deployment)
+  release:
+    needs: [build, deploy]
+    if: github.ref == 'refs/heads/master' && needs.build.outputs.should_release == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
+      - name: Generate changelog
+        uses: jaywcjlove/changelog-generator@main
+        id: changelog
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.build.outputs.tag_name }}
+          name: ServerlessInsight Site ${{ needs.build.outputs.version }}
+          body: |
+            ${{ steps.changelog.outputs.compareurl }}
+
+            ${{ steps.changelog.outputs.changelog }}
+          make_latest: true
+
+  # Job 4: Discord Notification
+  notify:
+    needs: [build, deploy, release]
+    if: always() && github.ref == 'refs/heads/master' && needs.build.outputs.should_release == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Discord Notification
+        uses: Ilshidur/action-discord@master
+        with:
+          args: |
+            **🚀 ServerlessInsight Site Deployment - ${{ needs.build.outputs.version }}**
+
+            **Status:** ${{ needs.deploy.result }}
+            **Release:** ${{ needs.release.result }}
+            **Environment:** Production
+            **Commit:** ${{ github.sha }}
+            **Author:** ${{ github.actor }}
+
+            **View changes:** ${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
