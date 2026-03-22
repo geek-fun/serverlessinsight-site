@@ -451,10 +451,31 @@ events:
 | `certificate_body` | string | ❌ | SSL 证书内容（PEM 格式，需同时提供 `certificate_private_key`） |
 | `certificate_private_key` | string | ❌ | SSL 证书私钥（PEM 格式，需同时提供 `certificate_body`） |
 | `protocol` | string/array | ❌ | 协议类型：`HTTP`、`HTTPS` 或数组 `['HTTP', 'HTTPS']` |
+| `www_bind_apex` | boolean | ❌ | 是否自动绑定 www 子域名到主域名（仅适用于 API Gateway） |
 
 > 💡 **说明**: SSL 证书配置有两种模式（二选一）：
 > - **引用模式**：使用 `certificate_id` 引用云厂商已存在的证书
 > - **上传模式**：使用 `certificate_body` + `certificate_private_key` 上传新证书
+
+**www_bind_apex 双域名绑定:**
+
+当 `www_bind_apex` 设置为 `true` 时，系统会自动将 `www.example.com` 子域名绑定到与主域名 `example.com` 相同的后端服务。这对于需要同时支持带 www 和不带 www 访问的场景非常有用。
+
+```yaml
+events:
+  api_gateway:
+    type: API_GATEWAY
+    name: my-api-gateway
+    triggers:
+      - method: GET
+        path: /api/*
+        backend: api_function
+    domain:
+      domain_name: example.com
+      certificate_id: 12345678-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+      protocol: HTTPS
+      www_bind_apex: true  # 自动绑定 www.example.com
+```
 
 ### databases
 
@@ -703,6 +724,7 @@ website:
 | `certificate_body` | string | ❌ | SSL 证书内容（需同时提供 `certificate_private_key`） |
 | `certificate_private_key` | string | ❌ | SSL 证书私钥 |
 | `protocol` | string/array | ❌ | 协议：`HTTP`、`HTTPS` 或 `['HTTP', 'HTTPS']` |
+| `www_bind_apex` | boolean | ❌ | 是否自动绑定 www 子域名（适用于主域名配置） |
 
 ## 变量引用
 

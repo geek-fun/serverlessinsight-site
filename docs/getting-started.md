@@ -26,7 +26,7 @@ npm install -g @geek-fun/serverlessinsight
 si --version
 ```
 
-如果安装成功，将会显示版本号，例如：`0.6.8`
+如果安装成功，将会显示版本号，例如：`0.6.12`
 
 ## 步骤 2: 配置云供应商密钥
 

@@ -26,7 +26,7 @@ Verify the installation:
 si --version
 ```
 
-If installed successfully, it will display the version number, e.g., `0.6.8`
+If installed successfully, it will display the version number, e.g., `0.6.12`
 
 ## Step 2: Configure Cloud Provider Credentials
 
