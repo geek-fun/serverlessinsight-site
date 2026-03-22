@@ -405,13 +405,15 @@ events:
         backend: user_function
     domain:
       domain_name: api.example.com
-      certificate_name: my-cert
-      certificate_private_key: |
-        -----BEGIN PRIVATE KEY-----
-        ...
-      certificate_body: |
-        -----BEGIN CERTIFICATE-----
-        ...
+      # 方式一：引用已有证书
+      certificate_id: 12345678-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+      # 方式二：上传新证书（二选一）
+      # certificate_body: |
+      #   -----BEGIN CERTIFICATE-----
+      #   ...
+      # certificate_private_key: |
+      #   -----BEGIN PRIVATE KEY-----
+      #   ...
 ```
 
 **字段说明:**
@@ -445,9 +447,14 @@ events:
 | 字段 | 类型 | 必填 | 说明 |
 |------|------|------|------|
 | `domain_name` | string | ✅ | 自定义域名 |
-| `certificate_name` | string | ❌ | SSL 证书名称 |
-| `certificate_private_key` | string | ❌ | 证书私钥 |
-| `certificate_body` | string | ❌ | 证书内容 |
+| `certificate_id` | string | ❌ | 云厂商已存在的 SSL 证书 ID（与 `certificate_body` + `certificate_private_key` 二选一） |
+| `certificate_body` | string | ❌ | SSL 证书内容（PEM 格式，需同时提供 `certificate_private_key`） |
+| `certificate_private_key` | string | ❌ | SSL 证书私钥（PEM 格式，需同时提供 `certificate_body`） |
+| `protocol` | string/array | ❌ | 协议类型：`HTTP`、`HTTPS` 或数组 `['HTTP', 'HTTPS']` |
+
+> 💡 **说明**: SSL 证书配置有两种模式（二选一）：
+> - **引用模式**：使用 `certificate_id` 引用云厂商已存在的证书
+> - **上传模式**：使用 `certificate_body` + `certificate_private_key` 上传新证书
 
 ### databases
 
@@ -662,10 +669,40 @@ buckets:
 | 字段 | 类型 | 必填 | 默认值 | 说明 |
 |------|------|------|--------|------|
 | `code` | string | ✅ | - | 网站代码包路径 |
-| `domain` | string | ❌ | - | 自定义域名 |
+| `domain` | string/object | ❌ | - | 自定义域名（字符串或对象） |
 | `index` | string | ❌ | index.html | 默认首页 |
 | `error_page` | string | ❌ | 404.html | 错误页面 |
 | `error_code` | integer | ❌ | 404 | 错误码 |
+
+**domain 配置对象（支持 SSL 证书）:**
+
+当需要为静态网站配置 SSL 证书时，`domain` 可以配置为对象：
+
+```yaml
+website:
+  code: dist/
+  domain:
+    domain_name: www.example.com
+    certificate_id: 12345678-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+    # 或者使用证书内容
+    # certificate_body: |
+    #   -----BEGIN CERTIFICATE-----
+    #   ...
+    # certificate_private_key: |
+    #   -----BEGIN PRIVATE KEY-----
+    #   ...
+    protocol: HTTPS
+  index: index.html
+  error_page: 404.html
+```
+
+| 字段 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `domain_name` | string | ✅ | 自定义域名 |
+| `certificate_id` | string | ❌ | 云厂商已存在的 SSL 证书 ID |
+| `certificate_body` | string | ❌ | SSL 证书内容（需同时提供 `certificate_private_key`） |
+| `certificate_private_key` | string | ❌ | SSL 证书私钥 |
+| `protocol` | string/array | ❌ | 协议：`HTTP`、`HTTPS` 或 `['HTTP', 'HTTPS']` |
 
 ## 变量引用
 

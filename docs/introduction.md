@@ -53,8 +53,8 @@ ServerlessInsight 支持多个主流云供应商，帮助您灵活选择最适�
 
 **已支持：**
 - ✅ **阿里云 (Aliyun)** - 完整支持函数计算 FC、API 网关、RDS、OSS 等服务
-- 🚧 **华为云 (Huawei Cloud)** - 开发中
-- 🚧 **腾讯云 (Tencent Cloud)** - 开发中
+- ✅ **腾讯云 (Tencent Cloud)** - 支持 SCF、COS、TDSQL-C 等服务
+- 🚧 **华为云 (Huawei Cloud)** - Beta 阶段
 
 **规划中：**
 - AWS Lambda & API Gateway

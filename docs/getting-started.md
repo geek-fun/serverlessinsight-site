@@ -26,7 +26,7 @@ npm install -g @geek-fun/serverlessinsight
 si --version
 ```
 
-如果安装成功，将会显示版本号，例如：`0.3.1`
+如果安装成功，将会显示版本号，例如：`0.6.8`
 
 ## 步骤 2: 配置云供应商密钥
 
@@ -116,10 +116,11 @@ tags:
 
 functions:
   hello_world_fn:
-    fc_name: hello-world-fn
-    runtime: nodejs18
-    handler: index.handler
-    code: artifacts/hello-world-api.zip
+    name: hello-world-fn
+    code:
+      runtime: nodejs18
+      handler: index.handler
+      path: artifacts/hello-world-api.zip
     memory: 512
     timeout: 10
     environment:
@@ -132,7 +133,7 @@ events:
     triggers:
       - method: GET
         path: /api/*
-        backend: ${functions.hello_world_fn}
+        backend: hello_world_fn
 ```
 
 ### 配置说明

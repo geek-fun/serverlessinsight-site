@@ -26,7 +26,7 @@ Verify the installation:
 si --version
 ```
 
-If installed successfully, it will display the version number, e.g., `0.3.1`
+If installed successfully, it will display the version number, e.g., `0.6.8`
 
 ## Step 2: Configure Cloud Provider Credentials
 
@@ -116,10 +116,11 @@ tags:
 
 functions:
   hello_world_fn:
-    fc_name: hello-world-fn
-    runtime: nodejs18
-    handler: index.handler
-    code: artifacts/hello-world-api.zip
+    name: hello-world-fn
+    code:
+      runtime: nodejs18
+      handler: index.handler
+      path: artifacts/hello-world-api.zip
     memory: 512
     timeout: 10
     environment:
@@ -132,7 +133,7 @@ events:
     triggers:
       - method: GET
         path: /api/*
-        backend: ${functions.hello_world_fn}
+        backend: hello_world_fn
 ```
 
 ### Configuration Explanation

@@ -27,4 +27,7 @@ buckets:
       index: index.html
       error_page: 404.html
       error_code: 404
-      domain: www.serverlessinsight.com
+      domain:
+        domain_name: www.serverlessinsight.com
+        certificate_id: 24042990
+        protocol: HTTPS

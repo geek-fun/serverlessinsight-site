@@ -19,8 +19,10 @@ si deploy -h
 | 命令 | 说明 |
 |------|------|
 | [`validate`](#validate-校验配置文件) | 校验配置文件合法性 |
+| [`plan`](#plan-生成部署计划) | 生成部署计划（预览变更） |
 | [`deploy`](#deploy-部署-serverless-应用) | 部署 Serverless 应用 |
 | [`destroy`](#destroy-销毁-serverless-应用) | 销毁 Serverless 应用 |
+| [`show`](#show-查看部署资源信息) | 查看已部署资源信息 |
 | [`local`](#local-本地运行-serverless-应用) | 本地运行 Serverless 应用 |
 
 ## validate 校验配置文件
@@ -66,6 +68,51 @@ si validate -f path/to/config.yml
 ```
 ✗ Configuration file is invalid
 Error: functions.hello_world_fn.memory must be an integer
+```
+
+## plan 生成部署计划
+
+`plan` 命令用于生成部署计划，预览将要创建、更新或删除的资源，帮助您在实际部署前了解变更内容。
+
+### 使用方法
+
+```bash
+si plan [选项]
+```
+
+### 选项
+
+| 选项 | 简写 | 说明 | 默认值 |
+|------|------|------|--------|
+| `--stage` | `-s` | 指定环境 | `default` |
+| `--file` | `-f` | 指定配置文件路径 | `serverlessinsight.yml` |
+
+### 示例
+
+```bash
+# 预览开发环境的部署变更
+si plan --stage dev
+
+# 指定配置文件
+si plan -f config/prod.yml -s prod
+```
+
+### 输出示例
+
+```bash
+Planning deployment for stage dev...
+
+Resources to create:
+  + function: hello-world-fn
+  + api_gateway: my-api-gateway
+
+Resources to update:
+  ~ function: api-handler (code changed)
+
+Resources to delete:
+  - function: old-function
+
+Plan: 2 to create, 1 to update, 1 to delete
 ```
 
 ## deploy 部署 Serverless 应用
@@ -190,6 +237,52 @@ Deleting API Gateway: insight-poc-gateway...
 Deleting resource stack...
 
 ✓ Service hello-world-api destroyed successfully
+```
+
+## show 查看部署资源信息
+
+`show` 命令用于查看已部署资源的信息，包括资源 ID、状态、访问地址等。
+
+### 使用方法
+
+```bash
+si show [选项]
+```
+
+### 选项
+
+| 选项 | 简写 | 说明 | 默认值 |
+|------|------|------|--------|
+| `--stage` | `-s` | 指定环境 | `default` |
+| `--file` | `-f` | 指定配置文件路径 | `serverlessinsight.yml` |
+
+### 示例
+
+```bash
+# 查看开发环境的部署信息
+si show --stage dev
+
+# 指定配置文件
+si show -f config/prod.yml -s prod
+```
+
+### 输出示例
+
+```bash
+Showing resources for stage dev...
+
+Functions:
+  hello-world-fn
+    ARN: acs:fc:cn-hangzhou:123456789:functions/hello-world-fn
+    Runtime: nodejs18
+    Memory: 512MB
+    Timeout: 10s
+
+API Gateway:
+  my-api-gateway
+    ID: api-abc123
+    Endpoint: https://abc123.apigateway.cn-hangzhou.aliyuncs.com
+    Triggers: 2 routes configured
 ```
 
 ## local 本地运行 Serverless 应用
