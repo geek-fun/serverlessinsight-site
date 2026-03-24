@@ -11,6 +11,15 @@ export default defineConfig({
   lastUpdated: true,
   outDir: '../dist',
   cacheDir: '../cache',
+  head: [
+    ['script', { async: '', src: 'https://www.googletagmanager.com/gtag/js?id=G-FSJWB3QKGJ' }],
+    ['script', {}, `
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-FSJWB3QKGJ');
+`]
+  ],
   locales: {
     root: {
       label: '中文',
@@ -34,6 +43,7 @@ export default defineConfig({
         ['meta', {name: 'twitter:description', content: descZh}],
         ['meta', {name: 'twitter:image', content: icon}],
         ['meta', {name: 'baidu-site-verification', content: 'codeva-RxGXH1Uqch'}],
+        ['meta', {name: 'google-site-verification', content: 'AZXIysKvXbgU83th3QJrI5ztjLlY3Yys9oav4uEQS6Y'}],
       ],
       themeConfig: {
         // https://vitepress.dev/reference/default-theme-config
@@ -88,6 +98,7 @@ export default defineConfig({
         ['meta', {name: 'twitter:description', content: descEn}],
         ['meta', {name: 'twitter:image', content: icon}],
         ['meta', {name: 'baidu-site-verification', content: 'codeva-RxGXH1Uqch'}],
+        ['meta', {name: 'google-site-verification', content: 'AZXIysKvXbgU83th3QJrI5ztjLlY3Yys9oav4uEQS6Y'}],
       ],
       themeConfig: {
         // https://vitepress.dev/reference/default-theme-config
