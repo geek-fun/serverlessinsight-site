@@ -105,25 +105,3 @@ jobs:
 
             ${{ steps.changelog.outputs.changelog }}
           make_latest: true
-
-  # Job 4: Discord Notification
-  notify:
-    needs: [build, deploy, release]
-    if: always() && github.ref == 'refs/heads/master' && needs.build.outputs.should_release == 'true'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Discord Notification
-        uses: Ilshidur/action-discord@master
-        with:
-          args: |
-            **🚀 ServerlessInsight Site Deployment - ${{ needs.build.outputs.version }}**
-
-            **Status:** ${{ needs.deploy.result }}
-            **Release:** ${{ needs.release.result }}
-            **Environment:** Production
-            **Commit:** ${{ github.sha }}
-            **Author:** ${{ github.actor }}
-
-            **View changes:** ${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}
-        env:
-          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
