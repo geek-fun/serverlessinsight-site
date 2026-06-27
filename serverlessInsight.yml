@@ -29,6 +29,6 @@ buckets:
       error_code: 404
       domain:
         domain_name: serverlessinsight.com
-        certificate_id: '24042990'
+        certificate_id: '25778342'
         protocol: HTTPS
         www_bind_apex: true
