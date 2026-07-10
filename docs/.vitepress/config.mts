@@ -109,9 +109,23 @@ gtag('config', 'G-FSJWB3QKGJ');`],
         logo: icon,
         nav: [
           {text: 'Home', link: '/en'},
-          {text: 'Docs', link: '/docs'},
+          {text: 'Docs', link: '/en/docs'},
         ],
 
+        sidebar: [
+          {
+            text: 'ServerlessInsight',
+            items: [
+              {text: 'Introduction', link: '/en/introduction'},
+              {text: 'Quick Start', link: '/en/getting-started'},
+              {text: 'Configuration Guide', link: '/en/reference'},
+              {text: 'CLI Reference', link: '/en/cli'},
+              {text: 'Support', link: '/en/support'},
+              {text: 'FAQ', link: '/en/faq'},
+              {text: 'Case Studies', link: '/en/case-study'},
+            ]
+          }
+        ],
 
         socialLinks: [
           {icon: 'github', link: 'https://github.com/geek-fun/serverlessinsight'},
