@@ -52,9 +52,10 @@ ServerlessInsight 提供从开发到运维的全生命周期管理：
 ServerlessInsight 支持多个主流云供应商，帮助您灵活选择最适合的云服务商：
 
 **已支持：**
-- ✅ **阿里云 (Aliyun)** - 完整支持函数计算 FC、API 网关、RDS、OSS 等服务
-- ✅ **腾讯云 (Tencent Cloud)** - 支持 SCF、COS、TDSQL-C 等服务
-- 🚧 **华为云 (Huawei Cloud)** - Beta 阶段
+- ✅ **阿里云 (Aliyun)** - 完整支持函数计算 FC3、API 网关、OSS、RDS、TableStore、ES Serverless、CDN、DNS 等服务
+- ✅ **腾讯云 (Tencent Cloud)** - 完整支持 SCF、COS、ES Serverless、TDSQL-C 等服务
+- ✅ **火山引擎 (Volcengine)** - 完整支持 veFaaS、API 网关、TOS 对象存储等服务
+- 🚧 **华为云 (Huawei Cloud)** - Beta 阶段，支持 FunctionGraph
 
 **规划中：**
 - AWS Lambda & API Gateway
@@ -79,10 +80,11 @@ ServerlessInsight 坚持开源开放的原则：
 ServerlessInsight 依托云厂商提供的 Serverless 服务和基础设施即代码能力，通过以下层次实现：
 
 1. **配置层**：`serverlessinsight.yml` 定义应用所需资源
-2. **解析层**：解析配置文件，生成资源依赖图
-3. **适配层**：屏蔽不同云供应商的 API 差异
-4. **执行层**：调用云供应商 API 创建和管理资源
-5. **运行时**：提供本地开发环境和调试工具
+2. **状态管理层**：管理部署状态和资源追踪，支持增量更新与部分失败恢复
+3. **解析层**：解析配置文件，生成资源依赖图
+4. **适配层**：屏蔽不同云供应商的 API 差异（阿里云、腾讯云、火山引擎、华为云等）
+5. **执行层**：调用云供应商 API 创建和管理资源
+6. **运行时**：提供本地开发环境和调试工具
 
 这种分层架构让开发者无需关心底层云供应商的差异和复杂的运维细节，只需专注于业务逻辑的开发。
 

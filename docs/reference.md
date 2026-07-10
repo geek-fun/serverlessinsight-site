@@ -8,13 +8,25 @@
 - [核心配置](#核心配置)
   - [version](#version)
   - [provider](#provider)
+  - [云供应商凭证](#云供应商凭证)
   - [vars](#vars)
   - [stages](#stages)
+  - [app](#app)
   - [service](#service)
   - [tags](#tags)
+  - [backend](#backend)
 - [资源类型](#资源类型)
   - [functions](#functions)
+    - [code - 代码部署](#code---代码部署)
+    - [container - 容器部署](#container---容器部署)
+    - [gpu - GPU 配置](#gpu---gpu-配置)
+    - [network - 网络配置](#network---网络配置)
+    - [storage - 存储配置](#storage---存储配置)
+    - [log - 日志配置](#log---日志配置)
+    - [iam - IAM 角色配置](#iam---iam-角色配置)
   - [events](#events)
+    - [triggers - 触发器配置](#triggers---触发器配置)
+    - [domain - 自定义域名](#domain---自定义域名)
   - [databases](#databases)
   - [tables](#tables)
   - [buckets](#buckets)
@@ -103,7 +115,7 @@ provider:
 
 | 字段 | 类型 | 必填 | 说明 |
 |------|------|------|------|
-| `name` | string | ✅ | 云供应商名称：`aliyun`, `huawei`, `tencent` |
+| `name` | string | ✅ | 云供应商名称：`aliyun`, `tencent`, `volcengine`, `huawei`, `aws` |
 | `region` | string | ✅ | 服务部署区域 |
 
 **阿里云支持的区域:**
@@ -122,7 +134,24 @@ provider:
 **中东:**
 - `me-east-1`, `me-central-1`
 
-> 💡 **提示**: 目前仅完整支持阿里云，华为云和腾讯云正在开发中。
+> 💡 **提示**: 各供应商支持状态：
+> - ✅ **阿里云** — 完整支持（FC3、API Gateway、OSS、RDS、TableStore、ES Serverless、CDN）
+> - ✅ **腾讯云** — 完整支持（SCF、COS、ES Serverless、TDSQL-C）
+> - ✅ **火山引擎** — 完整支持（veFaaS、API Gateway、TOS）
+> - 🚧 **华为云** — Beta（FunctionGraph）
+
+### 云供应商凭证
+
+ServerlessInsight 支持通过环境变量配置各云供应商的访问凭证：
+
+| 供应商 | Access Key 环境变量 | Secret Key 环境变量 | Token（可选） |
+|--------|-------------------|-------------------|-------------|
+| **阿里云** | `ALIYUN_ACCESS_KEY_ID` / `ALIBABA_CLOUD_ACCESS_KEY_ID` | `ALIYUN_ACCESS_KEY_SECRET` / `ALIBABA_CLOUD_ACCESS_KEY_SECRET` | `ALIYUN_SECURITY_TOKEN` |
+| **腾讯云** | `TENCENTCLOUD_SECRET_ID` | `TENCENTCLOUD_SECRET_KEY` | `TENCENTCLOUD_SECURITY_TOKEN` |
+| **火山引擎** | `VOLCENGINE_ACCESS_KEY_ID` / `VOLCSTACK_ACCESS_KEY_ID` | `VOLCENGINE_ACCESS_KEY_SECRET` / `VOLCSTACK_SECRET_ACCESS_KEY` | `VOLCENGINE_SESSION_TOKEN` |
+| **华为云** | `HUAWEICLOUD_ACCESS_KEY` | `HUAWEICLOUD_SECRET_KEY` | — |
+
+凭证也可以通过命令行参数 `--accessKeyId` / `--accessKeySecret` 传入。
 
 ### vars
 
@@ -199,17 +228,28 @@ si deploy
 
 > 💡 **提示**: `${ctx.stage}` 是 ServerlessInsight 提供的全局预定义变量，表示当前部署的 stage。
 
-### service
+### app
 
-指定 Serverless 应用的名称。该名称将作为资源 ID 和资源名称的前缀。
+指定应用的名称，用于标识整个 ServerlessInsight 项目。
 
 ```yaml
 app: my-app
+```
+
+**命名规范:**
+- 以小写字母开头，仅包含小写字母、数字和连字符（`-`）
+- 必须为静态字符串，不能使用变量
+- 全局唯一标识符，建议使用项目名称
+
+### service
+
+指定服务的名称。该名称将作为资源 ID 和资源名称的前缀。
+
+```yaml
 service: my-app-service
 ```
 
 **命名建议:**
-
 - 使用小写字母、数字和连字符（`-`）
 - 保持名称简短（资源名称会附加此服务名）
 - 必须为静态字符串，不能使用变量
@@ -230,6 +270,28 @@ tags:
 ```
 
 所有创建的资源都会自动附加这些标签。
+
+### backend
+
+配置后端状态存储，用于管理部署状态和锁信息。
+
+```yaml
+backend:
+  state_manager:
+    type: BUCKET_STORE  # 或 LOCAL
+    bucket: my-state-bucket
+    key: serverlessinsight/my-service/state.json
+```
+
+**字段说明:**
+
+| 字段 | 类型 | 必填 | 默认值 | 说明 |
+|------|------|------|--------|------|
+| `state_manager.type` | string | ❌ | `LOCAL` | 状态存储类型：`LOCAL`（本地文件）或 `BUCKET_STORE`（对象存储） |
+| `state_manager.bucket` | string | ⚠️ | - | 存储桶名称（`BUCKET_STORE` 类型必填） |
+| `state_manager.key` | string | ❌ | `state.json` | 状态文件路径 |
+
+> 💡 **提示**: 使用 `BUCKET_STORE` 类型可实现团队协作，多个成员共享同一状态文件，避免部署冲突。
 
 ## 资源类型
 
@@ -292,8 +354,10 @@ functions:
 | `memory` | integer | ❌ | 128MB | 内存大小（MB） |
 | `timeout` | integer | ❌ | 15 分钟 | 超时时间（秒） |
 | `gpu` | enum | ❌ | - | GPU 配置 |
+| `log` | boolean | ❌ | `true` | 是否启用日志收集（SLS），首次部署时创建日志资源有延迟 |
 | `network` | object | ❌ | - | 网络配置 |
 | `storage` | object | ❌ | - | 存储配置 |
+| `iam` | object | ❌ | - | IAM 角色配置 |
 | `environment` | object | ❌ | - | 环境变量 |
 
 #### code - 代码部署
@@ -304,13 +368,21 @@ functions:
 | `handler` | string | ✅ | 函数处理程序入口 |
 | `path` | string | ✅ | 代码包路径（zip 格式） |
 
+> ⚠️ **代码包大小限制**:
+> - **300KB 以下** — 自动内联部署
+> - **300KB ~ 70MB** — 自动通过 OSS 上传部署
+> - **超过 70MB** — 请使用容器部署方式（`container`）
+
 **支持的运行时:**
-- Node.js: `nodejs20`, `nodejs18`, `nodejs16`, `nodejs14`, `nodejs12`, `nodejs10`, `nodejs8`
-- Python: `python3.10`, `python3.9`, `python3`
-- PHP: `PHP7.2`
-- Java: `Java11`
-- .NET: `.NETCore3.1`
-- Go: `Go1.x`
+
+| 运行时 | 阿里云 FC3 | 腾讯云 SCF |
+|--------|-----------|-----------|
+| Node.js | `nodejs24`, `nodejs22`, `nodejs20`, `nodejs18`, `nodejs16`, `nodejs14`, `nodejs12`, `nodejs10` | `nodejs/v20`, `nodejs/v18`, `nodejs/v16`, `nodejs/v14` |
+| Python | `python3.14`, `python3.13`, `python3.12`, `python3.11`, `python3.10`, `python3.9`, `python3.7`, `python3.6` | `python/v3.12`, `python/v3.11`, `python/v3.10`, `python/v3.9` |
+| Java | `java25`, `java21`, `java17`, `java11`, `java8` | `java/v21`, `java/v17`, `java/v11`, `java/v8` |
+| Go | `go1` | `golang/v1` |
+| PHP | `php8.0`, `php7.4`, `php7.2`, `php5.6` | — |
+| .NET | `dotnet_core3.1` | — |
 
 #### container - 容器部署
 
@@ -385,6 +457,62 @@ nas:
 - `EXTREME_STANDARD` - 极速标准型
 - `EXTREME_ADVANCE` - 极速高级型
 
+#### log - 日志配置
+
+函数日志默认开启，自动创建 SLS 日志项目（Project）和日志库（Logstore）。
+
+```yaml
+functions:
+  my_function:
+    log: true  # 默认开启
+```
+
+> ⚠️ **注意**: 阿里云 SLS 日志资源创建有延迟。首次部署时若日志创建失败，可先关闭日志，等待 1-2 分钟后重新部署开启。
+
+#### iam - IAM 角色配置
+
+为函数配置 IAM 执行角色，支持指定已有角色名称或创建新角色。
+
+```yaml
+functions:
+  my_function:
+    iam:
+      role: my-existing-role  # 使用已有角色名称
+```
+
+或详细配置：
+
+```yaml
+functions:
+  my_function:
+    iam:
+      role:
+        name: my-function-role        # 新建角色名称
+        managed_policies:             # 附加系统策略
+          - AliyunFCFullAccess
+        statements:                   # 自定义权限语句
+          - sid: MyCustomAction
+            effect: Allow
+            action:
+              - oss:GetObject
+              - oss:PutObject
+            resource:
+              - arn:oss:*:*:my-bucket/*
+```
+
+**IAM 字段说明:**
+
+| 字段 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `role` | string/object | ❌ | IAM 角色名称，或角色配置对象 |
+| `role.name` | string | ❌ | 新建角色的名称 |
+| `role.managed_policies` | array | ❌ | 附加的系统策略名称列表 |
+| `role.statements` | array | ❌ | 自定义权限语句列表 |
+| `statement.sid` | string | ❌ | 语句标识 |
+| `statement.effect` | string | ✅ | `Allow` 或 `Deny` |
+| `statement.action` | string/array | ✅ | 允许或拒绝的操作 |
+| `statement.resource` | string/array | ✅ | 资源 ARN |
+
 ### events
 
 定义事件触发器，用于触发函数执行。
@@ -434,7 +562,7 @@ events:
 | `backend` | string | ✅ | 后端函数名称 |
 
 **支持的 HTTP 方法:**
-`GET`, `POST`, `PUT`, `DELETE`, `PATCH`, `HEAD`, `OPTIONS`, `ANY`
+`GET`, `POST`, `PUT`, `DELETE`, `ANY`
 
 **其他支持的事件类型（开发中）:**
 - `SQS` - 消息队列
@@ -452,6 +580,21 @@ events:
 | `certificate_private_key` | string | ❌ | SSL 证书私钥（PEM 格式，需同时提供 `certificate_body`） |
 | `protocol` | string/array | ❌ | 协议类型：`HTTP`、`HTTPS` 或数组 `['HTTP', 'HTTPS']` |
 | `www_bind_apex` | boolean | ❌ | 是否自动绑定 www 子域名到主域名（仅适用于 API Gateway） |
+| `cdn` | boolean/object | ❌ | CDN 加速配置 |
+
+**cdn - CDN 加速配置:**
+
+```yaml
+domain:
+  domain_name: api.example.com
+  cdn:
+    enabled: true
+    cdn_type: web           # web / download / video
+    scope: domestic          # domestic / overseas / global
+    cache_ttl: 3600          # 缓存时间（秒）
+    origin_protocol: https   # http / https / follow
+    force_redirect_https: true
+```
 
 > 💡 **说明**: SSL 证书配置有两种模式（二选一）：
 > - **引用模式**：使用 `certificate_id` 引用云厂商已存在的证书
@@ -496,11 +639,15 @@ databases:
       min: 20
     security:
       basic_auth:
-        master_user: admin
+        master_user: admin    # 可选，默认自动生成
         password: SecurePassword123
     network:
       type: PRIVATE
-      public: false
+      vpc_id: vpc-my-vpc
+      subnet_id: vsw-subnet1
+      ingress_rules:
+        - TCP:0.0.0.0/0:3306
+      public: false            # 是否开启公网访问
 ```
 
 **字段说明:**
@@ -512,14 +659,25 @@ databases:
 | `version` | string | ✅ | 数据库版本 |
 | `cu` | object | ❌ | 计算单元配置 |
 | `storage` | object | ❌ | 存储配置 |
-| `security` | object | ✅ | 安全配置 |
+| `security` | object | ✅ | 安全配置（`basic_auth.password` 必填，`master_user` 可选） |
 | `network` | object | ❌ | 网络配置 |
+
+**网络配置字段:**
+
+| 字段 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `type` | string | ✅ | 网络类型：`PUBLIC` 或 `PRIVATE` |
+| `vpc_id` | string | ❌ | VPC ID（仅 `PRIVATE` 类型） |
+| `subnet_id` | string | ❌ | 子网 ID（仅 `PRIVATE` 类型） |
+| `ingress_rules` | array | ❌ | 入站规则列表（格式同安全组规则） |
+| `public` | boolean | ❌ | 是否开启公网访问 |
 
 **支持的数据库类型:**
 - `ELASTICSEARCH_SERVERLESS` - Elasticsearch Serverless
 - `RDS_MYSQL_SERVERLESS` - MySQL Serverless
 - `RDS_PGSQL_SERVERLESS` - PostgreSQL Serverless
 - `RDS_MSSQL_SERVERLESS` - SQL Server Serverless
+- `TDSQL_C_SERVERLESS` - 腾讯云 TDSQL-C Serverless（MySQL 兼容）
 
 **支持的数据库版本:**
 - MySQL: `MYSQL_5.7`, `MYSQL_8.0`, `MYSQL_HA_5.7`, `MYSQL_HA_8.0`
@@ -576,9 +734,10 @@ tables:
 
 | 字段 | 类型 | 必填 | 说明 |
 |------|------|------|------|
-| `collection` | object | ⚠️ | 所属实例/存储仓 |
+| `collection` | string/object | ✅ | 所属实例/存储仓名称或配置对象 |
 | `name` | string | ✅ | 表名 |
 | `type` | enum | ✅ | 表类型 |
+| `desc` | string | ❌ | 表描述（最长 256 字符） |
 | `network` | object | ❌ | 网络配置 |
 | `throughput` | object | ❌ | 吞吐量配置 |
 | `key_schema` | array | ✅ | 主键结构 |
@@ -598,7 +757,7 @@ tables:
 
 **支持的表类型:**
 - `TABLE_STORE_C` - 容量型
-- `TABLE_STORE_G` - 性能型
+- `TABLE_STORE_H` - 高性能型
 
 **吞吐量配置:**
 
@@ -615,11 +774,10 @@ tables:
 
 **属性数据类型:**
 - `STRING` - 字符串
-- `NUMBER` - 数字
+- `INTEGER` - 64 位有符号整数
+- `DOUBLE` - 64 位双精度浮点数
 - `BOOLEAN` - 布尔值
 - `BINARY` - 二进制
-- `MAP` - 映射
-- `LIST` - 列表
 
 > ⚠️ **注意**: `key_schema` 中声明的键必须在 `attributes` 中声明其数据类型。
 
@@ -658,7 +816,9 @@ buckets:
 | `storage` | object | ❌ | - | 存储配置 |
 | `versioning` | object | ❌ | - | 版本控制配置 |
 | `security` | object | ❌ | - | 安全配置 |
+| `domain` | object | ❌ | - | 自定义域名配置（推荐方式，优先于 `website.domain`） |
 | `website` | object | ❌ | - | 静态网站托管配置 |
+| `iam` | object | ❌ | - | 存储桶 IAM 资源策略 |
 
 **存储类型:**
 - `STANDARD` - 标准存储
@@ -725,6 +885,74 @@ website:
 | `certificate_private_key` | string | ❌ | SSL 证书私钥 |
 | `protocol` | string/array | ❌ | 协议：`HTTP`、`HTTPS` 或 `['HTTP', 'HTTPS']` |
 | `www_bind_apex` | boolean | ❌ | 是否自动绑定 www 子域名（适用于主域名配置） |
+| `cdn` | boolean/object | ❌ | CDN 加速配置 |
+
+> 💡 **推荐**: 建议使用顶级 `domain` 字段（而非 `website.domain`）配置自定义域名，支持 CDN 加速和 OSS 传输加速。
+
+**顶级 domain 配置示例:**
+
+```yaml
+buckets:
+  my_bucket:
+    name: my-app-bucket
+    domain:
+      domain_name: static.example.com
+      certificate_id: 12345678-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+      protocol: HTTPS
+      www_bind_apex: true
+      cdn:                             # CDN 加速
+        enabled: true
+        cdn_type: web
+        scope: domestic
+        cache_ttl: 3600
+        origin_protocol: https
+        force_redirect_https: true
+      accelerate: true                 # OSS 传输加速（跨区域）
+```
+
+**cdn 配置字段:**
+
+| 字段 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `enabled` | boolean | ✅ | 是否启用 CDN |
+| `cdn_type` | string | ❌ | CDN 类型：`web`（网页）、`download`（下载）、`video`（音视频） |
+| `scope` | string | ❌ | 加速范围：`domestic`（国内）、`overseas`（海外）、`global`（全球） |
+| `cache_ttl` | number | ❌ | 缓存时间（秒） |
+| `ignore_query_string` | boolean | ❌ | 是否忽略查询参数 |
+| `origin_protocol` | string | ❌ | 回源协议：`http`、`https`、`follow` |
+| `compression` | boolean | ❌ | 是否启用压缩 |
+| `force_redirect_https` | boolean | ❌ | 是否强制跳转 HTTPS |
+
+#### iam - 存储桶资源策略
+
+为存储桶配置 IAM 资源策略，控制跨账户访问或匿名访问。
+
+```yaml
+buckets:
+  my_bucket:
+    name: my-app-bucket
+    iam:
+      resource:
+        statements:
+          - effect: Allow
+            principal:
+              AWS: '123456789012'
+            action:
+              - oss:GetObject
+              - oss:PutObject
+            resource:
+              - my-app-bucket/*
+```
+
+**IAM 字段说明:**
+
+| 字段 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `effect` | string | ✅ | `Allow` 或 `Deny` |
+| `principal` | object | ✅ | 授权主体（如 `AWS: 'account-id'`） |
+| `action` | string/array | ✅ | 允许或拒绝的操作 |
+| `resource` | string/array | ✅ | 资源路径 |
+| `condition` | object | ❌ | 策略条件 |
 
 ## 变量引用
 
