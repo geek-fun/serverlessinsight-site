@@ -7,9 +7,9 @@ Welcome to the ServerlessInsight documentation center. Here you'll find comprehe
 New to ServerlessInsight? Start here:
 
 - **[Quick Start](/en/getting-started)** - Build your first serverless application in 5 minutes
-- **[Introduction](/introduction)** - Learn about core concepts and capabilities
-- **[Configuration Guide](/reference)** - Detailed YAML configuration reference
-- **[CLI Reference](/cli)** - Command-line tool documentation
+- **[Introduction](/en/introduction)** - Learn about core concepts and capabilities
+- **[Configuration Guide](/en/reference)** - Detailed YAML configuration reference
+- **[CLI Reference](/en/cli)** - Command-line tool documentation
 
 ## Core Concepts
 
@@ -77,9 +77,10 @@ ServerlessInsight supports various cloud resource types:
 
 ### Currently Supported
 
-- ✅ **Alibaba Cloud** - Full support for FC, API Gateway, RDS, OSS, etc.
-- 🚧 **Huawei Cloud** - In development
-- 🚧 **Tencent Cloud** - In development
+- ✅ **Alibaba Cloud** - Full support for FC3, API Gateway, OSS, RDS, TableStore, ES Serverless, CDN, DNS
+- ✅ **Tencent Cloud** - Full support for SCF, COS, ES Serverless, TDSQL-C
+- ✅ **Volcengine** - Full support for veFaaS, API Gateway, TOS
+- 🚧 **Huawei Cloud** - Beta (FunctionGraph)
 
 ### Planned
 
@@ -115,9 +116,9 @@ si destroy --stage dev
 
 ### Tutorials
 
-- [Building a REST API](/getting-started) - Create a RESTful API with ServerlessInsight
-- [Database Integration](/reference#databases) - Connect your functions to databases
-- [Static Website Hosting](/reference#buckets) - Host static websites on object storage
+- [Building a REST API](/en/getting-started) - Create a RESTful API with ServerlessInsight
+- [Database Integration](/en/reference#databases) - Connect your functions to databases
+- [Static Website Hosting](/en/reference#buckets) - Host static websites on object storage
 
 ### Best Practices
 
@@ -129,13 +130,13 @@ si destroy --stage dev
 
 ### Reference
 
-- **[Configuration Specification](/reference)** - Complete YAML specification
-- **[CLI Commands](/cli)** - All supported CLI commands and options
-- **[Case Studies](/case-study)** - Real-world implementation examples
+- **[Configuration Specification](/en/reference)** - Complete YAML specification
+- **[CLI Commands](/en/cli)** - All supported CLI commands and options
+- **[Case Studies](/en/case-study)** - Real-world implementation examples
 
 ## Getting Help
 
-- **[FAQ](/faq)** - Frequently asked questions
+- **[FAQ](/en/faq)** - Frequently asked questions
 - **[GitHub Issues](https://github.com/geek-fun/serverlessinsight/issues)** - Report bugs and request features
 - **[Twitter](https://x.com/Blankll31075)** - Follow for updates and announcements
 - **[Email](mailto:support@geekfun.club)** - Contact us directly
