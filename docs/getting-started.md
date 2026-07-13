@@ -65,6 +65,28 @@ export ALIYUN_REGION="cn-hangzhou"
 > - 遵循 [阿里云安全最佳实践](https://help.aliyun.com/document_detail/54577.html)
 > - ServerlessInsight 不会保存任何供应商密钥信息
 
+### 其他云供应商凭证
+
+**腾讯云:**
+```bash
+export TENCENTCLOUD_SECRET_ID="your-secret-id"
+export TENCENTCLOUD_SECRET_KEY="your-secret-key"
+export TENCENTCLOUD_SECURITY_TOKEN="your-security-token"  # 可选，临时凭证
+```
+
+**火山引擎:**
+```bash
+export VOLCENGINE_ACCESS_KEY_ID="your-access-key-id"
+export VOLCENGINE_ACCESS_KEY_SECRET="your-access-key-secret"
+export VOLCENGINE_SESSION_TOKEN="your-session-token"  # 可选
+```
+
+**华为云:**
+```bash
+export HUAWEICLOUD_ACCESS_KEY="your-access-key"
+export HUAWEICLOUD_SECRET_KEY="your-secret-key"
+```
+
 ## 步骤 3: 初始化项目
 
 创建项目目录：

@@ -24,6 +24,7 @@ si deploy -h
 | [`destroy`](#destroy-销毁-serverless-应用) | 销毁 Serverless 应用 |
 | [`show`](#show-查看部署资源信息) | 查看已部署资源信息 |
 | [`local`](#local-本地运行-serverless-应用) | 本地运行 Serverless 应用 |
+| [`forceUnlock`](#forceunlock-强制解锁) | 强制解锁 |
 
 ## validate 校验配置文件
 
@@ -372,6 +373,69 @@ Watching for file changes...
 [DEBUG] Response: {"statusCode":200,"body":"..."}
 ```
 
+## forceUnlock 强制解锁
+
+`forceUnlock` 命令用于强制解除资源锁。当部署或销毁过程意外中断（如网络断开、进程被杀等），系统会留下锁文件防止并发操作。确认没有其他部署进程在运行后，可使用此命令强制解锁。
+
+### 使用方法
+
+```bash
+si forceUnlock <lockId> [选项]
+```
+
+### 选项
+
+| 选项 | 说明 | 默认值 |
+|------|------|--------|
+| `--file` `-f` | 指定配置文件路径 | `serverlessinsight.yml` |
+| `--stage` `-s` | 指定环境 | `default` |
+| `--region` `-r` | 指定区域 | 配置文件中的 `provider.region` |
+| `--provider` `-pr` | 指定云供应商 | 配置文件中的 `provider.name` |
+
+### 获取锁 ID
+
+锁 ID 可通过 `si show` 命令的输出获取，或查看 `.serverlessinsight/` 目录下的 `.si-lock` 文件内容。
+
+### 示例
+
+```bash
+# 强制解锁（会提示确认）
+si forceUnlock abc123def456
+
+# 指定配置文件解锁
+si forceUnlock abc123def456 -f config/prod.yml -s prod
+
+# 强制解锁（跳过确认，直接执行）
+echo "yes" | si forceUnlock abc123def456
+```
+
+### ⚠️ 警告
+
+> 强制解锁是一个危险操作。请确保：
+> - 没有其他部署进程在运行（`si deploy` / `si destroy`）
+> - 确认锁文件对应的操作已完全停止
+> - 解锁后建议运行 `si plan` 检查状态一致性
+>
+> 错误地强制解锁可能导致状态冲突或资源异常。
+
+## 部分失败恢复
+
+ServerlessInsight 支持部分失败恢复机制。当部署多个资源时，如果部分资源创建成功、部分失败：
+
+1. **已成功的资源会保留**，不会回滚
+2. **修复问题后重试** — 根据错误信息修复配置或权限问题
+3. **重新执行部署** — 再次运行 `si deploy --stage <env>`，系统会跳过已存在资源，只创建失败的资源
+
+```bash
+# 查看部署状态
+si show --stage dev
+
+# 修复问题后重新部署
+si deploy --stage dev
+```
+
+> 💡 **提示**: 这种方式避免了每次部署都要从头创建所有资源，大幅缩短修复重试的时间。
+
 ## 环境变量
 
 ServerlessInsight CLI 支持通过环境变量配置：
@@ -384,6 +448,26 @@ export ALIYUN_ACCESS_KEY_ID="your-access-key-id"
 export ALIYUN_ACCESS_KEY_SECRET="your-access-key-secret"
 export ALIYUN_REGION="cn-hangzhou"
 export ALIYUN_SECURITY_TOKEN="your-security-token"  # 可选，临时凭证
+```
+
+**腾讯云:**
+```bash
+export TENCENTCLOUD_SECRET_ID="your-secret-id"
+export TENCENTCLOUD_SECRET_KEY="your-secret-key"
+export TENCENTCLOUD_SECURITY_TOKEN="your-security-token"  # 可选，临时凭证
+```
+
+**火山引擎:**
+```bash
+export VOLCENGINE_ACCESS_KEY_ID="your-access-key-id"
+export VOLCENGINE_ACCESS_KEY_SECRET="your-access-key-secret"
+export VOLCENGINE_SESSION_TOKEN="your-session-token"  # 可选
+```
+
+**华为云:**
+```bash
+export HUAWEICLOUD_ACCESS_KEY="your-access-key"
+export HUAWEICLOUD_SECRET_KEY="your-secret-key"
 ```
 
 ### CLI 配置
@@ -516,6 +600,9 @@ si destroy --stage <env>
 
 # 本地运行
 si local --stage <env> [--debug] [--watch]
+
+# 强制解锁
+si forceUnlock <lockId>
 
 # 查看帮助
 si -h
