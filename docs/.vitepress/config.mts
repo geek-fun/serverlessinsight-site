@@ -1,16 +1,75 @@
 import {defineConfig} from 'vitepress'
 
-const titleZh = 'ServerlessInsight| 全栈Serverless应用开发运维平台';
-const descZh = 'ServerlessInsight是一个开源的Serverless应用开发运维平台, 提供了全栈Serverless应用开发、部署、监控、调试、优化等功能。支持基础设施即代码的开发实践';
+const siteOrigin = 'https://www.serverlessinsight.com';
+const titleZh = 'ServerlessInsight | 全栈 Serverless 应用开发运维平台';
+const descZh = 'ServerlessInsight 是一个开源的全栈 Serverless 应用开发运维平台，支持跨云开发、部署、监控、调试和优化，并采用基础设施即代码实践。';
 const icon = '/favicon.ico';
 
 const titleEn = 'ServerlessInsight | Full-stack Serverless Development and Operation Platform';
-const descEn = 'ServerlessInsight is an open-source full-stack serverless development and operation platform, providing full-stack serverless application development, deployment, monitoring, debugging, optimization and other functions. Support infrastructure as code development practices';
+const descEn = 'ServerlessInsight is an open-source full-stack serverless platform for developing, deploying, monitoring, debugging, and optimizing applications across cloud providers with infrastructure as code.';
+const socialImage = '/si-archtecture.drawio.png';
+
+const localizedPages = new Set([
+  'index.md',
+  'docs.md',
+  'getting-started.md',
+  'introduction.md',
+  'reference.md',
+  'cli.md',
+  'support.md',
+  'faq.md',
+  'case-study.md',
+]);
+
+const routeFromRelativePath = (relativePath: string) => {
+  const path = relativePath.replace(/\.md$/, '');
+
+  if (path === 'index' || path.endsWith('/index')) {
+    const localePath = path === 'index' ? '' : path.slice(0, -'/index'.length);
+    return localePath ? `/${localePath}/` : '/';
+  }
+
+  return `/${path}.html`;
+};
+
+const absoluteUrl = (route: string) => `${siteOrigin}${route}`;
+
+const addPageMetadata = (pageData: {relativePath: string; frontmatter: {head?: unknown[]}}) => {
+  const route = routeFromRelativePath(pageData.relativePath);
+  const head = pageData.frontmatter.head ?? [];
+  const metadata = [
+    ['link', {rel: 'canonical', href: absoluteUrl(route)}],
+    ['meta', {property: 'og:url', content: absoluteUrl(route)}],
+    ['meta', {property: 'og:image', content: absoluteUrl(socialImage)}],
+    ['meta', {name: 'twitter:card', content: 'summary_large_image'}],
+    ['meta', {name: 'twitter:image', content: absoluteUrl(socialImage)}],
+  ];
+
+  if (localizedPages.has(pageData.relativePath.replace(/^en\//, ''))) {
+    const isEnglish = pageData.relativePath.startsWith('en/');
+    const localPath = pageData.relativePath.replace(/^en\//, '');
+    const alternatePaths = isEnglish
+      ? {en: pageData.relativePath, 'zh-CN': localPath}
+      : {en: `en/${localPath}`, 'zh-CN': pageData.relativePath};
+
+    metadata.push(
+      ['link', {rel: 'alternate', hreflang: 'en', href: absoluteUrl(routeFromRelativePath(alternatePaths.en))}],
+      ['link', {rel: 'alternate', hreflang: 'zh-CN', href: absoluteUrl(routeFromRelativePath(alternatePaths['zh-CN']))}],
+    );
+  }
+
+  pageData.frontmatter.head = [...head, ...metadata];
+};
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
   lastUpdated: true,
+  sitemap: {
+    hostname: siteOrigin,
+    transformItems: (items) => items.filter(({url}) => !url.includes('404.html')),
+  },
   outDir: '../dist',
   cacheDir: '../cache',
+  transformPageData: addPageMetadata,
   locales: {
     root: {
       label: '中文',
@@ -26,13 +85,10 @@ export default defineConfig({
         }],
         ['meta', {property: 'og:title', content: titleZh}],
         ['meta', {property: 'og:description', content: descZh}],
-        ['meta', {property: 'og:image', content: icon}],
-        ['meta', {property: 'og:url', content: '/'}],
         ['meta', {property: 'og:site_name', content: titleZh}],
-        ['meta', {name: 'twitter:card', content: icon}],
+        ['meta', {name: 'twitter:card', content: 'summary_large_image'}],
         ['meta', {name: 'twitter:title', content: titleZh}],
         ['meta', {name: 'twitter:description', content: descZh}],
-        ['meta', {name: 'twitter:image', content: icon}],
         ['meta', {name: 'baidu-site-verification', content: 'codeva-RxGXH1Uqch'}],
         ['meta', {name: 'google-site-verification', content: 'AZXIysKvXbgU83th3QJrI5ztjLlY3Yys9oav4uEQS6Y'}],
         // Google Analytics
@@ -87,13 +143,10 @@ gtag('config', 'G-FSJWB3QKGJ');`],
         }],
         ['meta', {property: 'og:title', content: titleEn}],
         ['meta', {property: 'og:description', content: descEn}],
-        ['meta', {property: 'og:image', content: icon}],
-        ['meta', {property: 'og:url', content: '/'}],
         ['meta', {property: 'og:site_name', content: titleEn}],
-        ['meta', {name: 'twitter:card', content: icon}],
+        ['meta', {name: 'twitter:card', content: 'summary_large_image'}],
         ['meta', {name: 'twitter:title', content: titleEn}],
         ['meta', {name: 'twitter:description', content: descEn}],
-        ['meta', {name: 'twitter:image', content: icon}],
         ['meta', {name: 'baidu-site-verification', content: 'codeva-RxGXH1Uqch'}],
         ['meta', {name: 'google-site-verification', content: 'AZXIysKvXbgU83th3QJrI5ztjLlY3Yys9oav4uEQS6Y'}],
         // Google Analytics
@@ -108,7 +161,7 @@ gtag('config', 'G-FSJWB3QKGJ');`],
         siteTitle: 'ServerlessInsight',
         logo: icon,
         nav: [
-          {text: 'Home', link: '/en'},
+          {text: 'Home', link: '/en/'},
           {text: 'Docs', link: '/en/docs'},
         ],
 
