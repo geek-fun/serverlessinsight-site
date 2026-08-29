@@ -15,7 +15,7 @@ hero:
       link: /getting-started
     - theme: alt
       text: 配置手册
-      link: /reference
+      link: /concepts
     - theme: alt
       text: GitHub
       link: https://github.com/geek-fun/serverlessinsight

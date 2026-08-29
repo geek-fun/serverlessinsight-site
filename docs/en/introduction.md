@@ -51,14 +51,15 @@ ServerlessInsight covers every phase from development to production:
 
 ServerlessInsight works across major cloud providers so you can pick what fits:
 
-**Supported:**
+**Supported (deployable):**
 - ✅ **Aliyun (Alibaba Cloud)** — FC3, API Gateway, OSS, RDS, TableStore, ES Serverless, CDN, DNS
-- ✅ **Tencent Cloud** — SCF, COS, ES Serverless, TDSQL-C
-- ✅ **Volcengine** — veFaaS, API Gateway, TOS
-- 🚧 **Huawei Cloud** — Beta, FunctionGraph
+- ✅ **Tencent Cloud** — SCF, COS, ES Serverless, TDSQL-C (no standalone API Gateway resource; uses function HTTP triggers)
+- ✅ **Volcengine** — veFaaS, API Gateway, TOS (databases and tables not yet supported)
 
-**Planned:**
-- 🔜 AWS, Azure, GCP
+**Planned / not deployable yet:**
+- 🚧 **Huawei Cloud** — only generates HCL/Terraform templates; `deploy` not supported
+- AWS Lambda & API Gateway (enum only)
+- GCP, Azure
 
 A unified configuration syntax means you can switch between providers without rewriting your application. Less vendor lock-in, more flexibility.
 
@@ -119,7 +120,7 @@ Ready to get started? Head to the [Getting Started](/getting-started) guide and 
 
 ## Resources
 
-- [Configuration Reference](/reference) — detailed YAML config docs
+- [Configuration Model](/en/concepts) — detailed YAML config docs
 - [CLI Reference](/cli) — command line tool reference
 - [Case Studies](/case-study) — real-world usage examples
 - [FAQ](/faq) — frequently asked questions
