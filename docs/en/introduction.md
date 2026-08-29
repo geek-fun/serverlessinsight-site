@@ -115,11 +115,11 @@ Handle streaming data for monitoring, analytics, and clickstream analysis.
 
 ## Next Steps
 
-Ready to get started? Head to the [Getting Started](/getting-started) guide and build your first serverless app in five minutes.
+Ready to get started? Head to the [Getting Started](/en/getting-started) guide and build your first serverless app in five minutes.
 
 ## Resources
 
-- [Configuration Reference](/reference) — detailed YAML config docs
-- [CLI Reference](/cli) — command line tool reference
-- [Case Studies](/case-study) — real-world usage examples
-- [FAQ](/faq) — frequently asked questions
+- [Configuration Reference](/en/reference) — detailed YAML config docs
+- [CLI Reference](/en/cli) — command line tool reference
+- [Case Studies](/en/case-study) — real-world usage examples
+- [FAQ](/en/faq) — frequently asked questions
