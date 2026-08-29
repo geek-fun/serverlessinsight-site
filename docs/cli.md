@@ -1,624 +1,155 @@
-# 命令行工具
+---
+title: CLI 参考
+description: ServerlessInsight CLI 全部命令与参数说明
+---
 
-本文档介绍了 ServerlessInsight CLI 支持的所有命令及其使用方法。
+# CLI 参考
 
-## 获取帮助
-
-使用 `-h` 或 `--help` 参数查看命令帮助：
-
-```bash
-# 查看所有命令
-si -h
-
-# 查看特定命令帮助
-si deploy -h
-```
-
-## 命令概览
-
-| 命令 | 说明 |
-|------|------|
-| [`validate`](#validate-校验配置文件) | 校验配置文件合法性 |
-| [`plan`](#plan-生成部署计划) | 生成部署计划（预览变更） |
-| [`deploy`](#deploy-部署-serverless-应用) | 部署 Serverless 应用 |
-| [`destroy`](#destroy-销毁-serverless-应用) | 销毁 Serverless 应用 |
-| [`show`](#show-查看部署资源信息) | 查看已部署资源信息 |
-| [`local`](#local-本地运行-serverless-应用) | 本地运行 Serverless 应用 |
-| [`forceUnlock`](#forceunlock-强制解锁) | 强制解锁 |
-
-## validate 校验配置文件
-
-`validate` 命令用于校验 `serverlessinsight.yml` 配置文件是否合法。
-
-### 使用方法
+ServerlessInsight 的命令行工具名为 `si`。安装方式：
 
 ```bash
-si validate [选项]
-```
-
-### 选项
-
-| 选项 | 简写 | 说明 | 默认值 |
-|------|------|------|--------|
-| `--file` | `-f` | 指定配置文件路径 | `serverlessinsight.yml` |
-
-### 示例
-
-```bash
-# 使用默认配置文件
-si validate
-
-# 指定配置文件
-si validate -f path/to/config.yml
-```
-
-### 输出示例
-
-**校验成功:**
-
-![validate 校验成功示例](/cli-validate-success.png)
-
-```
-✓ Configuration file is valid
-✓ All resources are properly defined
-✓ No errors found
-```
-
-**校验失败:**
-
-```
-✗ Configuration file is invalid
-Error: functions.hello_world_fn.memory must be an integer
-```
-
-## plan 生成部署计划
-
-`plan` 命令用于生成部署计划，预览将要创建、更新或删除的资源，帮助您在实际部署前了解变更内容。
-
-### 使用方法
-
-```bash
-si plan [选项]
-```
-
-### 选项
-
-| 选项 | 简写 | 说明 | 默认值 |
-|------|------|------|--------|
-| `--stage` | `-s` | 指定环境 | `default` |
-| `--file` | `-f` | 指定配置文件路径 | `serverlessinsight.yml` |
-
-### 示例
-
-```bash
-# 预览开发环境的部署变更
-si plan --stage dev
-
-# 指定配置文件
-si plan -f config/prod.yml -s prod
-```
-
-### 输出示例
-
-```bash
-Planning deployment for stage dev...
-
-Resources to create:
-  + function: hello-world-fn
-  + api_gateway: my-api-gateway
-
-Resources to update:
-  ~ function: api-handler (code changed)
-
-Resources to delete:
-  - function: old-function
-
-Plan: 2 to create, 1 to update, 1 to delete
-```
-
-## deploy 部署 Serverless 应用
-
-`deploy` 命令用于将 Serverless 应用部署到指定的云供应商。
-
-### 使用方法
-
-```bash
-si deploy [选项]
-```
-
-### 选项
-
-| 选项 | 简写 | 说明 | 默认值 |
-|------|------|------|--------|
-| `--stage` | `-s` | 指定部署环境 | `default` |
-| `--parameter` | `-p` | 传递变量值并覆盖默认值（格式：`key=value`） | - |
-| `--file` | `-f` | 指定配置文件路径 | `serverlessinsight.yml` |
-| `--region` | `-r` | 指定部署区域 | 配置文件中的 `provider.region` |
-| `--provider` | `-pr` | 指定云供应商 | 配置文件中的 `provider.name` |
-| `--accessKeyId` | `-ak` | 指定 AccessKey ID | 环境变量 `ALIYUN_ACCESS_KEY_ID` |
-| `--accessKeySecret` | `-as` | 指定 AccessKey Secret | 环境变量 `ALIYUN_ACCESS_KEY_SECRET` |
-| `--securityToken` | `-at` | 指定安全令牌 | 环境变量 `ALIYUN_SECURITY_TOKEN` |
-
-### 示例
-
-```bash
-# 部署到默认环境
-si deploy
-
-# 部署到开发环境
-si deploy --stage dev
-
-# 部署到生产环境并覆盖内存配置
-si deploy --stage prod -p memory_size=2048
-
-# 指定配置文件和区域
-si deploy -f config/prod.yml -r cn-beijing
-
-# 使用临时安全令牌部署
-si deploy --stage prod \
-  -ak $ACCESS_KEY_ID \
-  -as $ACCESS_KEY_SECRET \
-  -at $SECURITY_TOKEN
-```
-
-### 部署流程
-
-1. **验证配置** - 检查配置文件合法性
-2. **创建资源栈** - 在云供应商处创建资源栈
-3. **部署资源** - 按依赖顺序创建/更新资源
-4. **输出结果** - 显示部署结果和资源访问信息
-
-### 输出示例
-
-```bash
-Deploying service hello-world-api to stage dev
-Creating API Gateway: insight-poc-gateway...
-Creating Function: hello-world-fn...
-Deploying function code...
-Configuring triggers...
-
-✓ Service hello-world-api deployed successfully
-
-API Endpoint: https://abc123.apigateway.cn-hangzhou.aliyuncs.com/api
-Function ARN: fc.cn-hangzhou.aliyuncs.com/001234567890/hello-world-fn
-```
-
-## destroy 销毁 Serverless 应用
-
-`destroy` 命令用于销毁 Serverless 应用及其所有相关资源。
-
-### 使用方法
-
-```bash
-si destroy [选项]
-```
-
-### 选项
-
-| 选项 | 简写 | 说明 | 默认值 |
-|------|------|------|--------|
-| `--stage` | `-s` | 指定环境 | `default` |
-| `--file` | `-f` | 指定配置文件路径 | `serverlessinsight.yml` |
-| `--force` | - | 强制删除，不提示确认 | `false` |
-
-### 示例
-
-```bash
-# 销毁开发环境资源
-si destroy --stage dev
-
-# 强制销毁（不提示确认）
-si destroy --stage dev --force
-
-# 指定配置文件销毁
-si destroy -f config/prod.yml
-```
-
-### ⚠️ 警告
-
-> **删除资源栈会删除所有声明的资源，导致：**
-> - 服务完全不可用
-> - 丢失所有有状态资源的数据
-> - 删除操作不可恢复
->
-> **请确保：**
-> - 相关数据已备份
-> - 确认不再需要这些资源
-> - 已通知相关干系人
->
-> 然后再执行此操作。
-
-### 输出示例
-
-```bash
-Destroying service hello-world-api to stage dev
-Deleting API Gateway triggers...
-Deleting Function: hello-world-fn...
-Deleting API Gateway: insight-poc-gateway...
-Deleting resource stack...
-
-✓ Service hello-world-api destroyed successfully
-```
-
-## show 查看部署资源信息
-
-`show` 命令用于查看已部署资源的信息，包括资源 ID、状态、访问地址等。
-
-### 使用方法
-
-```bash
-si show [选项]
-```
-
-### 选项
-
-| 选项 | 简写 | 说明 | 默认值 |
-|------|------|------|--------|
-| `--stage` | `-s` | 指定环境 | `default` |
-| `--file` | `-f` | 指定配置文件路径 | `serverlessinsight.yml` |
-
-### 示例
-
-```bash
-# 查看开发环境的部署信息
-si show --stage dev
-
-# 指定配置文件
-si show -f config/prod.yml -s prod
-```
-
-### 输出示例
-
-```bash
-Showing resources for stage dev...
-
-Functions:
-  hello-world-fn
-    ARN: acs:fc:cn-hangzhou:123456789:functions/hello-world-fn
-    Runtime: nodejs18
-    Memory: 512MB
-    Timeout: 10s
-
-API Gateway:
-  my-api-gateway
-    ID: api-abc123
-    Endpoint: https://abc123.apigateway.cn-hangzhou.aliyuncs.com
-    Triggers: 2 routes configured
-```
-
-## local 本地运行 Serverless 应用
-
-`local` 命令用于在本地运行和调试 Serverless 应用，无需部署到云端。
-
-### 使用方法
-
-```bash
-si local [选项]
-```
-
-### 选项
-
-| 选项 | 简写 | 说明 | 默认值 |
-|------|------|------|--------|
-| `--stage` | `-s` | 指定运行环境 | `default` |
-| `--debug` | `-d` | 启用调试模式 | `false` |
-| `--watch` | `-w` | 启用文件监视模式（代码变更自动重载） | `true` |
-| `--port` | `-p` | 指定本地服务端口 | `3000` |
-| `--file` | `-f` | 指定配置文件路径 | `serverlessinsight.yml` |
-
-### 示例
-
-```bash
-# 基本本地运行
-si local --stage dev
-
-# 启用调试模式
-si local --stage dev --debug
-
-# 启用文件监视模式
-si local --stage dev --watch
-
-# 指定端口
-si local --stage dev --port 8080
-
-# 组合使用
-si local --stage dev --debug --watch --port 8080
-```
-
-### 本地开发特性
-
-**🔄 热重载:**
-- 文件监视模式会自动检测代码变更
-- 自动重新加载变更的函数
-- 无需手动重启服务
-
-**🐛 调试支持:**
-- 调试模式会输出详细的日志
-- 支持断点调试（配合 IDE）
-- 显示函数执行时间和资源消耗
-
-**🌐 本地 API Gateway:**
-- 模拟 API Gateway 行为
-- 支持路由配置
-- 处理请求转发
-
-### 输出示例
-
-```bash
-Starting local development environment for stage dev
-Loading configuration from serverlessinsight.yml
-Starting API Gateway emulator on port 3000...
-Loading function: hello-world-fn
-
-✓ Local environment started successfully
-
-Endpoints:
-  GET  http://localhost:3000/api/*  → hello-world-fn
-  POST http://localhost:3000/api/*  → hello-world-fn
-
-Watching for file changes...
-```
-
-### 调试模式输出
-
-```bash
-[DEBUG] Loading function code from artifacts/hello-world-api.zip
-[DEBUG] Function loaded in 234ms
-[DEBUG] Memory allocated: 512MB
-[DEBUG] Timeout: 30s
-
-[INFO] Request: GET /api/users
-[DEBUG] Event: {"path":"/api/users","method":"GET",...}
-[DEBUG] Function executed in 45ms
-[DEBUG] Response: {"statusCode":200,"body":"..."}
-```
-
-## forceUnlock 强制解锁
-
-`forceUnlock` 命令用于强制解除资源锁。当部署或销毁过程意外中断（如网络断开、进程被杀等），系统会留下锁文件防止并发操作。确认没有其他部署进程在运行后，可使用此命令强制解锁。
-
-### 使用方法
-
-```bash
-si forceUnlock <lockId> [选项]
-```
-
-### 选项
-
-| 选项 | 说明 | 默认值 |
-|------|------|--------|
-| `--file` `-f` | 指定配置文件路径 | `serverlessinsight.yml` |
-| `--stage` `-s` | 指定环境 | `default` |
-| `--region` `-r` | 指定区域 | 配置文件中的 `provider.region` |
-| `--provider` `-pr` | 指定云供应商 | 配置文件中的 `provider.name` |
-
-### 获取锁 ID
-
-锁 ID 可通过 `si show` 命令的输出获取，或查看 `.serverlessinsight/` 目录下的 `.si-lock` 文件内容。
-
-### 示例
-
-```bash
-# 强制解锁（会提示确认）
-si forceUnlock abc123def456
-
-# 指定配置文件解锁
-si forceUnlock abc123def456 -f config/prod.yml -s prod
-
-# 强制解锁（跳过确认，直接执行）
-echo "yes" | si forceUnlock abc123def456
-```
-
-### ⚠️ 警告
-
-> 强制解锁是一个危险操作。请确保：
-> - 没有其他部署进程在运行（`si deploy` / `si destroy`）
-> - 确认锁文件对应的操作已完全停止
-> - 解锁后建议运行 `si plan` 检查状态一致性
->
-> 错误地强制解锁可能导致状态冲突或资源异常。
-
-## 部分失败恢复
-
-ServerlessInsight 支持部分失败恢复机制。当部署多个资源时，如果部分资源创建成功、部分失败：
-
-1. **已成功的资源会保留**，不会回滚
-2. **修复问题后重试** — 根据错误信息修复配置或权限问题
-3. **重新执行部署** — 再次运行 `si deploy --stage <env>`，系统会跳过已存在资源，只创建失败的资源
-
-```bash
-# 查看部署状态
-si show --stage dev
-
-# 修复问题后重新部署
-si deploy --stage dev
-```
-
-> 💡 **提示**: 这种方式避免了每次部署都要从头创建所有资源，大幅缩短修复重试的时间。
-
-## 环境变量
-
-ServerlessInsight CLI 支持通过环境变量配置：
-
-### 云供应商凭证
-
-**阿里云:**
-```bash
-export ALIYUN_ACCESS_KEY_ID="your-access-key-id"
-export ALIYUN_ACCESS_KEY_SECRET="your-access-key-secret"
-export ALIYUN_REGION="cn-hangzhou"
-export ALIYUN_SECURITY_TOKEN="your-security-token"  # 可选，临时凭证
-```
-
-**腾讯云:**
-```bash
-export TENCENTCLOUD_SECRET_ID="your-secret-id"
-export TENCENTCLOUD_SECRET_KEY="your-secret-key"
-export TENCENTCLOUD_SECURITY_TOKEN="your-security-token"  # 可选，临时凭证
-```
-
-**火山引擎:**
-```bash
-export VOLCENGINE_ACCESS_KEY_ID="your-access-key-id"
-export VOLCENGINE_ACCESS_KEY_SECRET="your-access-key-secret"
-export VOLCENGINE_SESSION_TOKEN="your-session-token"  # 可选
-```
-
-**华为云:**
-```bash
-export HUAWEICLOUD_ACCESS_KEY="your-access-key"
-export HUAWEICLOUD_SECRET_KEY="your-secret-key"
-```
-
-### CLI 配置
-
-```bash
-# 指定默认配置文件
-export SI_CONFIG_FILE="path/to/config.yml"
-
-# 指定默认 stage
-export SI_STAGE="dev"
-
-# 启用详细日志
-export SI_DEBUG="true"
-```
-
-## 最佳实践
-
-### 1. 使用 .env 文件管理环境变量
-
-创建 `.env` 文件（添加到 `.gitignore`）:
-
-```bash
-ALIYUN_ACCESS_KEY_ID=your-key-id
-ALIYUN_ACCESS_KEY_SECRET=your-key-secret
-ALIYUN_REGION=cn-hangzhou
-```
-
-使用 [direnv](https://direnv.net/) 或类似工具自动加载。
-
-### 2. 为不同环境使用不同的 stage
-
-```bash
-# 开发环境
-si deploy --stage dev
-
-# 测试环境
-si deploy --stage test
-
-# 生产环境
-si deploy --stage prod
-```
-
-### 3. 部署前验证配置
-
-```bash
-# 先验证
-si validate
-
-# 再部署
-si deploy --stage dev
-```
-
-### 4. 使用参数覆盖灵活配置
-
-```bash
-# 部署时动态调整配置
-si deploy --stage prod \
-  -p memory_size=2048 \
-  -p timeout=60
-```
-
-### 5. 本地开发使用 watch 模式
-
-```bash
-# 自动重载，提高开发效率
-si local --stage dev --watch
-```
-
-## 常见问题
-
-### Q: 部署时提示权限不足？
-
-检查环境变量是否正确配置：
-
-```bash
-echo $ALIYUN_ACCESS_KEY_ID
-echo $ALIYUN_ACCESS_KEY_SECRET
-```
-
-确保 RAM 用户有足够的权限（如 AliyunFCFullAccess, AliyunAPIGatewayFullAccess）。
-
-### Q: 如何查看部署日志？
-
-使用 `--verbose` 或设置 `SI_DEBUG=true`：
-
-```bash
-SI_DEBUG=true si deploy --stage dev
-```
-
-### Q: 本地运行端口被占用？
-
-指定其他端口：
-
-```bash
-si local --stage dev --port 8080
-```
-
-### Q: 如何清理本地环境？
-
-停止本地服务使用 `Ctrl+C`，然后清理缓存：
-
-```bash
-rm -rf .serverlessinsight
-```
-
-### Q: 部署失败如何回滚？
-
-ServerlessInsight 目前不支持自动回滚。建议：
-1. 使用 Git 管理配置文件
-2. 部署前备份当前状态
-3. 失败后使用历史版本重新部署
-
-```bash
-# 回滚到上一个版本
-git checkout HEAD~1 serverlessinsight.yml
-si deploy --stage dev
-```
-
-## 命令速查表
-
-```bash
-# 验证配置
-si validate
-
-# 部署应用
-si deploy --stage <env>
-
-# 销毁应用
-si destroy --stage <env>
-
-# 本地运行
-si local --stage <env> [--debug] [--watch]
-
-# 强制解锁
-si forceUnlock <lockId>
-
-# 查看帮助
-si -h
-si <command> -h
-```
-
-## 版本信息
-
-查看 CLI 版本：
-
-```bash
+npm install -g @geek-fun/serverlessinsight
 si --version
 ```
 
-升级 CLI：
+## 命令总览
+
+| 命令 | 说明 |
+| --- | --- |
+| `si login` | 登录 ServerlessInsight 控制台（获取 API Key） |
+| `si logout` | 注销并清除本地凭证 |
+| `si whoami` | 显示当前登录状态 |
+| `si show` | 从状态中展示已部署资源 |
+| `si validate` | 校验 `serverlessinsight.yml` 配置 |
+| `si plan` | 生成并展示部署计划（仅阿里云、腾讯云） |
+| `si deploy` | 部署配置到云供应商 |
+| `si destroy` | 销毁已部署的资源栈 |
+| `si local` | 本地运行应用进行调试（仅阿里云） |
+| `si force-unlock <lockId>` | 手动解除卡住的部署锁 |
+
+> 没有 `init` 命令。项目与 `serverlessinsight.yml` 由你自行创建，可参考 [快速开始](/getting-started)。
+
+## 通用参数
+
+以下参数在多个命令中可用（具体见各命令）：
+
+| 参数 | 说明 |
+| --- | --- |
+| `-f, --file <path>` | 指定 YAML 配置文件路径 |
+| `-s, --stage <stage>` | 指定部署环境（stage）；`local` 默认 `default` |
+| `-r, --region <region>` | 指定地域，覆盖配置与环境变量 |
+| `-v, --provider <provider>` | 指定云供应商，覆盖配置 |
+| `-k, --accessKeyId <id>` | 指定 AccessKeyId，覆盖环境变量 |
+| `-x, --accessKeySecret <secret>` | 指定 AccessKeySecret，覆盖环境变量 |
+| `-n, --securityToken <token>` | 指定临时凭证 Token，覆盖环境变量 |
+
+命令行参数优先级高于环境变量与 YAML 配置。地域解析顺序：`SI_REGION` > `ALIYUN_REGION` > `provider.region`（默认 `cn-hangzhou`）。
+
+## 各命令详解
+
+### si login
 
 ```bash
-npm update -g @geek-fun/serverlessinsight
+si login [--si-api-key <key>]
 ```
+
+与 ServerlessInsight 控制台鉴权，用于托管 SAAS 状态后端。可使用已有 API Key 直接登录。环境变量 `SI_API_KEY` 亦可被 `deploy` 的 `--si-api-key` 覆盖。
+
+### si logout
+
+```bash
+si logout
+```
+
+清除本地保存的凭证。
+
+### si whoami
+
+```bash
+si whoami
+```
+
+显示当前登录状态。
+
+### si show
+
+```bash
+si show -f serverlessinsight.yml -s dev
+```
+
+从部署状态中读取并展示资源。
+
+### si validate
+
+```bash
+si validate -f serverlessinsight.yml -s dev
+```
+
+校验配置语法与语义（含供应商相关的运行时、资源校验）。
+
+### si plan
+
+```bash
+si plan -s dev
+```
+
+生成部署计划。**注意：仅阿里云与腾讯云支持 `plan`；火山引擎会报错。**
+
+### si deploy
+
+```bash
+si deploy -s dev
+si deploy -s dev -y
+si deploy -s dev -p memory=1024
+si deploy -s dev --si-api-key $SI_API_KEY
+```
+
+| 参数 | 说明 |
+| --- | --- |
+| `--si-api-key <key>` | ServerlessInsight API Key（覆盖 `SI_API_KEY`） |
+| `-y, --auto-approve` | 跳过交互式确认直接部署 |
+| `-p, --parameter <key=value>` | 覆盖参数（可重复） |
+
+非交互环境（无 TTY）下必须加 `-y`，否则会报错。
+
+### si destroy
+
+```bash
+si destroy -s dev
+```
+
+销毁指定环境的资源栈。
+
+### si local
+
+```bash
+si local -s dev
+si local -s dev --debug
+```
+
+| 参数 | 说明 |
+| --- | --- |
+| `-d, --debug` | 开启调试模式 |
+| `-w, --watch` | 文件监视模式（默认开启，不可关闭） |
+
+在本地 `4567` 端口提供 HTTP 服务，**仅支持阿里云函数**。
+
+### si force-unlock
+
+```bash
+si force-unlock <lockId> -f serverlessinsight.yml
+```
+
+手动解除卡住的部署锁。对 SAAS 状态后端会拒绝执行。**请谨慎使用。**
+
+## 环境变量
+
+- 云供应商凭证：见各 [供应商页面](/providers/)
+- `SI_API_KEY`：控制台 API Key（托管状态后端）
+- `SI_REGION` / `ALIYUN_REGION`：默认地域
+- `DEBUG`：开启后打印错误堆栈
+
+## 相关文档
+
+- [配置模型](/concepts) — YAML 配置说明
+- [供应商总览](/providers/) — 各云能力差异
