@@ -73,7 +73,7 @@ jobs:
           projectName: serverlessinsight-site
           directory: dist
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
-          branch: main
+          branch: master
           environment: production
 
   # Job 3: Create Release (only after successful deployment)

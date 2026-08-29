@@ -364,9 +364,9 @@ Congratulations! You've successfully built and deployed your first Serverless ap
 
 Next, you can:
 
-- 📖 Read the [Configuration Guide](/reference) to learn more about resource configuration options
-- 🔧 Check the [CLI Reference](/cli) for more CLI commands
-- 💡 Browse [Case Studies](/case-study) for real-world application scenarios
+- 📖 Read the [Configuration Guide](/en/reference) to learn more about resource configuration options
+- 🔧 Check the [CLI Reference](/en/cli) for more CLI commands
+- 💡 Browse [Case Studies](/en/case-study) for real-world application scenarios
 - 🌐 Try configuring other cloud providers (Huawei Cloud, Tencent Cloud, etc.)
 
 ## Troubleshooting
