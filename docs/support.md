@@ -235,8 +235,11 @@ si deploy --stage dev --debug
 >   region: cn-hangzhou
 > functions:
 >   my_fn:
->     runtime: nodejs18
->     ...
+>     name: my-fn
+>     code:
+>       runtime: nodejs18
+>       handler: index.handler
+>       path: artifacts/my-fn.zip
 > ```
 > 
 > 错误日志: [附上完整日志]

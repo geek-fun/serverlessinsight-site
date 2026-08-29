@@ -235,8 +235,11 @@ When sharing configuration and logs:
 >   region: cn-hangzhou
 > functions:
 >   my_fn:
->     runtime: nodejs18
->     ...
+>     name: my-fn
+>     code:
+>       runtime: nodejs18
+>       handler: index.handler
+>       path: artifacts/my-fn.zip
 > ```
 >
 > Error log: [attached full log]
