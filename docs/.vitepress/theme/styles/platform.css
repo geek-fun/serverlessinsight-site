@@ -1,27 +1,24 @@
-/* Platform selector (doc-top) */
 .vp-platform-selector {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 24px;
-  padding-bottom: 16px;
+  gap: 6px;
+  padding: 0 0 16px;
+  margin-bottom: 8px;
   border-bottom: 1px solid var(--vp-c-divider);
 }
 
-.vp-platform-selector__label {
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--vp-c-text-2);
-}
-
 .vp-platform-selector__btn {
-  padding: 3px 14px;
+  flex: 1 1 auto;
+  padding: 3px 10px;
   border: 1px solid var(--vp-c-divider);
   border-radius: 999px;
   background: var(--vp-c-bg);
   color: var(--vp-c-text-2);
   font-size: 13px;
   line-height: 20px;
+  white-space: nowrap;
+  text-align: center;
   cursor: pointer;
   transition: color 0.25s, border-color 0.25s, background-color 0.25s;
 }

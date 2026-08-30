@@ -1,7 +1,6 @@
 ---
 title: Getting Started
 description: Install the ServerlessInsight CLI, understand the configuration model, and deploy your first Serverless app
-platforms: true
 ---
 
 # Getting Started

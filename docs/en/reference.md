@@ -1,6 +1,5 @@
 ---
 outline: [2, 4]
-platforms: true
 ---
 
 # Configuration Reference

@@ -9,7 +9,7 @@ export default {
     extends: DefaultTheme,
     Layout() {
         return h(DefaultTheme.Layout, null, {
-            'doc-top': () => h(PlatformSelector)
+            'sidebar-nav-before': () => h(PlatformSelector)
         })
     },
     setup() {

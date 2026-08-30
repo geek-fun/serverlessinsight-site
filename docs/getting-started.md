@@ -1,7 +1,6 @@
 ---
 title: 快速开始
 description: 安装 ServerlessInsight CLI，理解配置模型，并部署你的第一个 Serverless 应用
-platforms: true
 ---
 
 # 快速开始
