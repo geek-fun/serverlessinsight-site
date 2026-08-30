@@ -1,37 +1,35 @@
 .vp-platform-selector {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
+  flex-direction: column;
   gap: 6px;
   padding: 0 0 16px;
   margin-bottom: 8px;
   border-bottom: 1px solid var(--vp-c-divider);
 }
 
-.vp-platform-selector__btn {
-  flex: 1 1 auto;
-  padding: 3px 10px;
-  border: 1px solid var(--vp-c-divider);
-  border-radius: 999px;
-  background: var(--vp-c-bg);
+.vp-platform-selector__label {
+  font-size: 12px;
+  font-weight: 600;
   color: var(--vp-c-text-2);
+}
+
+.vp-platform-selector__select {
+  width: 100%;
+  padding: 4px 8px;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 6px;
+  background: var(--vp-c-bg);
+  color: var(--vp-c-text-1);
   font-size: 13px;
   line-height: 20px;
-  white-space: nowrap;
-  text-align: center;
   cursor: pointer;
-  transition: color 0.25s, border-color 0.25s, background-color 0.25s;
+  transition: border-color 0.25s;
 }
 
-.vp-platform-selector__btn:hover {
-  color: var(--vp-c-brand-1);
+.vp-platform-selector__select:hover,
+.vp-platform-selector__select:focus {
   border-color: var(--vp-c-brand-1);
-}
-
-.vp-platform-selector__btn.is-active {
-  color: var(--vp-c-white);
-  background: var(--vp-c-brand-1);
-  border-color: var(--vp-c-brand-1);
+  outline: none;
 }
 
 /* Platform-scoped content blocks:

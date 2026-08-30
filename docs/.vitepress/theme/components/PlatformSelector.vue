@@ -45,17 +45,15 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="vp-platform-selector" role="group" :aria-label="lang.startsWith('zh') ? '选择云平台' : 'Select cloud platform'">
-    <button
-      v-for="[value, label] in options"
-      :key="value"
-      type="button"
-      class="vp-platform-selector__btn"
-      :class="{'is-active': current === value}"
-      :aria-pressed="current === value"
-      @click="select(value)"
+  <div class="vp-platform-selector">
+    <label class="vp-platform-selector__label" for="vp-platform-select">{{ lang.startsWith('zh') ? '平台' : 'Platform' }}</label>
+    <select
+      id="vp-platform-select"
+      class="vp-platform-selector__select"
+      :value="current"
+      @change="select($event.target.value)"
     >
-      {{ label }}
-    </button>
+      <option v-for="[value, label] in options" :key="value" :value="value">{{ label }}</option>
+    </select>
   </div>
 </template>
