@@ -11,7 +11,8 @@ Welcome to the ServerlessInsight documentation center. The entries below are org
 
 - [Introduction](/en/introduction) — core ideas and use cases
 - [Getting Started](/en/getting-started) — install the CLI and deploy your first app in 5 minutes
-- [Configuration Model](/en/concepts) — full `serverlessinsight.yml` reference
+- [Configuration Model](/en/concepts) — `serverlessinsight.yml` structure and core ideas
+- [Configuration Reference](/en/reference) — all resources, fields, and valid values
 
 ## Providers
 

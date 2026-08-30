@@ -152,4 +152,5 @@ si force-unlock <lockId> -f serverlessinsight.yml
 ## 相关文档
 
 - [配置模型](/concepts) — YAML 配置说明
+- [配置手册](/reference) — 全部资源、字段与可选值
 - [供应商总览](/providers/) — 各云能力差异

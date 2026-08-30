@@ -123,6 +123,7 @@ ServerlessInsight 适用于以下场景：
 ## 学习资源
 
 - [配置模型](/concepts) - 详细的 YAML 配置说明
+- [配置手册](/reference) - 全部资源、字段与可选值
 - [命令行工具](/cli) - CLI 命令参考
 - [实践案例](/case-study) - 真实应用场景分享
 - [常见问题](/faq) - 常见问题解答

@@ -58,6 +58,7 @@ gtag('config', 'G-FSJWB3QKGJ');`],
               {text: 'ServerlessInsight介绍', link: 'introduction'},
               {text: '快速开始', link: 'getting-started'},
               {text: '配置模型', link: 'concepts'},
+              {text: '配置手册', link: 'reference'},
               {
                 text: '供应商',
                 items: [
@@ -128,6 +129,7 @@ gtag('config', 'G-FSJWB3QKGJ');`],
               {text: 'Introduction', link: '/en/introduction'},
               {text: 'Quick Start', link: '/en/getting-started'},
               {text: 'Configuration Model', link: '/en/concepts'},
+              {text: 'Configuration Reference', link: '/en/reference'},
               {
                 text: 'Providers',
                 items: [
