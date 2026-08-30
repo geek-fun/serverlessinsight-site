@@ -33,7 +33,7 @@ hello-world/
 └── serverlessinsight.yml   # resource config (the only required file)
 ```
 
-`serverlessinsight.yml` is everything to ServerlessInsight. It declaratively describes *which* cloud resources you want, and `si deploy` turns that declaration into real infrastructure. The traditional route — clicking through consoles to create functions, gateways, and databases — becomes sections of YAML in one file.
+`serverlessinsight.yml` is everything to ServerlessInsight. It declaratively describes *which* cloud resources you want, and `si deploy` turns that declaration into real infrastructure. The traditional route of clicking through consoles to create functions, gateways, and databases becomes sections of YAML in one file.
 
 ## 3. Understand the configuration model
 
@@ -65,9 +65,9 @@ What each piece is saying:
 
 - `provider` decides where every resource lands. Deployable providers today are `aliyun`, `tencent`, and `volcengine` (`huawei` and `aws` are not yet deployable). Per-platform capability, region, and credential differences are covered in the [Configuration Reference](/en/reference).
 - `app` and `service` must be static strings (lowercase letters, digits, `-`) because they must be known before variable resolution, and they prefix every cloud resource name.
-- In `functions`, the key `hello_world_fn` is the **reference name** — later, `events` uses it in `backend` to point at this function. The inner `name` is the actual cloud function name. A function takes one of two shapes: `code` (code package) or `container` (image), never both.
-- The `code` triple is all required: `runtime` is the cloud execution environment (validated per provider — Aliyun's `nodejs18`, Volcengine's `node20/v1`), `handler` is the `file.exportedFunction` entry, `path` points at the build artifact in `artifacts/`.
-- Unspecified fields have sensible defaults: `memory` defaults to 128 MB, `timeout` to 3 seconds — enough to start, adjust as you grow.
+- In `functions`, the key `hello_world_fn` is the **reference name**; later, `events` uses it in `backend` to point at this function. The inner `name` is the actual cloud function name. A function takes one of two shapes: `code` (code package) or `container` (image), never both.
+- The `code` triple is all required: `runtime` is the cloud execution environment (validated per provider: Aliyun's `nodejs18`, Volcengine's `node20/v1`), `handler` is the `file.exportedFunction` entry, `path` points at the build artifact in `artifacts/`.
+- Unspecified fields have sensible defaults: `memory` defaults to 128 MB, `timeout` to 3 seconds. Enough to start; adjust as you grow.
 
 ### Give the function an HTTP entry
 
@@ -84,13 +84,13 @@ events:
         backend: hello_world_fn   # the function's reference name, not its `name`
 ```
 
-Each entry in `triggers` is a route: `method` accepts `GET` / `POST` / `PUT` / `DELETE` / `ANY`, `path` starts with `/` and supports the `*` wildcard, and `backend` holds the function's reference name. Multiple rules can target different functions — the standard shape for "a set of endpoints".
+Each entry in `triggers` is a route: `method` accepts `GET` / `POST` / `PUT` / `DELETE` / `ANY`, `path` starts with `/` and supports the `*` wildcard, and `backend` holds the function's reference name. Multiple rules can target different functions, the standard shape for "a set of endpoints".
 
 > ⚠️ **Tencent Cloud does not support `events`.** Tencent functions expose HTTP via `triggers.http` on the function itself.
 
 ### Beyond functions: data and storage
 
-Real applications need a data layer. Declare it in the same file and the CLI creates it — network wiring included — during deploy:
+Real applications need a data layer. Declare it in the same file and the CLI creates it, network wiring included, during deploy:
 
 ```yaml
 databases:
@@ -113,7 +113,7 @@ buckets:
       class: STANDARD
 ```
 
-`cu.min/max` is the essence of serverless databases — scale to 0 CU when idle (no compute cost) and burst automatically under load. Full fields and enum values for every resource are in the [Configuration Reference](/en/reference).
+`cu.min/max` controls the elastic compute range: scale to 0 CU when idle (no compute cost), burst automatically under load. Full fields and enum values for every resource are in the [Configuration Reference](/en/reference).
 
 ### Variables and environments
 
@@ -141,11 +141,11 @@ functions:
       STAGE: ${ctx.stage}           # built-in context: current stage name
 ```
 
-The three references have distinct jobs: `${vars.*}` is team-defined (overridable at deploy time with `-p`, the right place for secrets), `${stages.*}` reads the current environment's overrides, and `${ctx.stage}` is CLI-injected runtime context. Never commit secrets — inject them with `si deploy -p db_password=xxx`.
+The three references have distinct jobs: `${vars.*}` is team-defined (overridable at deploy time with `-p`, the right place for secrets), `${stages.*}` reads the current environment's overrides, and `${ctx.stage}` is CLI-injected runtime context. Never commit secrets; inject them with `si deploy -p db_password=xxx`.
 
 ## 4. Configure cloud credentials
 
-Credentials never live in the config — they are injected via environment variables. Pick your platform at the top of the page to see the matching variables (Aliyun is the default):
+Credentials never live in the config; they are injected via environment variables. Pick your platform at the top of the page to see the matching variables (Aliyun is the default):
 
 ::: platform aliyun
 ```bash
@@ -207,7 +207,7 @@ The local server listens on port `4567` and routes requests per your `events` ru
 si destroy --stage dev
 ```
 
-Destroy tears down resources one by one from the state file. Non-empty buckets fail teardown — that's protection against accidental deletion; once confirmed, temporarily set `security.force_delete: true`.
+Destroy tears down resources one by one from the state file. Non-empty buckets fail teardown; that's protection against accidental deletion, once confirmed, temporarily set `security.force_delete: true`.
 
 ## Next Steps
 

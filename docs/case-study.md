@@ -1,6 +1,6 @@
 # ServerlessInsight 实践案例
 
-本页面收集了使用 ServerlessInsight 构建真实应用的成功案例，展示如何在不同场景下应用 Serverless 架构。
+本页面收集了团队使用 ServerlessInsight 构建真实应用的案例。
 
 ## 目录
 

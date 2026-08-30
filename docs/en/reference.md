@@ -6,13 +6,13 @@ outline: [2, 4]
 
 Everything ServerlessInsight does is expressed through a single `serverlessinsight.yml`. The file is both a deployment blueprint the `si` CLI executes and a reviewable record of your infrastructure: you declare *what* you need, the CLI provisions it on the target cloud, and on subsequent deploys it diffs against the last state and only changes what actually changed.
 
-This reference walks the file top-down: first the global skeleton (version, provider, variables, stages), then each of the five resource kinds — `functions`, `events`, `databases`, `tables`, `buckets`. For every resource we answer three questions: what it is, when to use it, and how each field is filled.
+This reference walks the file top-down: first the global skeleton (version, provider, variables, stages), then each of the five resource kinds: `functions`, `events`, `databases`, `tables`, `buckets`. For every resource we answer three questions: what it is, when to use it, and how each field is filled.
 
 > Use the on-page outline in the browser sidebar for quick field lookups; `si validate` checks every constraint below before anything is deployed.
 
 ## Quick Example
 
-This configuration covers what most real projects need: one HTTP function, an API gateway entry, and a pay-per-use MySQL. Read it for the overall shape — each block is dissected below:
+This configuration covers what most real projects need: one HTTP function, an API gateway entry, and a pay-per-use MySQL. Read it for the overall shape; each block is explained below:
 
 ```yaml
 version: 0.1.0
@@ -70,13 +70,13 @@ databases:
         password: "${vars.db_password}"
 ```
 
-Division of labor in this file: `provider` decides which cloud and region everything lands in; `vars` and `stages` pull environment-specific values out of resource definitions; `functions` + `events` form the classic "function + HTTP entry" server shape; `databases` declares the data layer the functions depend on. `app` and `service` thread through all cloud resource naming — they are the identity of the whole stack.
+Division of labor in this file: `provider` decides which cloud and region everything lands in; `vars` and `stages` pull environment-specific values out of resource definitions; `functions` + `events` form the classic "function + HTTP entry" server shape; `databases` declares the data layer the functions depend on. `app` and `service` prefix every cloud resource name; they identify the whole stack.
 
 ## Core Configuration
 
 ### version
 
-The version of the config format itself — not your app's version. The CLI uses it to decide how to parse the file; fields may be incompatible across major versions.
+The version of the config format itself, not your app's version. The CLI uses it to decide how to parse the file; fields may be incompatible across major versions.
 
 ```yaml
 version: 0.1.0
@@ -99,9 +99,9 @@ provider:
 | `name` | string | ✅ | `aliyun` / `tencent` / `volcengine` / `huawei` / `aws` |
 | `region` | string | ✅ | Deployment region |
 
-Providers you can actually deploy to today are **aliyun**, **tencent**, and **volcengine**; `huawei` and `aws` exist in the enum only and are not yet deployable (Huawei can currently only generate Terraform templates — `deploy` throws).
+Providers you can actually deploy to today are **aliyun**, **tencent**, and **volcengine**; `huawei` and `aws` exist in the enum only and are not yet deployable (Huawei can currently only generate Terraform templates, and `deploy` throws).
 
-**Per-platform capability matrix** — the same config lands as different cloud services per platform; check what your target platform supports before writing config:
+**Per-platform capability matrix**. The same config lands as different cloud services per platform, so check what your target platform supports before writing config:
 
 | Resource type | Aliyun | Tencent Cloud | Volcengine |
 | --- | --- | --- | --- |
@@ -163,7 +163,7 @@ The CLI flags `-k/--accessKeyId`, `-x/--accessKeySecret`, `-n/--securityToken` o
 
 ### vars
 
-The global variable area. Pull values that change — passwords, domains, sizes — out of resource definitions into one place. Referenced as `${vars.name}`.
+The global variable area. Pull values that change (passwords, domains, sizes) out of resource definitions into one place. Referenced as `${vars.name}`.
 
 ```yaml
 vars:
@@ -197,11 +197,11 @@ functions:
     memory: ${stages.memory}
 ```
 
-`${ctx.stage}` is a built-in context variable holding the current stage name — handy for environment-suffixed resource names like `user-api-${ctx.stage}`.
+`${ctx.stage}` is a built-in context variable holding the current stage name, handy for environment-suffixed resource names like `user-api-${ctx.stage}`.
 
 ### app
 
-The application name — the top-level namespace identifying your project. It must be a static string: it participates in all cloud resource naming, and the CLI must resolve it before any variable interpolation.
+The application name is the top-level namespace that identifies your project. It must be a static string: it participates in all cloud resource naming, and the CLI must resolve it before any variable interpolation.
 
 ```yaml
 app: my-app
@@ -251,7 +251,7 @@ backend:
 
 ### functions
 
-Functions are the core resource. The config key (e.g. `hello_world_fn`) is the **reference name** — fields like `events.triggers.backend` point at functions by it. The inner `name` is the actual cloud function name and is required.
+Functions are the core resource. The config key (e.g. `hello_world_fn`) is the **reference name**; fields like `events.triggers.backend` point at functions by it. The inner `name` is the actual cloud function name and is required.
 
 A function has one of two deployment shapes, mutually exclusive: a **code package** (`code`) or a **container image** (`container`). Most business logic uses `code`; custom runtimes, native libraries, or long-running processes call for `container`.
 
@@ -314,7 +314,7 @@ code:
 **Volcengine veFaaS**: `golang/v1` `native/v1` `nativejava8/v1` `node14/v1` `node20/v1` `nodeprime14/v1` `python3.12/v1` `python3.9/v1` `native-python3.12/v1` `native-node20/v1`
 :::
 
-> The config always uses the standard identifiers (e.g. `nodejs18`); the CLI maps them to each cloud's native runtime at build time (e.g. Tencent's `Nodejs18.15`). Volcengine is the exception — it uses its native identifiers directly. After switching platforms, re-check `runtime` against the list above.
+> The config always uses the standard identifiers (e.g. `nodejs18`); the CLI maps them to each cloud's native runtime at build time (e.g. Tencent's `Nodejs18.15`). Volcengine is the exception and uses its native identifiers directly. After switching platforms, re-check `runtime` against the list above.
 
 #### container - Container Deployment
 
@@ -331,7 +331,7 @@ container:
 | `port` | number | ✅ | HTTP port your service listens on inside the container |
 | `cmd` | string[] | ❌ | override the image's default entry command |
 
-In container mode there is no `handler` — the platform forwards requests to the HTTP service listening on `port` inside your container.
+In container mode there is no `handler`; the platform forwards requests to the HTTP service listening on `port` inside your container.
 
 #### gpu
 
@@ -376,7 +376,7 @@ network:
 | `security_group.ingress` | string[] | ✅ | inbound rules |
 | `security_group.egress` | string[] | ❌ | outbound rules |
 
-Rule format is `protocol:CIDR:port` where port is `ALL`, a single port (`443`), or a range (`80/90`) — e.g. `TCP:10.0.0.0/8:443`.
+Rule format is `protocol:CIDR:port` where port is `ALL`, a single port (`443`), or a range (`80/90`), e.g. `TCP:10.0.0.0/8:443`.
 
 #### iam
 
@@ -456,7 +456,7 @@ storage:
 
 ### events
 
-The events resource currently has exactly one shape: an **API gateway** (`type: API_GATEWAY`). It solves the "many functions, many routes" traffic-entry problem — the gateway dispatches requests to different functions by path and method, and carries a shared domain and certificate.
+The events resource currently has exactly one shape: an **API gateway** (`type: API_GATEWAY`). It solves the "many functions, many routes" traffic-entry problem: the gateway dispatches requests to different functions by path and method, and carries a shared domain and certificate.
 
 Choosing between `functions.triggers.http` and `events`: a single function with a fixed path is simpler with a function-level trigger; a set of endpoints needing routing and one shared domain belongs in `events`.
 
@@ -485,7 +485,7 @@ events:
 | `domain` | object | ❌ | custom domain and certificate |
 
 ::: platform tencent
-> ⚠️ **Tencent Cloud does not support `events` (API gateway resources).** Expose function HTTP entries via `functions.triggers.http` — the system creates an SCF function URL trigger rather than a standalone gateway.
+> ⚠️ **Tencent Cloud does not support `events` (API gateway resources).** Expose function HTTP entries via `functions.triggers.http`; the system creates an SCF function URL trigger rather than a standalone gateway.
 :::
 
 ::: platform volcengine
@@ -507,7 +507,7 @@ triggers:
 | `path` | string | ✅ | must start with `/`; `*` wildcard supported |
 | `backend` | string | ✅ | target function's **reference name** (the key under `functions`, not its `name`) |
 
-> Legacy event types — `type: HTTP`, `type: Timer`, `type: sqs` — have been removed from the schema and fail `validate`. Timer and messaging triggers are not yet supported.
+> Legacy event types (`type: HTTP`, `type: Timer`, `type: sqs`) have been removed from the schema and fail `validate`. Timer and messaging triggers are not yet supported.
 
 #### domain - Gateway Custom Domain
 
@@ -528,7 +528,7 @@ domain:
 | `www_bind_apex` | boolean | ❌ | also bind the www subdomain |
 | `cdn` | object / boolean | ❌ | CDN acceleration, see below |
 
-The three certificate forms are **mutually exclusive**: either `certificate_id`, or `certificate_body` + `certificate_private_key` together — never a mix.
+The three certificate forms are **mutually exclusive**: either `certificate_id`, or `certificate_body` + `certificate_private_key` together, never a mix.
 
 **cdn configuration** (or simply `cdn: true` for defaults):
 
@@ -555,7 +555,7 @@ cdn:
 
 ### databases
 
-The databases resource declares the data layer your functions depend on. ServerlessInsight provisions the instance, wires the network, and sets credentials — your function just needs the connection string. Supported: Aliyun RDS / Elasticsearch Serverless and Tencent TDSQL-C:
+The databases resource declares the data layer your functions depend on. ServerlessInsight provisions the instance, wires the network, and sets credentials; your function just needs the connection string. Supported: Aliyun RDS / Elasticsearch Serverless and Tencent TDSQL-C:
 
 ```yaml
 databases:
@@ -572,7 +572,7 @@ databases:
         password: "${vars.db_password}"
 ```
 
-`cu.min/max` is the point of serverless databases: scale to 0 CU with no traffic (no compute cost) and burst to `max` under load. **Always inject the password via `${vars.*}` or `-p` — never commit it in plain text.**
+`cu.min/max` is the point of serverless databases: scale to 0 CU with no traffic (no compute cost) and burst to `max` under load. **Always inject the password via `${vars.*}` or `-p`, never commit it in plain text.**
 
 **Type and version values**:
 
@@ -581,7 +581,7 @@ databases:
 | `type` | `ELASTICSEARCH_SERVERLESS` `RDS_MYSQL_SERVERLESS` `RDS_PGSQL_SERVERLESS` `RDS_MSSQL_SERVERLESS` `TDSQL_C_SERVERLESS` |
 | `version` | `MYSQL_5.7` `MYSQL_8.0` `MYSQL_HA_5.7` `MYSQL_HA_8.0`, `PGSQL_14` `PGSQL_15` `PGSQL_16` `PGSQL_HA_14` `PGSQL_HA_15` `PGSQL_HA_16`, `MSSQL_HA_2016` `MSSQL_HA_2017` `MSSQL_HA_2019`, `ES_SEARCH_7.10` `ES_TIME_SERIES_7.10` |
 
-The `_HA_` variants are high-availability (primary-standby) — prefer them in production.
+The `_HA_` variants are high-availability (primary-standby); prefer them in production.
 
 **Remaining fields**:
 
@@ -617,16 +617,16 @@ Supports RDS Serverless (MySQL / PostgreSQL / SQL Server) and Elasticsearch Serv
 :::
 
 ::: platform tencent
-Supports TDSQL-C Serverless and Elasticsearch Serverless — pick `TDSQL_C_SERVERLESS` and `ELASTICSEARCH_SERVERLESS` respectively.
+Supports TDSQL-C Serverless and Elasticsearch Serverless; pick `TDSQL_C_SERVERLESS` and `ELASTICSEARCH_SERVERLESS` respectively.
 :::
 
 ::: platform volcengine
-**`databases` and `tables` are not supported yet** — manage databases through your existing cloud resources and simply omit these sections from the config.
+**`databases` and `tables` are not supported yet**; manage databases through your existing cloud resources and simply omit these sections from the config.
 :::
 
 ### tables
 
-Table storage fits low-latency reads/writes over massive semi-structured data (user profiles, sessions, IoT time series). Currently supported only on **Aliyun TableStore**. Every table belongs to an instance (`collection`, a string, required) — the instance is TableStore's billing and network unit.
+Table storage fits low-latency reads/writes over massive semi-structured data (user profiles, sessions, IoT time series). Currently supported only on **Aliyun TableStore**. Every table belongs to an instance (`collection`, a required string); the instance is TableStore's billing and network unit.
 
 ```yaml
 tables:
@@ -653,7 +653,7 @@ tables:
         write: 100
 ```
 
-**Primary key design is the single most important decision here**: the `HASH` key decides which shard a row lands on — pick a high-cardinality field (like user_id) to avoid hot spots; the `RANGE` key sorts rows within a shard and suits range queries.
+**Primary key design is the single most important decision here**: the `HASH` key decides which shard a row lands on, so pick a high-cardinality field (like user_id) to avoid hot spots; the `RANGE` key sorts rows within a shard and suits range queries.
 
 | Field | Type | Required | Description |
 |------|------|------|------|
@@ -673,7 +673,7 @@ tables:
 | `name` | string | key / attribute name |
 | `type` | string | key type: `HASH` (partition) or `RANGE` (sort); attribute types: `STRING` `INTEGER` `DOUBLE` `BOOLEAN` `BINARY` |
 
-> Every key in `key_schema` must have its type declared in `attributes` — schema validation rejects keys without types.
+> Every key in `key_schema` must have its type declared in `attributes`; schema validation rejects keys without types.
 
 **throughput** (capacity-type tables usually need no reservation):
 
@@ -686,7 +686,7 @@ tables:
 
 ### buckets
 
-Object storage buckets serve three typical purposes: hosting static assets and frontend builds, storing function code packages and artifacts, and archiving logs and backups. Bucket names are globally unique — prefix them with your project:
+Object storage buckets serve three typical purposes: hosting static assets and frontend builds, storing function code packages and artifacts, and archiving logs and backups. Bucket names are globally unique, so prefix them with your project:
 
 ```yaml
 buckets:
@@ -720,7 +720,7 @@ buckets:
 | Field | Type | Description |
 |------|------|------|
 | `acl` | string | `PRIVATE` (default) / `PUBLIC_READ` / `PUBLIC_READ_WRITE` |
-| `force_delete` | boolean | allow destroy to delete non-empty buckets (default false — a non-empty bucket fails teardown, by design) |
+| `force_delete` | boolean | allow destroy to delete non-empty buckets (default false; a non-empty bucket fails teardown by design) |
 | `sse_algorithm` | string | server-side encryption: `AES256` / `KMS` |
 | `sse_kms_master_key_id` | string | KMS key ID (used with `sse_algorithm: KMS`) |
 
@@ -760,7 +760,7 @@ website:
 | `index` | string | ❌ | default index page (index.html) |
 | `domain` | string / object | ❌ | ⚠️ deprecated: use the top-level `domain` field |
 
-> Public access requires `security.acl: PUBLIC_READ`; `website` only handles hosting behavior — domains and certificates go through the top-level `domain`.
+> Public access requires `security.acl: PUBLIC_READ`; `website` only handles hosting behavior; domains and certificates go through the top-level `domain`.
 
 **iam - bucket resource policy**: cross-account or anonymous access control; statement structure mirrors function `iam.statements` (`effect` / `action` / `resource` required):
 
@@ -802,11 +802,11 @@ functions:
       STAGE: ${ctx.stage}              # dev / prod / ...
 ```
 
-> `app` and `service` do not support variables — they participate in state-file resolution and must be literals before interpolation happens.
+> `app` and `service` do not support variables: they participate in state-file resolution and must be literals before interpolation happens.
 
 ## Local Development
 
-`si local` runs the defined functions in local processes, using your real handler code behind a local HTTP server that simulates cloud behavior — iterate without redeploying (currently Aliyun functions only):
+`si local` runs the defined functions in local processes, using your real handler code behind a local HTTP server that simulates cloud behavior, so you can iterate without redeploying (currently Aliyun functions only):
 
 ```bash
 si local --stage dev
@@ -824,15 +824,15 @@ si local --stage dev
 
 **Put the environment in function names.** Suffix resource names with `${ctx.stage}` (e.g. `user-api-${ctx.stage}`) so parallel environments are instantly identifiable and never collide.
 
-**Let destroy fail loudly.** Buckets refuse to delete while non-empty (`force_delete: false`) — that guard is protection, not friction. Enable it only for genuinely disposable scratch resources.
+**Let destroy fail loudly.** Buckets refuse to delete while non-empty (`force_delete: false`); that guard is protection, not friction. Enable it only for genuinely disposable scratch resources.
 
-**Validate before deploying.** `si validate` checks runtimes, enums, and required fields per provider — catching errors before any cloud resource is created is always cheaper than rolling back a failed deploy.
+**Validate before deploying.** `si validate` checks runtimes, enums, and required fields per provider; catching errors before any cloud resource is created is always cheaper than rolling back a failed deploy.
 
 ## FAQ
 
 ### Q: Why is API_GATEWAY the only event type?
 
-The schema currently implements only API gateway events. Timer and messaging triggers are not in the schema yet — writing `type: Timer` fails `validate` by design, not by bug. For simple HTTP, use `functions.triggers.http` meanwhile.
+The schema currently implements only API gateway events. Timer and messaging triggers are not in the schema yet, so writing `type: Timer` fails `validate` by design, not by bug. For simple HTTP, use `functions.triggers.http` meanwhile.
 
 ### Q: Why can't `app` / `service` use variables?
 

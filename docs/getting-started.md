@@ -33,7 +33,7 @@ hello-world/
 └── serverlessinsight.yml   # 资源配置文件（唯一必需）
 ```
 
-`serverlessinsight.yml` 是 ServerlessInsight 的全部——它以声明式的方式描述"你要哪些云资源"，`si deploy` 负责把这份声明落到云上。传统方式里你需要手工在控制台建函数、配网关、开数据库；在这里，它们都是文件里的一段 YAML。
+`serverlessinsight.yml` 是 ServerlessInsight 的全部。它以声明式的方式描述"你要哪些云资源"，`si deploy` 负责把这份声明落到云上。传统方式里你需要手工在控制台建函数、配网关、开数据库；在这里，它们都是文件里的一段 YAML。
 
 ## 3. 理解配置模型
 
@@ -67,7 +67,7 @@ functions:
 - `app` 与 `service` 必须是静态字符串（小写字母、数字、`-`），因为它们要在解析变量之前就确定，并作为前缀出现在每个云资源的名字里。
 - `functions` 的键名 `hello_world_fn` 是**引用名**，后续 `events` 里的 `backend` 就用它指向这个函数；内部的 `name` 才是云上的实际函数名。函数支持两种形态：`code`（代码包）或 `container`（容器镜像），二选一。
 - `code` 三要素缺一不可：`runtime` 是云上的执行环境（按供应商校验，如阿里云的 `nodejs18`、火山引擎的 `node20/v1`），`handler` 是 `文件.导出函数` 格式的入口，`path` 指向 `artifacts/` 里的打包产物。
-- 没写的字段都有合理默认：`memory` 默认 128 MB，`timeout` 默认 3 秒——起步足够，之后按需调整。
+- 没写的字段都有合理默认：`memory` 默认 128 MB，`timeout` 默认 3 秒，起步足够，之后按需调整。
 
 ### 给函数接一个 HTTP 入口
 
@@ -113,7 +113,7 @@ buckets:
       class: STANDARD
 ```
 
-`cu.min/max` 是 Serverless 数据库的精髓——空闲时缩到 0 CU 不计费，高峰自动扩容。各资源类型的完整字段与枚举值见[配置手册](/reference)。
+`cu.min/max` 控制 Serverless 数据库的弹性算力：空闲时缩到 0 CU 不计费，高峰自动扩容。各资源类型的完整字段与枚举值见[配置手册](/reference)。
 
 ### 变量与多环境
 
@@ -141,7 +141,7 @@ functions:
       STAGE: ${ctx.stage}           # 内置上下文：当前 stage 名
 ```
 
-三种引用各有分工：`${vars.*}` 是团队自定义变量（可用 `-p` 在部署时覆盖，适合放密钥）；`${stages.*}` 取当前环境的覆盖值；`${ctx.stage}` 是 CLI 注入的运行时上下文。敏感值永远不要写进文件——部署时用 `si deploy -p db_password=xxx` 注入。
+三种引用各有分工：`${vars.*}` 是团队自定义变量（可用 `-p` 在部署时覆盖，适合放密钥）；`${stages.*}` 取当前环境的覆盖值；`${ctx.stage}` 是 CLI 注入的运行时上下文。敏感值永远不要写进文件，部署时用 `si deploy -p db_password=xxx` 注入。
 
 ## 4. 配置云凭证
 
@@ -207,7 +207,7 @@ si local --stage dev
 si destroy --stage dev
 ```
 
-销毁基于状态文件逐个回收资源。桶非空时销毁会失败——这是防止误删的保护；确认无误后可临时设置 `security.force_delete: true`。
+销毁基于状态文件逐个回收资源。桶非空时销毁会失败，这是防止误删的保护；确认无误后可临时设置 `security.force_delete: true`。
 
 ## 下一步
 

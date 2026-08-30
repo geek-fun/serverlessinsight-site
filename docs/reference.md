@@ -76,7 +76,7 @@ databases:
 
 ### version
 
-配置格式的版本号。它不是你应用的版本，而是这份 YAML 遵循的 schema 版本——CLI 用它判断如何解析文件，主版本之间的字段可能不兼容。
+配置格式的版本号。它不是你应用的版本，而是这份 YAML 遵循的 schema 版本：CLI 用它判断如何解析文件，主版本之间的字段可能不兼容。
 
 ```yaml
 version: 0.1.0
@@ -101,7 +101,7 @@ provider:
 
 当前可实际部署的供应商是 **aliyun**、**tencent**、**volcengine**；`huawei` 与 `aws` 仅存在于枚举中，暂不可部署（华为云目前仅能生成 Terraform 模板，`deploy` 会报错）。
 
-**各平台能力矩阵**——同一份配置在不同平台落地为不同云服务，写配置前先确认目标平台支持哪些资源：
+**各平台能力矩阵**。同一份配置在不同平台落地为不同云服务，写配置前先确认目标平台支持哪些资源：
 
 | 资源类型 | 阿里云 | 腾讯云 | 火山引擎 |
 | --- | --- | --- | --- |
@@ -201,7 +201,7 @@ functions:
 
 ### app
 
-应用名，标识整个项目的顶层命名空间。必须是静态字符串——它参与所有云资源的命名，CLI 需要在解析变量之前就确定它。
+应用名，标识整个项目的顶层命名空间。必须是静态字符串：它参与所有云资源的命名，CLI 需要在解析变量之前就确定它。
 
 ```yaml
 app: my-app
@@ -251,7 +251,7 @@ backend:
 
 ### functions
 
-函数是 ServerlessInsight 的核心资源。配置里的键名（如 `hello_world_fn`）是**引用名**——`events.triggers.backend` 等字段用它来指向函数；键内部的 `name` 才是云上的实际函数名，必填。
+函数是 ServerlessInsight 的核心资源。配置里的键名（如 `hello_world_fn`）是**引用名**，`events.triggers.backend` 等字段用它来指向函数；键内部的 `name` 才是云上的实际函数名，必填。
 
 函数有两种部署形态，二选一：**代码包**（`code`）或**容器镜像**（`container`）。绝大多数业务用 `code`；依赖自定义运行时、原生库或需要长启动进程的场景用 `container`。
 
@@ -331,7 +331,7 @@ container:
 | `port` | number | ✅ | 容器内 HTTP 服务监听端口 |
 | `cmd` | string[] | ❌ | 覆盖镜像默认启动命令 |
 
-容器模式下没有 `handler` 的概念——云平台把请求转发给容器内监听 `port` 的 HTTP 服务。
+容器模式下没有 `handler` 的概念，云平台把请求转发给容器内监听 `port` 的 HTTP 服务。
 
 #### gpu
 
@@ -456,7 +456,7 @@ storage:
 
 ### events
 
-事件资源当前只支持一种形态：**API 网关**（`type: API_GATEWAY`）。它解决的是"多个函数、多条路由"的流量入口问题——网关按路径和方法把请求分发给不同函数，还可以统一挂域名和证书。
+事件资源当前只支持一种形态：**API 网关**（`type: API_GATEWAY`）。它解决的是"多个函数、多条路由"的流量入口问题：网关按路径和方法把请求分发给不同函数，还可以统一挂域名和证书。
 
 与 `functions.triggers.http` 的取舍：单个函数、路径固定的简单 HTTP 服务用函数级触发器更省事；一组接口、需要路由与统一域名的服务用 `events`。
 
@@ -485,7 +485,7 @@ events:
 | `domain` | object | ❌ | 自定义域名与证书 |
 
 ::: platform tencent
-> ⚠️ **腾讯云不支持 `events`（API 网关资源）**。函数的 HTTP 入口请通过 `functions.triggers.http` 暴露——系统会创建 SCF 函数 URL 触发器，而非独立网关。
+> ⚠️ **腾讯云不支持 `events`（API 网关资源）**。函数的 HTTP 入口请通过 `functions.triggers.http` 暴露，系统会创建 SCF 函数 URL 触发器，而非独立网关。
 :::
 
 ::: platform volcengine
@@ -621,12 +621,12 @@ network:
 :::
 
 ::: platform volcengine
-**暂不支持 `databases` 与 `tables` 资源**——数据库请通过现有云上资源自行管理，配置里省略这两段即可。
+**暂不支持 `databases` 与 `tables` 资源**，数据库请通过现有云上资源自行管理，配置里省略这两段即可。
 :::
 
 ### tables
 
-表格存储适合海量半结构化数据的低延迟读写（用户画像、会话、IoT 时序等）。当前仅**阿里云 TableStore** 支持。表格必须归属一个实例（`collection`，字符串，必填）——实例是 TableStore 的计费与网络单元。
+表格存储适合海量半结构化数据的低延迟读写（用户画像、会话、IoT 时序等）。当前仅**阿里云 TableStore** 支持。表格必须归属一个实例（`collection`，字符串，必填），实例是 TableStore 的计费与网络单元。
 
 ```yaml
 tables:
@@ -673,7 +673,7 @@ tables:
 | `name` | string | 键名 / 属性名 |
 | `type` | string | 主键类型：`HASH`（分区键）或 `RANGE`（排序键）；属性类型：`STRING` `INTEGER` `DOUBLE` `BOOLEAN` `BINARY` |
 
-> `key_schema` 中出现的键，必须在 `attributes` 里声明类型——schema 校验会拒绝"有键无型"的配置。
+> `key_schema` 中出现的键，必须在 `attributes` 里声明类型，schema 校验会拒绝"有键无型"的配置。
 
 **throughput**（容量型表通常不需要预留）：
 
@@ -720,7 +720,7 @@ buckets:
 | 字段 | 类型 | 说明 |
 |------|------|------|
 | `acl` | string | `PRIVATE`（默认）/ `PUBLIC_READ` / `PUBLIC_READ_WRITE` |
-| `force_delete` | boolean | 销毁时是否强制删除桶内对象（默认 false，桶非空会销毁失败——这是防止误删的保护） |
+| `force_delete` | boolean | 销毁时是否强制删除桶内对象（默认 false，桶非空会销毁失败，这是防止误删的保护） |
 | `sse_algorithm` | string | 服务端加密：`AES256` / `KMS` |
 | `sse_kms_master_key_id` | string | KMS 密钥 ID（`sse_algorithm: KMS` 时使用） |
 
@@ -780,16 +780,16 @@ iam:
 配置里所有"随环境变化"的值都应该走变量，而不是复制粘贴多份配置。三种引用各有分工：
 
 ```yaml
-# ${vars.*} —— 团队自定义变量，可被 -p 覆盖
+# ${vars.*}：团队自定义变量，可被 -p 覆盖
 vars:
   db_password: change-me
 
-# ${stages.*} —— 当前 stage 中定义的值
+# ${stages.*}：当前 stage 中定义的值
 stages:
   dev:
     memory: 256
 
-# ${ctx.*} —— CLI 运行时上下文
+# ${ctx.*}：CLI 运行时上下文
 # ctx.stage 即当前部署的 stage 名
 ```
 
@@ -802,7 +802,7 @@ functions:
       STAGE: ${ctx.stage}              # dev / prod / ...
 ```
 
-> `app` 与 `service` 不支持变量——它们参与状态定位，必须在解析变量前就是确定的字面量。
+> `app` 与 `service` 不支持变量：它们参与状态定位，必须在解析变量前就是确定的字面量。
 
 ## 本地开发
 
@@ -824,7 +824,7 @@ si local --stage dev
 
 **函数命名带环境**。资源名里拼 `${ctx.stage}`（如 `user-api-${ctx.stage}`），多套环境并存时一眼可辨，也避免命名冲突。
 
-**销毁有保护**。桶默认不允许非空删除（`force_delete: false`），这是防线不是麻烦——真正需要强制清理的临时资源才显式打开。
+**销毁有保护**。桶默认不允许非空删除（`force_delete: false`），这是防线不是麻烦，真正需要强制清理的临时资源才显式打开。
 
 **部署前先 validate**。`si validate` 会按供应商校验运行时、枚举与必填字段，把错误拦在创建云资源之前，比部署失败再回滚便宜得多。
 
@@ -832,7 +832,7 @@ si local --stage dev
 
 ### Q: 事件触发器为什么只有 API_GATEWAY？
 
-当前 schema 只实现了 API 网关事件。定时任务、消息队列等触发器尚未进入 schema——硬写 `type: Timer` 会在 `validate` 阶段报错，这不是 bug 而是未支持。简单 HTTP 场景可先用 `functions.triggers.http`。
+当前 schema 只实现了 API 网关事件。定时任务、消息队列等触发器尚未进入 schema，硬写 `type: Timer` 会在 `validate` 阶段报错，这不是 bug 而是未支持。简单 HTTP 场景可先用 `functions.triggers.http`。
 
 ### Q: 为什么 `app` / `service` 不允许用变量？
 

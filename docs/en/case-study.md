@@ -1,6 +1,6 @@
 # Case Studies
 
-This page collects real-world success stories built with ServerlessInsight, showcasing how serverless architecture is applied across different scenarios.
+This page collects stories of teams building real applications on ServerlessInsight.
 
 ## Table of Contents
 
