@@ -1,4 +1,5 @@
 .vp-platform-selector {
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -13,23 +14,87 @@
   color: var(--vp-c-text-2);
 }
 
-.vp-platform-selector__select {
+.vp-platform-selector__trigger {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   width: 100%;
-  padding: 4px 8px;
+  padding: 5px 10px;
   border: 1px solid var(--vp-c-divider);
-  border-radius: 6px;
+  border-radius: 8px;
   background: var(--vp-c-bg);
   color: var(--vp-c-text-1);
   font-size: 13px;
   line-height: 20px;
+  text-align: left;
   cursor: pointer;
   transition: border-color 0.25s;
 }
 
-.vp-platform-selector__select:hover,
-.vp-platform-selector__select:focus {
+.vp-platform-selector__trigger:hover,
+.vp-platform-selector__trigger[aria-expanded='true'] {
   border-color: var(--vp-c-brand-1);
-  outline: none;
+}
+
+.vp-platform-selector__text {
+  flex: 1;
+}
+
+.vp-platform-selector__chevron {
+  color: var(--vp-c-text-3);
+  transition: transform 0.2s;
+}
+
+.vp-platform-selector__chevron.is-open {
+  transform: rotate(180deg);
+}
+
+.vp-platform-selector__icon {
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.vp-platform-selector__menu {
+  position: absolute;
+  top: calc(100% - 8px);
+  left: 0;
+  right: 0;
+  z-index: 30;
+  padding: 4px;
+  margin: 0;
+  list-style: none;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 10px;
+  background: var(--vp-c-bg);
+  box-shadow: var(--vp-shadow-3);
+}
+
+.vp-platform-selector__option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 6px 8px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--vp-c-text-1);
+  font-size: 13px;
+  line-height: 20px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.vp-platform-selector__option:hover {
+  background: var(--vp-c-bg-soft);
+}
+
+.vp-platform-selector__option.is-active {
+  color: var(--vp-c-brand-1);
+  background: var(--vp-c-bg-soft);
 }
 
 /* Platform-scoped content blocks:
