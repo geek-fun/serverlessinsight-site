@@ -55,22 +55,22 @@ gtag('config', 'G-FSJWB3QKGJ');`],
           {
             text: 'ServerlessInsight',
             items: [
-              {text: 'ServerlessInsight介绍', link: 'introduction'},
-              {text: '快速开始', link: 'getting-started'},
-              {text: '配置手册', link: 'reference'},
+              {text: 'ServerlessInsight介绍', link: '/introduction'},
+              {text: '快速开始', link: '/getting-started'},
+              {text: '配置手册', link: '/reference'},
               {
                 text: '供应商',
                 items: [
-                  {text: '供应商总览', link: 'providers'},
-                  {text: '阿里云 Aliyun', link: 'providers/aliyun'},
-                  {text: '火山引擎 Volcengine', link: 'providers/volcengine'},
-                  {text: '腾讯云 Tencent', link: 'providers/tencent'},
+                  {text: '供应商总览', link: '/providers/'},
+                  {text: '阿里云 Aliyun', link: '/providers/aliyun'},
+                  {text: '火山引擎 Volcengine', link: '/providers/volcengine'},
+                  {text: '腾讯云 Tencent', link: '/providers/tencent'},
                 ]
               },
-              {text: '命令行', link: 'cli'},
-              {text: '支持服务', link: 'support'},
-              {text: '常见问题', link: 'faq'},
-              {text: '实践案例', link: 'case-study'},
+              {text: '命令行', link: '/cli'},
+              {text: '支持服务', link: '/support'},
+              {text: '常见问题', link: '/faq'},
+              {text: '实践案例', link: '/case-study'},
             ]
           }
         ],
