@@ -6,7 +6,7 @@ outline: [2, 4]
 
 ServerlessInsight 的全部能力都通过一份 `serverlessinsight.yml` 表达。这份配置既是给 `si` CLI 读的部署蓝图，也是团队评审基础设施变更的依据：你声明"要什么"，CLI 负责把它落到目标云上，并在后续部署中对比差异、只改动变化的部分。
 
-本文按配置文件的层级自上而下展开：先讲全局骨架（版本、供应商、变量、环境），再逐个讲五类云资源（functions、events、databases、tables、buckets）。每个资源都回答三个问题：它是什么、什么时候用、每个字段怎么填。所有枚举值均对照 `serverlessinsight` v0.8.7 源码 schema 校验。
+本文按配置文件的层级自上而下展开：先讲全局骨架（版本、供应商、变量、环境），再逐个讲五类云资源（functions、events、databases、tables、buckets）。每个资源都回答三个问题：它是什么、什么时候用、每个字段怎么填。
 
 > 字段级的取值速查推荐用浏览器侧边栏的本页大纲导航；`si validate` 会在部署前校验下述所有约束。
 
