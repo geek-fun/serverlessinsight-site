@@ -1,4 +1,5 @@
 import {defineConfig} from 'vitepress'
+import container from 'markdown-it-container'
 
 const titleZh = 'ServerlessInsight| 全栈Serverless应用开发运维平台';
 const descZh = 'ServerlessInsight是一个开源的Serverless应用开发运维平台, 提供了全栈Serverless应用开发、部署、监控、调试、优化等功能。支持基础设施即代码的开发实践';
@@ -11,6 +12,23 @@ export default defineConfig({
   lastUpdated: true,
   outDir: '../dist',
   cacheDir: '../cache',
+  markdown: {
+    // ::: platform <aliyun|tencent|volcengine> ... :::
+    // Rendered as a div toggled by the platform selector (see theme/styles/platform.css)
+    config(md) {
+      md.use(container, 'platform', {
+        validate: (params: string) => /^platform\s+(aliyun|tencent|volcengine)\s*$/.test(params.trim()),
+        render(tokens: any[], idx: number) {
+          const token = tokens[idx]
+          if (token.nesting === 1) {
+            const name = token.info.trim().split(/\s+/)[1] ?? 'aliyun'
+            return `<div class="vp-platform-block" data-platform="${name}">\n`
+          }
+          return '</div>\n'
+        }
+      })
+    }
+  },
   locales: {
     root: {
       label: '中文',

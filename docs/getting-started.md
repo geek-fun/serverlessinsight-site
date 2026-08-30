@@ -1,6 +1,7 @@
 ---
 title: 快速开始
 description: 安装 ServerlessInsight CLI，理解配置模型，并部署你的第一个 Serverless 应用
+platforms: true
 ---
 
 # 快速开始
@@ -145,14 +146,35 @@ functions:
 
 ## 4. 配置云凭证
 
-凭证不写在配置里，通过环境变量注入。以阿里云为例：
+凭证不写在配置里，通过环境变量注入。在页面顶部选择你的平台，查看对应的变量（默认展示阿里云）：
 
+::: platform aliyun
 ```bash
 export ALIYUN_ACCESS_KEY_ID="your-access-key-id"
 export ALIYUN_ACCESS_KEY_SECRET="your-access-key-secret"
+export ALIYUN_REGION="cn-hangzhou"
 ```
 
-各供应商的变量名与获取方式见对应页面：[阿里云](/providers/aliyun) · [火山引擎](/providers/volcengine) · [腾讯云](/providers/tencent)。
+变量名与获取方式详见[阿里云供应商页](/providers/aliyun)。
+:::
+
+::: platform tencent
+```bash
+export TENCENTCLOUD_SECRET_ID="your-secret-id"
+export TENCENTCLOUD_SECRET_KEY="your-secret-key"
+```
+
+变量名与获取方式详见[腾讯云供应商页](/providers/tencent)。
+:::
+
+::: platform volcengine
+```bash
+export VOLCENGINE_ACCESS_KEY_ID="your-access-key-id"
+export VOLCENGINE_ACCESS_KEY_SECRET="your-access-key-secret"
+```
+
+变量名与获取方式详见[火山引擎供应商页](/providers/volcengine)。
+:::
 
 > ⚠️ 使用 RAM 子用户的 AccessKey，不要用主账号；密钥切勿提交到仓库。
 

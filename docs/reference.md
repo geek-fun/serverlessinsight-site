@@ -1,5 +1,6 @@
 ---
 outline: [2, 4]
+platforms: true
 ---
 
 # 配置手册
@@ -244,14 +245,21 @@ code:
 
 `runtime` 决定函数在云上的执行环境，`handler` 是"文件.导出函数"格式的入口，`path` 指向打包产物（相对项目根目录，通常放 `artifacts/`）。
 
-**运行时可选值**（`validate` / `plan` 阶段会按供应商二次校验，以供应商页面为准）：
+**运行时可选值**（按平台切换；`validate` / `plan` 阶段会按 `provider` 精确校验）：
 
-| 供应商 | 运行时 |
-|--------|--------|
-| **阿里云 FC** | `nodejs24` `nodejs22` `nodejs20` `nodejs18` `nodejs16` `nodejs14` `nodejs12` `nodejs10`，`python3.14` `python3.13` `python3.12` `python3.11` `python3.10` `python3.9` `python3.7` `python3.6`，`java25` `java21` `java17` `java11` `java8`，`php8.0` `php7.4` `php7.2` `php5.6`，`go1`，`dotnet_core3.1` |
-| **火山引擎 veFaaS** | `golang/v1` `native/v1` `nativejava8/v1` `node14/v1` `node20/v1` `nodeprime14/v1` `python3.12/v1` `python3.9/v1` `native-python3.12/v1` `native-node20/v1` |
+::: platform aliyun
+**阿里云 FC**：`nodejs20` `nodejs18` `nodejs16` `nodejs14` `nodejs12` `nodejs10`，`python3.12` `python3.10` `python3.9` `python3.6`，`java11` `java8`，`php7.2`，`go1`，`dotnet_core3.1`
+:::
 
-> 火山引擎的运行时标识带 `/v1` 后缀，与阿里云风格不同，切换供应商时需要同步修改 `runtime`。
+::: platform tencent
+**腾讯云 SCF**：`nodejs18` `nodejs16` `nodejs14` `nodejs12` `nodejs10`，`python3.10` `python3.9` `python3.7` `python3.6`，`java8`，`php8.0` `php7.4` `php7.2` `php5.6`，`go1`
+:::
+
+::: platform volcengine
+**火山引擎 veFaaS**：`golang/v1` `native/v1` `nativejava8/v1` `node14/v1` `node20/v1` `nodeprime14/v1` `python3.12/v1` `python3.9/v1` `native-python3.12/v1` `native-node20/v1`
+:::
+
+> 配置里统一写标准标识（如 `nodejs18`），CLI 生成部署物时自动映射为各云原生运行时（如腾讯云的 `Nodejs18.15`）；火山引擎例外，直接使用其原生标识。切换平台后请按上方列表核对 `runtime`。
 
 #### container - 容器部署
 

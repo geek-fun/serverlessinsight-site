@@ -34,7 +34,7 @@ functions:
   hello_world_fn:
     name: hello-world-fn
     code:
-      runtime: Nodejs18.15
+      runtime: nodejs18
       handler: index.handler
       path: artifacts/hello-world-api.zip
     triggers:
@@ -67,7 +67,11 @@ si deploy --stage dev
 
 ### 运行时
 
-`Nodejs18.15`、`Nodejs16.13`、`Nodejs14.18`、`Nodejs12.16`、`Nodejs10.15`、`Python3.10`、`Python3.9`、`Python3.7`、`Python3.6`、`Java8`、`Php8.0`、`Php7.4`、`Php7.2`、`Php5.6`、`Go1`
+配置中统一使用标准标识，CLI 部署时自动映射为腾讯云原生运行时：
+
+`nodejs18`、`nodejs16`、`nodejs14`、`nodejs12`、`nodejs10`、`python3.10`、`python3.9`、`python3.7`、`python3.6`、`java8`、`php8.0`、`php7.4`、`php7.2`、`php5.6`、`go1`
+
+（原生映射对应：`Nodejs18.15`、`Nodejs16.13`、`Python3.10`、`Java8`、`Php8.0`、`Go1` 等，无需在配置中手写。）
 
 ## 支持的资源
 

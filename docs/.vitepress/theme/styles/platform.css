@@ -1,0 +1,56 @@
+/* Platform selector (doc-top) */
+.vp-platform-selector {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--vp-c-divider);
+}
+
+.vp-platform-selector__label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--vp-c-text-2);
+}
+
+.vp-platform-selector__btn {
+  padding: 3px 14px;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 999px;
+  background: var(--vp-c-bg);
+  color: var(--vp-c-text-2);
+  font-size: 13px;
+  line-height: 20px;
+  cursor: pointer;
+  transition: color 0.25s, border-color 0.25s, background-color 0.25s;
+}
+
+.vp-platform-selector__btn:hover {
+  color: var(--vp-c-brand-1);
+  border-color: var(--vp-c-brand-1);
+}
+
+.vp-platform-selector__btn.is-active {
+  color: var(--vp-c-white);
+  background: var(--vp-c-brand-1);
+  border-color: var(--vp-c-brand-1);
+}
+
+/* Platform-scoped content blocks:
+   - hidden by default
+   - Aliyun visible pre-hydration (SSR default) so there is no flash and SEO sees it
+   - once the selector sets data-platform on <html>, the matching block shows */
+.vp-platform-block {
+  display: none;
+}
+
+:root:not([data-platform]) .vp-platform-block[data-platform='aliyun'] {
+  display: block;
+}
+
+:root[data-platform='aliyun'] .vp-platform-block[data-platform='aliyun'],
+:root[data-platform='tencent'] .vp-platform-block[data-platform='tencent'],
+:root[data-platform='volcengine'] .vp-platform-block[data-platform='volcengine'] {
+  display: block;
+}

@@ -1,5 +1,6 @@
 ---
 outline: [2, 4]
+platforms: true
 ---
 
 # Configuration Reference
@@ -244,14 +245,21 @@ code:
 
 `runtime` selects the execution environment on the cloud, `handler` is the entry in `file.exportedFunction` form, and `path` points at the build artifact (relative to project root, usually under `artifacts/`).
 
-**Runtime values** (`validate` / `plan` re-check per provider — see provider pages):
+**Runtime values** (switch per platform; `validate` / `plan` checks against the chosen `provider`):
 
-| Provider | Runtimes |
-|--------|--------|
-| **Aliyun FC** | `nodejs24` `nodejs22` `nodejs20` `nodejs18` `nodejs16` `nodejs14` `nodejs12` `nodejs10`, `python3.14` `python3.13` `python3.12` `python3.11` `python3.10` `python3.9` `python3.7` `python3.6`, `java25` `java21` `java17` `java11` `java8`, `php8.0` `php7.4` `php7.2` `php5.6`, `go1`, `dotnet_core3.1` |
-| **Volcengine veFaaS** | `golang/v1` `native/v1` `nativejava8/v1` `node14/v1` `node20/v1` `nodeprime14/v1` `python3.12/v1` `python3.9/v1` `native-python3.12/v1` `native-node20/v1` |
+::: platform aliyun
+**Aliyun FC**: `nodejs20` `nodejs18` `nodejs16` `nodejs14` `nodejs12` `nodejs10`, `python3.12` `python3.10` `python3.9` `python3.6`, `java11` `java8`, `php7.2`, `go1`, `dotnet_core3.1`
+:::
 
-> Volcengine runtime identifiers carry a `/v1` suffix — unlike Aliyun's style — so switching providers means updating `runtime` accordingly.
+::: platform tencent
+**Tencent Cloud SCF**: `nodejs18` `nodejs16` `nodejs14` `nodejs12` `nodejs10`, `python3.10` `python3.9` `python3.7` `python3.6`, `java8`, `php8.0` `php7.4` `php7.2` `php5.6`, `go1`
+:::
+
+::: platform volcengine
+**Volcengine veFaaS**: `golang/v1` `native/v1` `nativejava8/v1` `node14/v1` `node20/v1` `nodeprime14/v1` `python3.12/v1` `python3.9/v1` `native-python3.12/v1` `native-node20/v1`
+:::
+
+> The config always uses the standard identifiers (e.g. `nodejs18`); the CLI maps them to each cloud's native runtime at build time (e.g. Tencent's `Nodejs18.15`). Volcengine is the exception — it uses its native identifiers directly. After switching platforms, re-check `runtime` against the list above.
 
 #### container - Container Deployment
 

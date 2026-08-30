@@ -34,7 +34,7 @@ functions:
   hello_world_fn:
     name: hello-world-fn
     code:
-      runtime: Nodejs18.15
+      runtime: nodejs18
       handler: index.handler
       path: artifacts/hello-world-api.zip
     triggers:
@@ -67,7 +67,11 @@ Tencent regions are free text (e.g. `ap-guangzhou`, `ap-shanghai`, `ap-beijing`)
 
 ### Runtimes
 
-`Nodejs18.15`, `Nodejs16.13`, `Nodejs14.18`, `Nodejs12.16`, `Nodejs10.15`, `Python3.10`, `Python3.9`, `Python3.7`, `Python3.6`, `Java8`, `Php8.0`, `Php7.4`, `Php7.2`, `Php5.6`, `Go1`
+The config uses standard identifiers; the CLI maps them to Tencent's native runtimes at deploy time:
+
+`nodejs18`, `nodejs16`, `nodejs14`, `nodejs12`, `nodejs10`, `python3.10`, `python3.9`, `python3.7`, `python3.6`, `java8`, `php8.0`, `php7.4`, `php7.2`, `php5.6`, `go1`
+
+(Native mappings include `Nodejs18.15`, `Nodejs16.13`, `Python3.10`, `Java8`, `Php8.0`, `Go1`, etc. — you never write these in the config.)
 
 ## Supported Resources
 

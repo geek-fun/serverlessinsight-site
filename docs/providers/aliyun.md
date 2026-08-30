@@ -81,7 +81,7 @@ si deploy --stage dev
 
 ### 运行时
 
-`nodejs20`、`nodejs18`、`nodejs16`、`nodejs14`、`nodejs12`、`nodejs10`、`python3.12`、`python3.10`、`python3.9`、`python3.6`、`java11`、`java8`、`php7.2`、`go1.x`、`.NET Core 3.1`
+`nodejs20`、`nodejs18`、`nodejs16`、`nodejs14`、`nodejs12`、`nodejs10`、`python3.12`、`python3.10`、`python3.9`、`python3.6`、`java11`、`java8`、`php7.2`、`go1`、`dotnet_core3.1`
 
 ## 支持的资源
 

@@ -1,6 +1,7 @@
 ---
 title: Getting Started
 description: Install the ServerlessInsight CLI, understand the configuration model, and deploy your first Serverless app
+platforms: true
 ---
 
 # Getting Started
@@ -145,14 +146,35 @@ The three references have distinct jobs: `${vars.*}` is team-defined (overridabl
 
 ## 4. Configure cloud credentials
 
-Credentials never live in the config — they are injected via environment variables. For Aliyun:
+Credentials never live in the config — they are injected via environment variables. Pick your platform at the top of the page to see the matching variables (Aliyun is the default):
 
+::: platform aliyun
 ```bash
 export ALIYUN_ACCESS_KEY_ID="your-access-key-id"
 export ALIYUN_ACCESS_KEY_SECRET="your-access-key-secret"
+export ALIYUN_REGION="cn-hangzhou"
 ```
 
-Variable names and setup per provider: [Aliyun](/en/providers/aliyun) · [Volcengine](/en/providers/volcengine) · [Tencent Cloud](/en/providers/tencent).
+Variable names and setup details: [Aliyun provider page](/en/providers/aliyun).
+:::
+
+::: platform tencent
+```bash
+export TENCENTCLOUD_SECRET_ID="your-secret-id"
+export TENCENTCLOUD_SECRET_KEY="your-secret-key"
+```
+
+Variable names and setup details: [Tencent Cloud provider page](/en/providers/tencent).
+:::
+
+::: platform volcengine
+```bash
+export VOLCENGINE_ACCESS_KEY_ID="your-access-key-id"
+export VOLCENGINE_ACCESS_KEY_SECRET="your-access-key-secret"
+```
+
+Variable names and setup details: [Volcengine provider page](/en/providers/volcengine).
+:::
 
 > ⚠️ Use a RAM sub-user's AccessKey, not the root account; never commit keys to a repository.
 
