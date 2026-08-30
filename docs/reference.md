@@ -100,11 +100,67 @@ provider:
 | `name` | string | ✅ | `aliyun` / `tencent` / `volcengine` / `huawei` / `aws` |
 | `region` | string | ✅ | 部署地域 |
 
-当前可实际部署的供应商是 **aliyun**、**tencent**、**volcengine**；`huawei` 与 `aws` 仅存在于枚举中，暂不可部署。
+当前可实际部署的供应商是 **aliyun**、**tencent**、**volcengine**；`huawei` 与 `aws` 仅存在于枚举中，暂不可部署（华为云目前仅能生成 Terraform 模板，`deploy` 会报错）。
 
-**阿里云常用地域**：`cn-hangzhou`、`cn-shanghai`、`cn-beijing`、`cn-qingdao`、`cn-shenzhen`、`cn-zhangjiakou`、`cn-huhehaote`、`cn-wulanchabu`、`cn-heyuan`、`cn-guangzhou`、`cn-chengdu`、`cn-hongkong`，以及 `ap-southeast-1/3/5/6/7`、`ap-northeast-1/2`、`eu-central-1`、`eu-west-1`、`us-east-1`、`us-west-1`、`me-east-1`、`me-central-1` 等。
+**各平台能力矩阵**——同一份配置在不同平台落地为不同云服务，写配置前先确认目标平台支持哪些资源：
 
-云凭证不写在配置里，通过环境变量注入（如 `ALIYUN_ACCESS_KEY_ID` / `ALIYUN_ACCESS_KEY_SECRET`），详见各供应商页面。
+| 资源类型 | 阿里云 | 腾讯云 | 火山引擎 |
+| --- | --- | --- | --- |
+| 函数计算 | FC3 | SCF | VeFaaS |
+| 对象存储 | OSS | COS | TOS |
+| API 网关 / 事件 | API Gateway | 无独立网关（函数 URL） | API Gateway |
+| 数据库 | RDS Serverless、ES Serverless | TDSQL-C Serverless、ES Serverless | — |
+| 表格存储 | TableStore | — | — |
+| CDN | 支持（OSS + APIGW） | 不支持 | 不支持 |
+| 自定义域名 | 支持 | 支持（DNSPod） | 仅 APIGW 域名 |
+
+**命令支持差异**：
+
+| 命令 | 阿里云 | 腾讯云 | 火山引擎 |
+| --- | --- | --- | --- |
+| `validate` | ✅ | ✅ | ✅ |
+| `plan` | ✅ | ✅ | ❌ |
+| `deploy` / `destroy` | ✅ | ✅ | ✅ |
+| `local` | ✅（本地模拟） | ❌ | ❌ |
+| `show` | ✅ | ✅ | ✅ |
+
+**地域与凭证**（按页面顶部的平台选择器切换）：
+
+::: platform aliyun
+地域**强制校验**，仅接受：`cn-qingdao` `cn-beijing` `cn-zhangjiakou` `cn-huhehaote` `cn-wulanchabu` `cn-hangzhou` `cn-shanghai` `cn-shenzhen` `cn-heyuan` `cn-guangzhou` `cn-chengdu` `cn-hongkong` `ap-southeast-1/3/5/6/7` `ap-northeast-1/2` `eu-central-1` `eu-west-1` `us-east-1` `us-west-1` `na-south-1` `me-east-1` `me-central-1`。默认 `cn-hangzhou`，优先级 `SI_REGION` > `ALIYUN_REGION` > `provider.region`。
+
+凭证环境变量（两组别名等价）：
+
+| 变量 | 说明 |
+| --- | --- |
+| `ALIYUN_ACCESS_KEY_ID` 或 `ALIBABA_CLOUD_ACCESS_KEY_ID` | AccessKey ID |
+| `ALIYUN_ACCESS_KEY_SECRET` 或 `ALIBABA_CLOUD_ACCESS_KEY_SECRET` | AccessKey Secret |
+| `ALIYUN_SECURITY_TOKEN` 或 `ALIBABA_CLOUD_SECURITY_TOKEN` | STS 临时凭证 Token（可选） |
+:::
+
+::: platform tencent
+地域为自由文本（如 `ap-guangzhou`、`ap-shanghai`、`ap-beijing`），不做枚举校验。
+
+| 变量 | 说明 |
+| --- | --- |
+| `TENCENTCLOUD_SECRET_ID` | SecretId |
+| `TENCENTCLOUD_SECRET_KEY` | SecretKey |
+| `TENCENTCLOUD_SECURITY_TOKEN` | 临时凭证 Token（可选） |
+:::
+
+::: platform volcengine
+地域建议使用 `cn-beijing`、`cn-shanghai`、`cn-guangzhou`、`ap-southeast-1`，默认 `cn-beijing`（不强制校验）。
+
+凭证环境变量（多组别名等价）：
+
+| 变量 | 说明 |
+| --- | --- |
+| `VOLCENGINE_ACCESS_KEY_ID` 或 `VOLCENGINE_ACCESS_KEY` 或 `VOLCSTACK_ACCESS_KEY_ID` | AccessKey ID |
+| `VOLCENGINE_ACCESS_KEY_SECRET` 或 `VOLCENGINE_SECRET_KEY` 或 `VOLCSTACK_SECRET_ACCESS_KEY` | AccessKey Secret |
+| `VOLCENGINE_SESSION_TOKEN` 或 `VOLCSTACK_SESSION_TOKEN` | 临时凭证 Token（可选） |
+:::
+
+命令行参数 `-k/--accessKeyId`、`-x/--accessKeySecret`、`-n/--securityToken` 在所有平台都可覆盖环境变量。
 
 ### vars
 
@@ -429,7 +485,13 @@ events:
 | `network` | object | ❌ | 网关所在 VPC |
 | `domain` | object | ❌ | 自定义域名与证书 |
 
-> ⚠️ **腾讯云不支持 `events`**。腾讯云函数通过 `functions.triggers.http` 暴露 HTTP 入口，详见[腾讯云供应商](/providers/tencent)。
+::: platform tencent
+> ⚠️ **腾讯云不支持 `events`（API 网关资源）**。函数的 HTTP 入口请通过 `functions.triggers.http` 暴露——系统会创建 SCF 函数 URL 触发器，而非独立网关。
+:::
+
+::: platform volcengine
+自定义域名仅限 API 网关场景（函数级 `domain` 暂不可用）；域名证书能力与阿里云一致。
+:::
 
 #### triggers - 路由规则
 
@@ -551,7 +613,17 @@ network:
 | `public` | boolean | 是否额外开通公网访问 |
 | `ingress_rules` | string[] | 访问规则，格式同安全组规则 |
 
-> 并非所有供应商支持全部数据库类型，能力矩阵见[供应商总览](/providers/)。
+::: platform aliyun
+支持 RDS Serverless（MySQL / PostgreSQL / SQL Server）与 Elasticsearch Serverless，另有表格存储（`tables`）。
+:::
+
+::: platform tencent
+支持 TDSQL-C Serverless 与 Elasticsearch Serverless，类型分别选 `TDSQL_C_SERVERLESS` 与 `ELASTICSEARCH_SERVERLESS`。
+:::
+
+::: platform volcengine
+**暂不支持 `databases` 与 `tables` 资源**——数据库请通过现有云上资源自行管理，配置里省略这两段即可。
+:::
 
 ### tables
 

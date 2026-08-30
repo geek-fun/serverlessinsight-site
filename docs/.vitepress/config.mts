@@ -76,15 +76,6 @@ gtag('config', 'G-FSJWB3QKGJ');`],
               {text: 'ServerlessInsight介绍', link: '/introduction'},
               {text: '快速开始', link: '/getting-started'},
               {text: '配置手册', link: '/reference'},
-              {
-                text: '供应商',
-                items: [
-                  {text: '供应商总览', link: '/providers/'},
-                  {text: '阿里云 Aliyun', link: '/providers/aliyun'},
-                  {text: '火山引擎 Volcengine', link: '/providers/volcengine'},
-                  {text: '腾讯云 Tencent', link: '/providers/tencent'},
-                ]
-              },
               {text: '命令行', link: '/cli'},
               {text: '支持服务', link: '/support'},
               {text: '常见问题', link: '/faq'},
@@ -146,15 +137,6 @@ gtag('config', 'G-FSJWB3QKGJ');`],
               {text: 'Introduction', link: '/en/introduction'},
               {text: 'Quick Start', link: '/en/getting-started'},
               {text: 'Configuration Reference', link: '/en/reference'},
-              {
-                text: 'Providers',
-                items: [
-                  {text: 'Provider Overview', link: '/en/providers'},
-                  {text: 'Aliyun', link: '/en/providers/aliyun'},
-                  {text: 'Volcengine', link: '/en/providers/volcengine'},
-                  {text: 'Tencent Cloud', link: '/en/providers/tencent'},
-                ]
-              },
               {text: 'CLI Reference', link: '/en/cli'},
               {text: 'Support', link: '/en/support'},
               {text: 'FAQ', link: '/en/faq'},

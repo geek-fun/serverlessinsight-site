@@ -13,12 +13,10 @@ Welcome to the ServerlessInsight documentation center. The entries below are org
 - [Getting Started](/en/getting-started) — install the CLI, learn the config model, deploy your first app
 - [Configuration Reference](/en/reference) — all resources, fields, and valid values
 
-## Providers
+## Platform Support
 
-- [Provider Overview](/en/providers/) — capability matrix and command support
-- [Aliyun](/en/providers/aliyun)
-- [Volcengine](/en/providers/volcengine)
-- [Tencent Cloud](/en/providers/tencent)
+- Deployable platforms: **Aliyun · Tencent Cloud · Volcengine** — switch perspective with the selector at the top of doc pages (Aliyun is the default)
+- Capability matrix, command differences, regions, and credentials: see the [Configuration Reference](/en/reference)
 
 ## Reference & Help
 

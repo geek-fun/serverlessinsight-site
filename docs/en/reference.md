@@ -100,11 +100,67 @@ provider:
 | `name` | string | ✅ | `aliyun` / `tencent` / `volcengine` / `huawei` / `aws` |
 | `region` | string | ✅ | Deployment region |
 
-Providers you can actually deploy to today are **aliyun**, **tencent**, and **volcengine**; `huawei` and `aws` exist in the enum only and are not yet deployable.
+Providers you can actually deploy to today are **aliyun**, **tencent**, and **volcengine**; `huawei` and `aws` exist in the enum only and are not yet deployable (Huawei can currently only generate Terraform templates — `deploy` throws).
 
-**Common Aliyun regions**: `cn-hangzhou`, `cn-shanghai`, `cn-beijing`, `cn-qingdao`, `cn-shenzhen`, `cn-zhangjiakou`, `cn-huhehaote`, `cn-wulanchabu`, `cn-heyuan`, `cn-guangzhou`, `cn-chengdu`, `cn-hongkong`, plus `ap-southeast-1/3/5/6/7`, `ap-northeast-1/2`, `eu-central-1`, `eu-west-1`, `us-east-1`, `us-west-1`, `me-east-1`, `me-central-1`.
+**Per-platform capability matrix** — the same config lands as different cloud services per platform; check what your target platform supports before writing config:
 
-Cloud credentials are never written in the config — they are injected via environment variables (e.g. `ALIYUN_ACCESS_KEY_ID` / `ALIYUN_ACCESS_KEY_SECRET`). See each provider page for details.
+| Resource type | Aliyun | Tencent Cloud | Volcengine |
+| --- | --- | --- | --- |
+| Functions | FC3 | SCF | VeFaaS |
+| Object storage | OSS | COS | TOS |
+| API gateway / events | API Gateway | no standalone gateway (function URL) | API Gateway |
+| Databases | RDS Serverless, ES Serverless | TDSQL-C Serverless, ES Serverless | — |
+| Table storage | TableStore | — | — |
+| CDN | yes (OSS + APIGW) | no | no |
+| Custom domains | yes | yes (DNSPod) | APIGW domains only |
+
+**Command support differences**:
+
+| Command | Aliyun | Tencent Cloud | Volcengine |
+| --- | --- | --- | --- |
+| `validate` | ✅ | ✅ | ✅ |
+| `plan` | ✅ | ✅ | ❌ |
+| `deploy` / `destroy` | ✅ | ✅ | ✅ |
+| `local` | ✅ (local emulation) | ❌ | ❌ |
+| `show` | ✅ | ✅ | ✅ |
+
+**Regions and credentials** (switch via the platform selector at the top of the page):
+
+::: platform aliyun
+Regions are **strictly validated**, only these are accepted: `cn-qingdao` `cn-beijing` `cn-zhangjiakou` `cn-huhehaote` `cn-wulanchabu` `cn-hangzhou` `cn-shanghai` `cn-shenzhen` `cn-heyuan` `cn-guangzhou` `cn-chengdu` `cn-hongkong` `ap-southeast-1/3/5/6/7` `ap-northeast-1/2` `eu-central-1` `eu-west-1` `us-east-1` `us-west-1` `na-south-1` `me-east-1` `me-central-1`. Default `cn-hangzhou`; precedence `SI_REGION` > `ALIYUN_REGION` > `provider.region`.
+
+Credential environment variables (both alias groups are equivalent):
+
+| Variable | Description |
+| --- | --- |
+| `ALIYUN_ACCESS_KEY_ID` or `ALIBABA_CLOUD_ACCESS_KEY_ID` | AccessKey ID |
+| `ALIYUN_ACCESS_KEY_SECRET` or `ALIBABA_CLOUD_ACCESS_KEY_SECRET` | AccessKey Secret |
+| `ALIYUN_SECURITY_TOKEN` or `ALIBABA_CLOUD_SECURITY_TOKEN` | STS session token (optional) |
+:::
+
+::: platform tencent
+Regions are free-form text (e.g. `ap-guangzhou`, `ap-shanghai`, `ap-beijing`) and are not enum-validated.
+
+| Variable | Description |
+| --- | --- |
+| `TENCENTCLOUD_SECRET_ID` | SecretId |
+| `TENCENTCLOUD_SECRET_KEY` | SecretKey |
+| `TENCENTCLOUD_SECURITY_TOKEN` | session token (optional) |
+:::
+
+::: platform volcengine
+Recommended regions: `cn-beijing`, `cn-shanghai`, `cn-guangzhou`, `ap-southeast-1`; default `cn-beijing` (not strictly validated).
+
+Credential environment variables (multiple equivalent aliases):
+
+| Variable | Description |
+| --- | --- |
+| `VOLCENGINE_ACCESS_KEY_ID` or `VOLCENGINE_ACCESS_KEY` or `VOLCSTACK_ACCESS_KEY_ID` | AccessKey ID |
+| `VOLCENGINE_ACCESS_KEY_SECRET` or `VOLCENGINE_SECRET_KEY` or `VOLCSTACK_SECRET_ACCESS_KEY` | AccessKey Secret |
+| `VOLCENGINE_SESSION_TOKEN` or `VOLCSTACK_SESSION_TOKEN` | session token (optional) |
+:::
+
+The CLI flags `-k/--accessKeyId`, `-x/--accessKeySecret`, `-n/--securityToken` override environment variables on every platform.
 
 ### vars
 
@@ -429,7 +485,13 @@ events:
 | `network` | object | ❌ | the VPC the gateway lives in |
 | `domain` | object | ❌ | custom domain and certificate |
 
-> ⚠️ **Tencent Cloud does not support `events`.** Tencent functions expose HTTP via `functions.triggers.http` — see [Tencent Cloud](/en/providers/tencent).
+::: platform tencent
+> ⚠️ **Tencent Cloud does not support `events` (API gateway resources).** Expose function HTTP entries via `functions.triggers.http` — the system creates an SCF function URL trigger rather than a standalone gateway.
+:::
+
+::: platform volcengine
+Custom domains are limited to the API gateway scenario (function-level `domain` is not available yet); certificate handling matches Aliyun.
+:::
 
 #### triggers - Routing Rules
 
@@ -551,7 +613,17 @@ network:
 | `public` | boolean | additionally expose public access |
 | `ingress_rules` | string[] | access rules, same format as security group rules |
 
-> Not every provider supports every database type — see the [Provider Overview](/en/providers/) capability matrix.
+::: platform aliyun
+Supports RDS Serverless (MySQL / PostgreSQL / SQL Server) and Elasticsearch Serverless, plus table storage (`tables`).
+:::
+
+::: platform tencent
+Supports TDSQL-C Serverless and Elasticsearch Serverless — pick `TDSQL_C_SERVERLESS` and `ELASTICSEARCH_SERVERLESS` respectively.
+:::
+
+::: platform volcengine
+**`databases` and `tables` are not supported yet** — manage databases through your existing cloud resources and simply omit these sections from the config.
+:::
 
 ### tables
 

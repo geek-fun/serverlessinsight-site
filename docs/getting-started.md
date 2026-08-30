@@ -64,7 +64,7 @@ functions:
 
 逐段看这份配置在说什么：
 
-- `provider` 决定所有资源的落点。当前可部署的供应商为 `aliyun`、`tencent`、`volcengine`（`huawei` 与 `aws` 暂不可部署）。切换供应商意味着换一套运行时标识与能力矩阵，详见[供应商总览](/providers/)。
+- `provider` 决定所有资源的落点。当前可部署的供应商为 `aliyun`、`tencent`、`volcengine`（`huawei` 与 `aws` 暂不可部署）。平台间的能力矩阵、地域与凭证差异见[配置手册](/reference)。
 - `app` 与 `service` 必须是静态字符串（小写字母、数字、`-`），因为它们要在解析变量之前就确定，并作为前缀出现在每个云资源的名字里。
 - `functions` 的键名 `hello_world_fn` 是**引用名**，后续 `events` 里的 `backend` 就用它指向这个函数；内部的 `name` 才是云上的实际函数名。函数支持两种形态：`code`（代码包）或 `container`（容器镜像），二选一。
 - `code` 三要素缺一不可：`runtime` 是云上的执行环境（按供应商校验，如阿里云的 `nodejs18`、火山引擎的 `node20/v1`），`handler` 是 `文件.导出函数` 格式的入口，`path` 指向 `artifacts/` 里的打包产物。
@@ -87,7 +87,7 @@ events:
 
 `triggers` 数组里每条规则就是一个路由：`method` 支持 `GET` / `POST` / `PUT` / `DELETE` / `ANY`，`path` 以 `/` 开头、支持 `*` 通配，`backend` 填函数的引用名。多条规则可以指向不同函数，这就是"一组接口"的标准形态。
 
-> ⚠️ **腾讯云不支持 `events`**。腾讯云函数通过函数自身的 `triggers.http` 暴露 HTTP 入口，详见[腾讯云供应商](/providers/tencent)。
+> ⚠️ **腾讯云不支持 `events`**。腾讯云函数通过函数自身的 `triggers.http` 暴露 HTTP 入口。
 
 ### 函数之外：数据与存储
 
@@ -155,7 +155,7 @@ export ALIYUN_ACCESS_KEY_SECRET="your-access-key-secret"
 export ALIYUN_REGION="cn-hangzhou"
 ```
 
-变量名与获取方式详见[阿里云供应商页](/providers/aliyun)。
+完整变量别名与 STS 临时凭证见[配置手册](/reference)。
 :::
 
 ::: platform tencent
@@ -164,7 +164,7 @@ export TENCENTCLOUD_SECRET_ID="your-secret-id"
 export TENCENTCLOUD_SECRET_KEY="your-secret-key"
 ```
 
-变量名与获取方式详见[腾讯云供应商页](/providers/tencent)。
+完整变量别名与 STS 临时凭证见[配置手册](/reference)。
 :::
 
 ::: platform volcengine
@@ -173,7 +173,7 @@ export VOLCENGINE_ACCESS_KEY_ID="your-access-key-id"
 export VOLCENGINE_ACCESS_KEY_SECRET="your-access-key-secret"
 ```
 
-变量名与获取方式详见[火山引擎供应商页](/providers/volcengine)。
+完整变量别名与临时凭证 Token 见[配置手册](/reference)。
 :::
 
 > ⚠️ 使用 RAM 子用户的 AccessKey，不要用主账号；密钥切勿提交到仓库。
@@ -213,6 +213,5 @@ si destroy --stage dev
 ## 下一步
 
 - [配置手册](/reference) — 全部资源、字段与可选值
-- [供应商总览](/providers/) — 各云能力矩阵与差异
 - [CLI 参考](/cli) — 全部命令与参数
 - [实践案例](/case-study) — 真实场景示例

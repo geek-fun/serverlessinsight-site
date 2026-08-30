@@ -144,7 +144,7 @@ Manually remove a stuck deployment lock. Refuses to run against the SAAS state b
 
 ## Environment Variables
 
-- Cloud provider credentials: see each [provider page](/en/providers/)
+- Cloud provider credentials: see "Regions and credentials" in the [Configuration Reference](/en/reference)
 - `SI_API_KEY`: Console API Key (managed state backend)
 - `SI_REGION` / `ALIYUN_REGION`: default region
 - `DEBUG`: print error stack traces when set
@@ -153,4 +153,3 @@ Manually remove a stuck deployment lock. Refuses to run against the SAAS state b
 
 - [Getting Started](/en/getting-started) — install and config model primer
 - [Configuration Reference](/en/reference) — all resources, fields, and valid values
-- [Provider Overview](/en/providers/) — capability differences

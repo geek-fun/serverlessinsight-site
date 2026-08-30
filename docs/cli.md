@@ -144,7 +144,7 @@ si force-unlock <lockId> -f serverlessinsight.yml
 
 ## 环境变量
 
-- 云供应商凭证：见各 [供应商页面](/providers/)
+- 云供应商凭证：见[配置手册](/reference)的"地域与凭证"部分
 - `SI_API_KEY`：控制台 API Key（托管状态后端）
 - `SI_REGION` / `ALIYUN_REGION`：默认地域
 - `DEBUG`：开启后打印错误堆栈
@@ -153,4 +153,3 @@ si force-unlock <lockId> -f serverlessinsight.yml
 
 - [快速开始](/getting-started) — 安装与配置模型入门
 - [配置手册](/reference) — 全部资源、字段与可选值
-- [供应商总览](/providers/) — 各云能力差异

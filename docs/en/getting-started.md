@@ -64,7 +64,7 @@ functions:
 
 What each piece is saying:
 
-- `provider` decides where every resource lands. Deployable providers today are `aliyun`, `tencent`, and `volcengine` (`huawei` and `aws` are not yet deployable). Switching providers means switching runtime identifiers and capability matrices — see the [Provider Overview](/en/providers/).
+- `provider` decides where every resource lands. Deployable providers today are `aliyun`, `tencent`, and `volcengine` (`huawei` and `aws` are not yet deployable). Per-platform capability, region, and credential differences are covered in the [Configuration Reference](/en/reference).
 - `app` and `service` must be static strings (lowercase letters, digits, `-`) because they must be known before variable resolution, and they prefix every cloud resource name.
 - In `functions`, the key `hello_world_fn` is the **reference name** — later, `events` uses it in `backend` to point at this function. The inner `name` is the actual cloud function name. A function takes one of two shapes: `code` (code package) or `container` (image), never both.
 - The `code` triple is all required: `runtime` is the cloud execution environment (validated per provider — Aliyun's `nodejs18`, Volcengine's `node20/v1`), `handler` is the `file.exportedFunction` entry, `path` points at the build artifact in `artifacts/`.
@@ -87,7 +87,7 @@ events:
 
 Each entry in `triggers` is a route: `method` accepts `GET` / `POST` / `PUT` / `DELETE` / `ANY`, `path` starts with `/` and supports the `*` wildcard, and `backend` holds the function's reference name. Multiple rules can target different functions — the standard shape for "a set of endpoints".
 
-> ⚠️ **Tencent Cloud does not support `events`.** Tencent functions expose HTTP via `triggers.http` on the function itself — see [Tencent Cloud](/en/providers/tencent).
+> ⚠️ **Tencent Cloud does not support `events`.** Tencent functions expose HTTP via `triggers.http` on the function itself.
 
 ### Beyond functions: data and storage
 
@@ -155,7 +155,7 @@ export ALIYUN_ACCESS_KEY_SECRET="your-access-key-secret"
 export ALIYUN_REGION="cn-hangzhou"
 ```
 
-Variable names and setup details: [Aliyun provider page](/en/providers/aliyun).
+Full variable aliases and STS session tokens are in the [Configuration Reference](/en/reference).
 :::
 
 ::: platform tencent
@@ -164,7 +164,7 @@ export TENCENTCLOUD_SECRET_ID="your-secret-id"
 export TENCENTCLOUD_SECRET_KEY="your-secret-key"
 ```
 
-Variable names and setup details: [Tencent Cloud provider page](/en/providers/tencent).
+Full variable aliases and session tokens are in the [Configuration Reference](/en/reference).
 :::
 
 ::: platform volcengine
@@ -173,7 +173,7 @@ export VOLCENGINE_ACCESS_KEY_ID="your-access-key-id"
 export VOLCENGINE_ACCESS_KEY_SECRET="your-access-key-secret"
 ```
 
-Variable names and setup details: [Volcengine provider page](/en/providers/volcengine).
+Full variable aliases and session tokens are in the [Configuration Reference](/en/reference).
 :::
 
 > ⚠️ Use a RAM sub-user's AccessKey, not the root account; never commit keys to a repository.
@@ -213,6 +213,5 @@ Destroy tears down resources one by one from the state file. Non-empty buckets f
 ## Next Steps
 
 - [Configuration Reference](/en/reference) — every resource, field, and valid value
-- [Provider Overview](/en/providers/) — capability matrix and per-cloud differences
 - [CLI Reference](/en/cli) — all commands and options
 - [Case Studies](/en/case-study) — real-world examples

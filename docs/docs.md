@@ -13,12 +13,10 @@ description: ServerlessInsight 文档导航
 - [快速开始](/getting-started) — 安装 CLI、理解配置模型并部署第一个应用
 - [配置手册](/reference) — 全部资源、字段与可选值
 
-## 供应商
+## 平台支持
 
-- [供应商总览](/providers/) — 各云能力矩阵与命令支持差异
-- [阿里云 Aliyun](/providers/aliyun)
-- [火山引擎 Volcengine](/providers/volcengine)
-- [腾讯云 Tencent](/providers/tencent)
+- 可部署平台：**阿里云 · 腾讯云 · 火山引擎** —— 文档页面顶部的选择器可切换平台视角（默认阿里云）
+- 能力矩阵、命令差异、地域与凭证见[配置手册](/reference)
 
 ## 参考与帮助
 
