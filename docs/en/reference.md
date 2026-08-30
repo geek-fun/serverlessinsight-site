@@ -6,7 +6,7 @@ outline: [2, 4]
 
 Everything ServerlessInsight does is expressed through a single `serverlessinsight.yml`. The file is both a deployment blueprint the `si` CLI executes and a reviewable record of your infrastructure: you declare *what* you need, the CLI provisions it on the target cloud, and on subsequent deploys it diffs against the last state and only changes what actually changed.
 
-This reference walks the file top-down: first the global skeleton (version, provider, variables, stages), then each of the five resource kinds — `functions`, `events`, `databases`, `tables`, `buckets`. For every resource we answer three questions: what it is, when to use it, and how each field is filled. All enum values are verified against the `serverlessinsight` v0.7.9 source schema.
+This reference walks the file top-down: first the global skeleton (version, provider, variables, stages), then each of the five resource kinds — `functions`, `events`, `databases`, `tables`, `buckets`. For every resource we answer three questions: what it is, when to use it, and how each field is filled. All enum values are verified against the `serverlessinsight` v0.8.7 source schema.
 
 > Use the on-page outline in the browser sidebar for quick field lookups; `si validate` checks every constraint below before anything is deployed.
 

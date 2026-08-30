@@ -216,7 +216,7 @@ si deploy --stage dev --debug
 > 标题：部署到 cn-hangzhou 时函数创建失败
 > 
 > 环境:
-> - ServerlessInsight CLI: 0.3.1
+> - ServerlessInsight CLI: 0.8.7
 > - Node.js: 18.16.0
 > - 云供应商：阿里云 cn-hangzhou
 > 
