@@ -1,47 +1,18 @@
+---
+outline: [2, 4]
+---
+
 # Configuration Reference
 
-This document details the ServerlessInsight configuration specification, including the Infrastructure as Code (IaC) YAML syntax and all available resource types, fields, and valid values. Verified against the `serverlessinsight` v0.7.9 source schema.
+Everything ServerlessInsight does is expressed through a single `serverlessinsight.yml`. The file is both a deployment blueprint the `si` CLI executes and a reviewable record of your infrastructure: you declare *what* you need, the CLI provisions it on the target cloud, and on subsequent deploys it diffs against the last state and only changes what actually changed.
 
-## Table of Contents
+This reference walks the file top-down: first the global skeleton (version, provider, variables, stages), then each of the five resource kinds — `functions`, `events`, `databases`, `tables`, `buckets`. For every resource we answer three questions: what it is, when to use it, and how each field is filled. All enum values are verified against the `serverlessinsight` v0.7.9 source schema.
 
-- [Quick Example](#quick-example)
-- [Core Configuration](#core-configuration)
-  - [version](#version)
-  - [provider](#provider)
-  - [vars](#vars)
-  - [stages](#stages)
-  - [app](#app)
-  - [service](#service)
-  - [tags](#tags)
-  - [backend](#backend)
-- [Resource Types](#resource-types)
-  - [functions](#functions)
-    - [code - Code Deployment](#code---code-deployment)
-    - [container - Container Deployment](#container---container-deployment)
-    - [memory - Memory](#memory---memory)
-    - [timeout - Timeout](#timeout---timeout)
-    - [gpu - GPU Configuration](#gpu---gpu-configuration)
-    - [log - Log Configuration](#log---log-configuration)
-    - [environment - Environment Variables](#environment---environment-variables)
-    - [network - Network Configuration](#network---network-configuration)
-    - [iam - IAM Role Configuration](#iam---iam-role-configuration)
-    - [triggers - Function-level Triggers](#triggers---function-level-triggers)
-    - [domain - Function-level Custom Domain](#domain---function-level-custom-domain)
-    - [storage - Storage Mounts](#storage---storage-mounts)
-  - [events](#events)
-    - [triggers - Trigger Rules](#triggers---trigger-rules)
-    - [domain - Custom Domain](#domain---custom-domain)
-  - [databases](#databases)
-  - [tables](#tables)
-  - [buckets](#buckets)
-- [Variable References](#variable-references)
-- [Local Development](#local-development)
-- [Best Practices](#best-practices)
-- [FAQ](#faq)
+> Use the on-page outline in the browser sidebar for quick field lookups; `si validate` checks every constraint below before anything is deployed.
 
 ## Quick Example
 
-A complete `serverlessinsight.yml` configuration example:
+This configuration covers what most real projects need: one HTTP function, an API gateway entry, and a pay-per-use MySQL. Read it for the overall shape — each block is dissected below:
 
 ```yaml
 version: 0.1.0
@@ -50,24 +21,19 @@ provider:
   region: cn-hangzhou
 
 vars:
-  region: cn-hangzhou
-  account_id: 1234567890
-  memory_size: 512
+  db_password: "${ctx.stage}-secret"
 
 stages:
   dev:
-    region: ${vars.region}
-    memory: 512
+    memory: 256
   prod:
-    region: ${vars.region}
     memory: 1024
 
 app: my-app
-service: my-app-service
+service: my-app-api
 
 tags:
   owner: geek-fun
-  project: my-app
 
 functions:
   api_function:
@@ -75,22 +41,18 @@ functions:
     code:
       runtime: nodejs18
       handler: index.handler
-      path: artifacts/function.zip
+      path: artifacts/api.zip
     memory: ${stages.memory}
     timeout: 30
     environment:
       NODE_ENV: production
-      DB_HOST: ${vars.db_host}
 
 events:
   api_gateway:
-    type: API_GATEWAY
     name: my-api-gateway
+    type: API_GATEWAY
     triggers:
       - method: GET
-        path: /api/*
-        backend: api_function
-      - method: POST
         path: /api/*
         backend: api_function
 
@@ -99,26 +61,32 @@ databases:
     name: main-db
     type: RDS_MYSQL_SERVERLESS
     version: MYSQL_8.0
+    cu:
+      min: 0
+      max: 8
     security:
       basic_auth:
+        master_user: dbadmin
         password: "${vars.db_password}"
 ```
+
+Division of labor in this file: `provider` decides which cloud and region everything lands in; `vars` and `stages` pull environment-specific values out of resource definitions; `functions` + `events` form the classic "function + HTTP entry" server shape; `databases` declares the data layer the functions depend on. `app` and `service` thread through all cloud resource naming — they are the identity of the whole stack.
 
 ## Core Configuration
 
 ### version
 
-Specifies the version of the ServerlessInsight YAML configuration file.
+The version of the config format itself — not your app's version. The CLI uses it to decide how to parse the file; fields may be incompatible across major versions.
 
 ```yaml
 version: 0.1.0
 ```
 
-> ⚠️ **Note**: Only version `0.1` is currently supported. Major versions may contain incompatible changes. Ensure your configuration file is compatible with the ServerlessInsight CLI version.
+**Valid values**: `0.0.0`, `0.0.1`, `0.1.0`. New projects should use `0.1.0`.
 
 ### provider
 
-Configures the cloud provider information.
+Declares the target cloud and region. Every resource in the file is created in this `region`; deploying to multiple regions means maintaining multiple configs.
 
 ```yaml
 provider:
@@ -126,213 +94,144 @@ provider:
   region: cn-hangzhou
 ```
 
-**Supported fields:**
-
 | Field | Type | Required | Description |
 |------|------|------|------|
-| `name` | string | ✅ | Provider name: `aliyun`, `tencent`, `volcengine`, `huawei`, `aws` |
+| `name` | string | ✅ | `aliyun` / `tencent` / `volcengine` / `huawei` / `aws` |
 | `region` | string | ✅ | Deployment region |
 
-**Supported Aliyun regions:**
+Providers you can actually deploy to today are **aliyun**, **tencent**, and **volcengine**; `huawei` and `aws` exist in the enum only and are not yet deployable.
 
-**Mainland China:**
-- `cn-qingdao`, `cn-beijing`, `cn-zhangjiakou`, `cn-huhehaote`, `cn-wulanchabu`
-- `cn-hangzhou`, `cn-shanghai`, `cn-shenzhen`, `cn-heyuan`, `cn-guangzhou`, `cn-chengdu`
+**Common Aliyun regions**: `cn-hangzhou`, `cn-shanghai`, `cn-beijing`, `cn-qingdao`, `cn-shenzhen`, `cn-zhangjiakou`, `cn-huhehaote`, `cn-wulanchabu`, `cn-heyuan`, `cn-guangzhou`, `cn-chengdu`, `cn-hongkong`, plus `ap-southeast-1/3/5/6/7`, `ap-northeast-1/2`, `eu-central-1`, `eu-west-1`, `us-east-1`, `us-west-1`, `me-east-1`, `me-central-1`.
 
-**Asia Pacific:**
-- `cn-hongkong`, `ap-southeast-1`, `ap-southeast-3`, `ap-southeast-5`
-- `ap-southeast-6`, `ap-southeast-7`, `ap-northeast-1`, `ap-northeast-2`
-
-**Europe & Americas:**
-- `eu-central-1`, `eu-west-1`, `us-east-1`, `us-west-1`, `na-south-1`
-
-**Middle East:**
-- `me-east-1`, `me-central-1`
-
-> 💡 **Tip**: Provider support status:
-> - ✅ **Aliyun** — Full support (FC3, API Gateway, OSS, RDS, TableStore, ES Serverless, CDN)
-> - ✅ **Tencent Cloud** — Full support (SCF, COS, ES Serverless, TDSQL-C)
-> - ✅ **Volcengine** — Full support (veFaaS, API Gateway, TOS)
-> - 🚧 **Huawei Cloud** — Beta (FunctionGraph)
-> - 🚧 **AWS** — Planned
+Cloud credentials are never written in the config — they are injected via environment variables (e.g. `ALIYUN_ACCESS_KEY_ID` / `ALIYUN_ACCESS_KEY_SECRET`). See each provider page for details.
 
 ### vars
 
-Defines reusable variables that can be referenced in the configuration via `${vars.variableName}`.
+The global variable area. Pull values that change — passwords, domains, sizes — out of resource definitions into one place. Referenced as `${vars.name}`.
 
 ```yaml
 vars:
-  region: cn-hangzhou
-  account_id: 1234567890
-  memory_size: 512
   db_host: db.example.com
+  memory_size: 512
 ```
 
-**Variable reference example:**
-
-```yaml
-functions:
-  my_function:
-    memory: ${vars.memory_size}
-    environment:
-      REGION: ${vars.region}
-```
-
-**Command-line override:**
-
-Variable defaults can be overridden at deploy time via `--parameter` or `-p`:
+Values can be overridden at deploy time with `-p`, which is how secrets stay out of the file:
 
 ```bash
-si deploy --stage prod -p memory_size=1024
+si deploy --stage prod -p db_password=xxxx
 ```
 
 ### stages
 
-Defines configuration for different deployment environments. Select the environment via `--stage` or `-s`.
+Per-environment configuration. Each stage is a set of overrides; the same resource definitions pick up different memory, domains, or regions per environment. Select with `--stage` / `-s`; `default` is used when omitted.
 
 ```yaml
 stages:
-  default:
-    domain_name: my-domain.com
-    database_name: my-database
   dev:
-    domain_name: dev.my-domain.com
-    database_name: my-database-dev
-    memory: 512
+    memory: 256
   prod:
-    domain_name: my-domain.com
-    database_name: my-database-prod
-    memory: 2048
+    memory: 1024
 ```
 
-**Usage example:**
+Reference the current stage's values with `${stages.field}`:
 
 ```yaml
-app: my-app
-service: my-app-service
-
 functions:
   api_function:
     memory: ${stages.memory}
 ```
 
-**Deploy commands:**
-
-```bash
-# Deploy to the dev environment
-si deploy --stage dev
-
-# Deploy to the production environment
-si deploy --stage prod
-
-# Defaults to `default` when no stage is specified
-si deploy
-```
-
-> 💡 **Tip**: `${ctx.stage}` is a global predefined variable provided by ServerlessInsight that represents the current deployment stage.
+`${ctx.stage}` is a built-in context variable holding the current stage name — handy for environment-suffixed resource names like `user-api-${ctx.stage}`.
 
 ### app
 
-Specifies the application name, used to identify the entire ServerlessInsight project.
+The application name — the top-level namespace identifying your project. It must be a static string: it participates in all cloud resource naming, and the CLI must resolve it before any variable interpolation.
 
 ```yaml
 app: my-app
 ```
 
-**Naming rules:**
-- Must start with a lowercase letter; only lowercase letters, digits, and hyphens (`-`)
-- Must be a static string — variables are not allowed
-- Globally unique identifier; using the project name is recommended
+Naming rules: starts with a lowercase letter, contains only lowercase letters, digits, and `-`.
 
 ### service
 
-Specifies the service name. It is used as the prefix for resource IDs and resource names.
+The service name. Where `app` answers "which project", `service` answers "which independently deployable unit of it". It prefixes resource IDs and names, so keep it short. Also must be a static string.
 
 ```yaml
-service: my-app-service
+service: my-app-api
 ```
 
-**Naming tips:**
-- Use lowercase letters, digits, and hyphens (`-`)
-- Keep it short (resource names append this service name)
-- Must be a static string — variables are not allowed
-
-> ⚠️ **Note**: 
-> - Both `app` and `service` are required and must be static strings
-> - `service` is different from `<stackName>` on the command line. `service` is used for resource naming; `stackName` is the deployment stack identifier.
+> `service` is not the same as the CLI's `<stackName>`: `service` lives in the config and drives naming; `stackName` is given at deploy time and locates the state file.
 
 ### tags
 
-Defines resource tags for resource management, cost allocation, etc.
+Resource tags. The CLI attaches these key-values to every cloud resource it creates, for cost allocation and resource search.
 
 ```yaml
 tags:
   owner: geek-fun
-  project: my-app
   environment: ${ctx.stage}
 ```
 
-All created resources automatically carry these tags.
-
 ### backend
 
-Configures the backend state storage used to manage deployment state and locks.
+The state backend. `si deploy` relies on a state file recording what the last deployment created, enabling incremental updates and resource teardown. By default ServerlessInsight uses its managed SaaS state backend (authenticate via `si login` or `SI_API_KEY`); teams that self-manage can switch to object storage:
 
 ```yaml
 backend:
   state_manager:
-    type: BUCKET_STORE  # or LOCAL
+    type: BUCKET_STORE
     bucket: my-state-bucket
-    key: serverlessinsight/my-service/state.json
+    key: si-state/
 ```
 
-**Field description:**
-
-| Field | Type | Required | Default | Description |
-|------|------|------|--------|------|
-| `state_manager.type` | string | ❌ | `LOCAL` | State storage type: `LOCAL` (local file) or `BUCKET_STORE` (object storage) |
-| `state_manager.bucket` | string | ⚠️ | - | Bucket name (required for `BUCKET_STORE`) |
-| `state_manager.key` | string | ❌ | `state.json` | State file path |
-
-> 💡 **Tip**: Use `BUCKET_STORE` for team collaboration — members share the same state file to avoid deploy conflicts.
+| Field | Type | Required | Description |
+|------|------|------|------|
+| `state_manager.type` | string | ❌ | `LOCAL` (local file) or `BUCKET_STORE` (object storage); omitted = managed SaaS |
+| `state_manager.bucket` | string | ⚠️ | required when `BUCKET_STORE` |
+| `state_manager.key` | string | ❌ | state file path |
 
 ## Resource Types
 
 ### functions
 
-Defines serverless function compute resources. Supports both code-package deployment (`code`) and container-image deployment (`container`) — choose one.
+Functions are the core resource. The config key (e.g. `hello_world_fn`) is the **reference name** — fields like `events.triggers.backend` point at functions by it. The inner `name` is the actual cloud function name and is required.
+
+A function has one of two deployment shapes, mutually exclusive: a **code package** (`code`) or a **container image** (`container`). Most business logic uses `code`; custom runtimes, native libraries, or long-running processes call for `container`.
 
 ```yaml
 functions:
-  function_key:
-    name: function-name
+  hello_world_fn:
+    name: hello-world-fn
     code:
       runtime: nodejs18
       handler: index.handler
-      path: artifacts/function.zip
+      path: artifacts/hello-world-api.zip
     memory: 512
-    timeout: 30
+    timeout: 10
+    environment:
+      NODE_ENV: prod
 ```
 
-**Top-level fields:**
+**Top-level fields**:
 
 | Field | Type | Required | Description |
 |------|------|------|------|
-| `name` | string | ✅ | Function name (a-zA-Z0-9-_, 1-64 chars) |
-| `code` | object | ⚠️ | Code deployment config (mutually exclusive with `container`; required when `container` is absent) |
-| `container` | object | ⚠️ | Container deployment config (mutually exclusive with `code`) |
-| `memory` | integer | ❌ | Memory in MB, default 512, range 128-3072 |
-| `timeout` | integer | ❌ | Timeout in seconds, default 30, range 1-900 |
-| `gpu` | string | ❌ | GPU spec (e.g. `AMPERE_16`, `V100_16`) |
-| `log` | object | ❌ | Log configuration |
-| `environment` | object | ❌ | Environment variables (key-value; values may use variable references) |
-| `network` | object | ❌ | VPC network configuration |
-| `iam` | object | ❌ | IAM role configuration |
-| `triggers` | object | ❌ | Function-level triggers (HTTP, Timer, CDN, etc.) |
-| `domain` | object | ❌ | Function-level custom domain |
-| `storage` | object | ❌ | Storage mounts (NAS/OSS) |
+| `name` | string | ✅ | cloud function name |
+| `code` | object | ⚠️ | code package deployment (either this or `container`) |
+| `container` | object | ⚠️ | container image deployment (either this or `code`) |
+| `memory` | number | ❌ | memory (MB), default 128 |
+| `timeout` | number | ❌ | timeout (seconds), default 3 |
+| `gpu` | string | ❌ | GPU spec, see below |
+| `log` | boolean | ❌ | enable logging |
+| `environment` | object | ❌ | environment variables; values are string / number / boolean |
+| `network` | object | ❌ | VPC networking |
+| `iam` | object | ❌ | execution role and grants |
+| `triggers` | object | ❌ | function-level triggers (HTTP) |
+| `domain` | object | ❌ | function-level custom domain |
+| `storage` | object | ❌ | disk and NAS mounts |
 
-> 💡 **Note**: `code` and `container` are mutually exclusive. For `code`, provide `runtime`, `handler`, and `path`; for `container`, provide `image` and `port`.
+> `code` and `container` are mutually exclusive; providing both is not a supported combination.
 
 #### code - Code Deployment
 
@@ -340,30 +239,19 @@ functions:
 code:
   runtime: nodejs18
   handler: index.handler
-  path: artifacts/function.zip
+  path: artifacts/hello-world-api.zip
 ```
 
-**Field description:**
+`runtime` selects the execution environment on the cloud, `handler` is the entry in `file.exportedFunction` form, and `path` points at the build artifact (relative to project root, usually under `artifacts/`).
 
-| Field | Type | Required | Description |
-|------|------|------|------|
-| `runtime` | string | ✅ | Runtime identifier, see table below |
-| `handler` | string | ✅ | Entry function, format: `file.function` |
-| `path` | string | ✅ | Code package path (relative to project root) |
+**Runtime values** (`validate` / `plan` re-check per provider — see provider pages):
 
-**Supported runtimes (generic + Aliyun-specific):**
+| Provider | Runtimes |
+|--------|--------|
+| **Aliyun FC** | `nodejs24` `nodejs22` `nodejs20` `nodejs18` `nodejs16` `nodejs14` `nodejs12` `nodejs10`, `python3.14` `python3.13` `python3.12` `python3.11` `python3.10` `python3.9` `python3.7` `python3.6`, `java25` `java21` `java17` `java11` `java8`, `php8.0` `php7.4` `php7.2` `php5.6`, `go1`, `dotnet_core3.1` |
+| **Volcengine veFaaS** | `golang/v1` `native/v1` `nativejava8/v1` `node14/v1` `node20/v1` `nodeprime14/v1` `python3.12/v1` `python3.9/v1` `native-python3.12/v1` `native-node20/v1` |
 
-| Category | Runtime identifiers |
-|------|-------------|
-| **Node.js** | `nodejs20`, `nodejs18`, `nodejs16`, `nodejs14`, `nodejs12`, `nodejs10` |
-| **Python** | `python3.12`, `python3.11`, `python3.10`, `python3.9`, `python3.8`, `python3.7`, `python3.6` |
-| **Java** | `java17`, `java11`, `java8` |
-| **Go** | `go1.x` |
-| **PHP** | `php7.2`, `php7.3`, `php7.4`, `php8.0`, `php8.1` |
-| **.NET** | `dotnetcore3.1`, `dotnet6`, `dotnet8` |
-| **Custom Runtime** | `custom`, `custom.debian10` |
-
-> 💡 **Tip**: These are the generic runtimes. Aliyun FC3 also supports the latest versions such as `nodejs20` and `python3.12`. For provider-specific versions, refer to the corresponding cloud vendor documentation.
+> Volcengine runtime identifiers carry a `/v1` suffix — unlike Aliyun's style — so switching providers means updating `runtime` accordingly.
 
 #### container - Container Deployment
 
@@ -371,151 +259,105 @@ code:
 container:
   image: registry.cn-hangzhou.aliyuncs.com/my-repo/my-image:latest
   port: 9000
+  cmd: ["node", "server.js"]
 ```
-
-**Field description:**
 
 | Field | Type | Required | Description |
 |------|------|------|------|
-| `image` | string | ✅ | Full container image address |
-| `port` | integer | ✅ | Container listening port (1-65535) |
+| `image` | string | ✅ | image address (must be pullable by the provider) |
+| `port` | number | ✅ | HTTP port your service listens on inside the container |
+| `cmd` | string[] | ❌ | override the image's default entry command |
 
-> ⚠️ **Note**: In container mode, the function entry is handled by the HTTP service inside the container — no `handler` is needed. The image must include an HTTP service listening on the specified port.
+In container mode there is no `handler` — the platform forwards requests to the HTTP service listening on `port` inside your container.
 
-#### memory - Memory
+#### gpu
 
-```yaml
-memory: 1024
-```
+GPU spec enum (Aliyun):
 
-- Unit: MB
-- Range: 128 - 3072
-- Default: 512
-- Must be a multiple of 64 (some providers require multiples of 128)
+`TESLA_8` `TESLA_12` `TESLA_16` `AMPERE_8` `AMPERE_12` `AMPERE_16` `AMPERE_24` `ADA_48`
 
-#### timeout - Timeout
+The number is VRAM in GB. GPU instances usually need a higher `memory` to match.
 
-```yaml
-timeout: 60
-```
+#### log
 
-- Unit: seconds
-- Range: 1 - 900
-- Default: 30
-
-#### gpu - GPU Configuration
+A boolean. When enabled, invocation logs flow into the provider's log service (e.g. Aliyun SLS); observability commands like `si logs` depend on it:
 
 ```yaml
-gpu: AMPERE_16
+log: true
 ```
 
-**Supported GPU specs (Aliyun):**
-- `AMPERE_16` - A10 16GB
-- `AMPERE_24` - A10G 24GB
-- `V100_16` - V100 16GB
-- `V100_32` - V100 32GB
-- `T4_16` - T4 16GB
+#### network
 
-> 💡 **Tip**: GPU instances require higher memory; `memory >= 4096` is recommended.
-
-#### log - Log Configuration
-
-```yaml
-log:
-  project: my-log-project
-  logstore: my-function-logs
-  ttl: 30
-```
-
-**Field description:**
-
-| Field | Type | Required | Description |
-|------|------|------|------|
-| `project` | string | ❌ | SLS log project name |
-| `logstore` | string | ❌ | Logstore name |
-| `ttl` | integer | ❌ | Log retention days (1-3650) |
-
-#### environment - Environment Variables
-
-```yaml
-environment:
-  NODE_ENV: production
-  DB_HOST: "${vars.db_host}"
-  API_KEY: "secret-value"
-```
-
-- Format: `key: value`; values support variable references `${vars.xxx}`, `${stages.xxx}`, `${ctx.stage}`
-- All environment variables are accessible at runtime via `process.env`
-
-#### network - Network Configuration
+Attaching a function to a private network is what lets it reach databases, caches, and other VPC-internal endpoints. All three sub-fields are **required** when `network` is present:
 
 ```yaml
 network:
   vpc_id: vpc-xxxxx
   subnet_ids:
     - vsw-xxxxx
-    - vsw-xxxxx
+    - vsw-yyyyy
   security_group:
     name: my-sg
     ingress:
       - TCP:10.0.0.0/8:443
-      - UDP:172.16.0.0/12:53
+    egress:
+      - UDP:0.0.0.0/0:ALL
 ```
 
-**Field description:**
-
 | Field | Type | Required | Description |
 |------|------|------|------|
-| `vpc_id` | string | ⚠️ | VPC ID (required when configuring network) |
-| `subnet_ids` | string[] | ⚠️ | vSwitch ID list (required when configuring network) |
-| `security_group` | object | ❌ | Security group configuration |
+| `vpc_id` | string | ✅ | VPC ID |
+| `subnet_ids` | string[] | ✅ | vSwitch (subnet) IDs |
+| `security_group` | object | ✅ | see below |
+| `security_group.name` | string | ✅ | security group name |
+| `security_group.ingress` | string[] | ✅ | inbound rules |
+| `security_group.egress` | string[] | ❌ | outbound rules |
 
-**security_group fields:**
+Rule format is `protocol:CIDR:port` where port is `ALL`, a single port (`443`), or a range (`80/90`) — e.g. `TCP:10.0.0.0/8:443`.
 
-| Field | Type | Required | Description |
-|------|------|------|------|
-| `name` | string | ✅ | Security group name |
-| `ingress` | string[] | ❌ | Inbound rules, format: `protocol:CIDR:port` |
+#### iam
 
-#### iam - IAM Role Configuration
+Configures the function's execution role. The simple form references an existing RAM role ARN; for fine-grained grants, use the object form:
 
 ```yaml
+# Form 1: reference an existing role
 iam:
   role: acs:ram::1234567890:role/my-role
-  policies:
-    - AliyunOSSReadOnlyAccess
-    - AliyunRDSReadOnlyAccess
+
+# Form 2: declare the role and its grants
+iam:
+  role:
+    name: my-fn-role
+    managed_policies:
+      - AliyunOSSReadOnlyAccess
+    statements:
+      - effect: Allow
+        action:
+          - oss:GetObject
+        resource:
+          - my-bucket/*
 ```
 
-**Field description:**
+Each `statements` item requires `effect` (`Allow` / `Deny`), `action`, and `resource` (string or array); `sid` is optional.
 
-| Field | Type | Required | Description |
-|------|------|------|------|
-| `role` | string | ❌ | Existing RAM role ARN |
-| `policies` | string[] | ❌ | Attached system policy name list |
+#### triggers - Function-level HTTP Trigger
 
-> 💡 **Note**: If not specified, a role with basic permissions is created automatically.
-
-#### triggers - Function-level Triggers
+Attaches an HTTP trigger directly to the function (no API gateway). Tencent Cloud functions expose their HTTP entry this way:
 
 ```yaml
 triggers:
   http:
-    type: HTTP
-    methods: [GET, POST]
-    path: /api/v1/*
-  timer:
-    type: TIMER
-    cron: "0 */5 * * * *"
+    auth_type: public
+    access:
+      - public
 ```
 
-**Supported trigger types:**
+| Field | Type | Required | Description |
+|------|------|------|------|
+| `auth_type` | string | ✅ | `public` (anonymous public access) or `iam` (signature-authenticated) |
+| `access` | string[] | ❌ | network access types: `public` / `internal`, at least one |
 
-| Type | Description | Required fields |
-|------|------|----------|
-| `HTTP` | HTTP trigger | `methods`, `path` |
-| `TIMER` | Timer trigger | `cron` (6-field cron expression) |
-| `CDN` | CDN event trigger | `event` |
+> Function-level HTTP triggers fit simple cases; for path routing, custom domains, and rate limiting, use `events` (API gateway) instead.
 
 #### domain - Function-level Custom Domain
 
@@ -524,99 +366,127 @@ domain:
   domain_name: api.example.com
   certificate_id: 12345678-xxxx-xxxx-xxxx-xxxxxxxxxxxx
   protocol: HTTPS
-  route_config:
-    - path: /api/*
-      methods: [GET, POST]
 ```
-
-**Field description:**
 
 | Field | Type | Required | Description |
 |------|------|------|------|
-| `domain_name` | string | ✅ | Custom domain |
-| `certificate_id` | string | ❌ | SSL certificate ID |
-| `protocol` | string/array | ❌ | Protocol: `HTTP`, `HTTPS`, or `['HTTP', 'HTTPS']` |
-| `route_config` | object[] | ❌ | Route configuration |
+| `domain_name` | string | ✅ | custom domain (registered and pointed at the provider) |
+| `certificate_id` | string | ❌ | uploaded SSL certificate ID |
+| `protocol` | string | ❌ | `HTTP` or `HTTPS` |
 
-#### storage - Storage Mounts
+#### storage - Disk and NAS
 
 ```yaml
 storage:
+  disk: 512
   nas:
-    - mount_point: /mnt/nas
-      server: nas-xxxxx.cn-hangzhou.nas.aliyuncs.com
-      path: /serverless
-      access_group: DEFAULT_VPC_GROUP_NAME
-  oss:
-    - mount_point: /mnt/oss
-      bucket: my-bucket
-      endpoint: oss-cn-hangzhou.aliyuncs.com
+    - mount_path: /mnt/nas
+      storage_class: STANDARD_CAPACITY
 ```
 
----
+| Field | Type | Required | Description |
+|------|------|------|------|
+| `disk` | number | ❌ | temporary disk size (MB) |
+| `nas` | object[] | ❌ | NAS mount list |
+| `nas[].mount_path` | string | ✅ | in-container mount path |
+| `nas[].storage_class` | string | ✅ | `STANDARD_CAPACITY` / `STANDARD_PERFORMANCE` / `EXTREME_STANDARD` / `EXTREME_ADVANCE` |
 
 ### events
 
-Defines event triggers (e.g. API Gateway). Currently only `API_GATEWAY` is supported.
+The events resource currently has exactly one shape: an **API gateway** (`type: API_GATEWAY`). It solves the "many functions, many routes" traffic-entry problem — the gateway dispatches requests to different functions by path and method, and carries a shared domain and certificate.
+
+Choosing between `functions.triggers.http` and `events`: a single function with a fixed path is simpler with a function-level trigger; a set of endpoints needing routing and one shared domain belongs in `events`.
 
 ```yaml
 events:
-  api_gateway:
+  gateway_event:
+    name: insight-poc-gateway
     type: API_GATEWAY
-    name: my-api-gateway
     triggers:
       - method: GET
         path: /api/*
-        backend: api_function
-      - method: POST
-        path: /api/*
-        backend: api_function
+        backend: hello_world_fn
     domain:
       domain_name: api.example.com
       certificate_id: 12345678-xxxx-xxxx-xxxx-xxxxxxxxxxxx
       protocol: HTTPS
 ```
 
-**Top-level fields:**
-
 | Field | Type | Required | Description |
 |------|------|------|------|
-| `type` | string | ✅ | Event type — only `API_GATEWAY` is supported |
-| `name` | string | ✅ | Gateway name |
-| `triggers` | object[] | ✅ | Trigger rule list |
-| `domain` | object | ❌ | Custom domain configuration |
+| `name` | string | ✅ | gateway name |
+| `type` | string | ✅ | `API_GATEWAY` only |
+| `triggers` | object[] | ✅ | routing rules |
+| `log` | boolean | ❌ | enable gateway logging |
+| `network` | object | ❌ | the VPC the gateway lives in |
+| `domain` | object | ❌ | custom domain and certificate |
 
-#### triggers - Trigger Rules
+> ⚠️ **Tencent Cloud does not support `events`.** Tencent functions expose HTTP via `functions.triggers.http` — see [Tencent Cloud](/en/providers/tencent).
+
+#### triggers - Routing Rules
 
 ```yaml
 triggers:
   - method: GET
     path: /api/*
-    backend: api_function
-  - method: POST
-    path: /api/*
-    backend: api_function
+    backend: hello_world_fn
 ```
-
-**Each trigger object:**
 
 | Field | Type | Required | Description |
 |------|------|------|------|
-| `method` | string | ✅ | HTTP method: `GET`, `POST`, `PUT`, `DELETE`, `ANY` |
-| `path` | string | ✅ | Path pattern (must start with `/`; wildcard `*` supported) |
-| `backend` | string | ✅ | Backend function key (corresponds to a key in `functions`) |
+| `method` | string | ✅ | `GET` / `POST` / `PUT` / `DELETE` / `ANY` |
+| `path` | string | ✅ | must start with `/`; `*` wildcard supported |
+| `backend` | string | ✅ | target function's **reference name** (the key under `functions`, not its `name`) |
 
-> ⚠️ **Note**: The `type` in `events` only supports `API_GATEWAY`. Legacy types such as `HTTP`, `Timer`, and `SQS` are no longer supported.
+> Legacy event types — `type: HTTP`, `type: Timer`, `type: sqs` — have been removed from the schema and fail `validate`. Timer and messaging triggers are not yet supported.
 
-#### domain - Custom Domain
+#### domain - Gateway Custom Domain
 
-Same as [functions.domain](#domain---function-level-custom-domain).
+```yaml
+domain:
+  domain_name: api.example.com
+  protocol: HTTPS
+  certificate_id: 12345678-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  www_bind_apex: false
+```
 
----
+| Field | Type | Required | Description |
+|------|------|------|------|
+| `domain_name` | string | ✅ | custom domain |
+| `protocol` | string / string[] | ❌ | `HTTP`, `HTTPS`, or an array of both, e.g. `['HTTP', 'HTTPS']` |
+| `certificate_id` | string | ⚠️ | certificate ID (one of three forms, see below) |
+| `certificate_body` + `certificate_private_key` | string | ⚠️ | certificate content + private key (one of three forms) |
+| `www_bind_apex` | boolean | ❌ | also bind the www subdomain |
+| `cdn` | object / boolean | ❌ | CDN acceleration, see below |
+
+The three certificate forms are **mutually exclusive**: either `certificate_id`, or `certificate_body` + `certificate_private_key` together — never a mix.
+
+**cdn configuration** (or simply `cdn: true` for defaults):
+
+```yaml
+cdn:
+  enabled: true
+  cdn_type: web
+  scope: domestic
+  cache_ttl: 3600
+  origin_protocol: follow
+  force_redirect_https: true
+```
+
+| Field | Type | Description |
+|------|------|------|
+| `enabled` | boolean | enable CDN |
+| `cdn_type` | string | `web` / `download` / `video` |
+| `scope` | string | `domestic` / `overseas` / `global` |
+| `cache_ttl` | number | cache duration (seconds) |
+| `ignore_query_string` | boolean | exclude query strings from cache keys |
+| `origin_protocol` | string | origin protocol: `http` / `https` / `follow` |
+| `compression` | boolean | smart compression |
+| `force_redirect_https` | boolean | force HTTPS redirect |
 
 ### databases
 
-Defines serverless database resources. Currently supports MySQL, PostgreSQL, SQL Server, Elasticsearch, and TDSQL-C.
+The databases resource declares the data layer your functions depend on. ServerlessInsight provisions the instance, wires the network, and sets credentials — your function just needs the connection string. Supported: Aliyun RDS / Elasticsearch Serverless and Tencent TDSQL-C:
 
 ```yaml
 databases:
@@ -624,467 +494,283 @@ databases:
     name: main-db
     type: RDS_MYSQL_SERVERLESS
     version: MYSQL_8.0
+    cu:
+      min: 0
+      max: 8
     security:
       basic_auth:
+        master_user: dbadmin
         password: "${vars.db_password}"
 ```
 
-**Top-level fields:**
+`cu.min/max` is the point of serverless databases: scale to 0 CU with no traffic (no compute cost) and burst to `max` under load. **Always inject the password via `${vars.*}` or `-p` — never commit it in plain text.**
 
-| Field | Type | Required | Description |
-|------|------|------|------|
-| `name` | string | ✅ | Database instance name |
-| `type` | enum | ✅ | Database type (see table below) |
-| `version` | enum | ✅ | Engine version (see table below) |
-| `security` | object | ✅ | Security config; must include `basic_auth.password` |
+**Type and version values**:
 
-**Database type (`type`) enum values:**
+| Field | Values |
+|------|--------|
+| `type` | `ELASTICSEARCH_SERVERLESS` `RDS_MYSQL_SERVERLESS` `RDS_PGSQL_SERVERLESS` `RDS_MSSQL_SERVERLESS` `TDSQL_C_SERVERLESS` |
+| `version` | `MYSQL_5.7` `MYSQL_8.0` `MYSQL_HA_5.7` `MYSQL_HA_8.0`, `PGSQL_14` `PGSQL_15` `PGSQL_16` `PGSQL_HA_14` `PGSQL_HA_15` `PGSQL_HA_16`, `MSSQL_HA_2016` `MSSQL_HA_2017` `MSSQL_HA_2019`, `ES_SEARCH_7.10` `ES_TIME_SERIES_7.10` |
 
-| Value | Description |
-|----|------|
-| `ELASTICSEARCH_SERVERLESS` | Elasticsearch Serverless |
-| `RDS_MYSQL_SERVERLESS` | RDS MySQL Serverless |
-| `RDS_PGSQL_SERVERLESS` | RDS PostgreSQL Serverless |
-| `RDS_MSSQL_SERVERLESS` | RDS SQL Server Serverless |
-| `TDSQL_C_SERVERLESS` | TDSQL-C Serverless (Tencent Cloud) |
+The `_HA_` variants are high-availability (primary-standby) — prefer them in production.
 
-**Version (`version`) enum values (grouped by type):**
+**Remaining fields**:
 
-| Type | Supported versions |
-|------|-----------|
-| `RDS_MYSQL_SERVERLESS` | `MYSQL_5.7`, `MYSQL_8.0`, `MYSQL_HA_5.7`, `MYSQL_HA_8.0` |
-| `RDS_PGSQL_SERVERLESS` | `PGSQL_14`, `PGSQL_15`, `PGSQL_16`, `PGSQL_HA_14`, `PGSQL_HA_15`, `PGSQL_HA_16` |
-| `RDS_MSSQL_SERVERLESS` | `MSSQL_HA_2016`, `MSSQL_HA_2017`, `MSSQL_HA_2019` |
-| `ELASTICSEARCH_SERVERLESS` | `ES_SEARCH_7.10`, `ES_TIME_SERIES_7.10` |
-| `TDSQL_C_SERVERLESS` | (Tencent Cloud versions; see console) |
+| Field | Type | Description |
+|------|------|------|
+| `cu` | object | elastic compute unit range: `min` / `max` |
+| `storage` | object | storage capacity range: `min` / `max` (GB, integers) |
+| `security.basic_auth.master_user` | string | admin username |
+| `security.basic_auth.password` | string | admin password (inject via variable) |
+| `network` | object | access network, see below |
 
-> ⚠️ **Note**: Legacy values such as `RDS_REDIS_SERVERLESS` and `REDIS_6.0` have been removed; Redis Serverless is not currently supported.
-
-**Security basic auth:**
+**network fields**:
 
 ```yaml
-security:
-  basic_auth:
-    password: "${vars.db_password}"
+network:
+  type: PRIVATE
+  vpc_id: vpc-xxxxx
+  subnet_id: vsw-xxxxx
+  public: false
+  ingress_rules:
+    - TCP:10.0.0.0/8:3306
 ```
 
-| Field | Type | Required | Description |
-|------|------|------|------|
-| `basic_auth.password` | string | ✅ | Database password (a variable reference is recommended) |
+| Field | Type | Description |
+|------|------|------|
+| `type` | string | `PUBLIC` (direct public access) or `PRIVATE` (VPC-internal) |
+| `vpc_id` / `subnet_id` | string | VPC and vSwitch for private access (note: a single `subnet_id`) |
+| `public` | boolean | additionally expose public access |
+| `ingress_rules` | string[] | access rules, same format as security group rules |
 
----
+> Not every provider supports every database type — see the [Provider Overview](/en/providers/) capability matrix.
 
 ### tables
 
-Defines table storage resources (TableStore / DynamoDB, etc.).
+Table storage fits low-latency reads/writes over massive semi-structured data (user profiles, sessions, IoT time series). Currently supported only on **Aliyun TableStore**. Every table belongs to an instance (`collection`, a string, required) — the instance is TableStore's billing and network unit.
 
 ```yaml
 tables:
-  user_table:
-    name: user-table
+  sessions:
+    collection: my-instance
+    name: session-table
     type: TABLE_STORE_H
-    collection:
-      name: my-instance
+    desc: user session table
     key_schema:
       - name: user_id
         type: HASH
-      - name: created_at
+      - name: session_id
         type: RANGE
     attributes:
       - name: user_id
         type: STRING
-      - name: created_at
-        type: INTEGER
-      - name: email
+      - name: session_id
         type: STRING
+      - name: payload
+        type: BINARY
     throughput:
       reserved:
         read: 100
         write: 100
 ```
 
-**Top-level fields:**
+**Primary key design is the single most important decision here**: the `HASH` key decides which shard a row lands on — pick a high-cardinality field (like user_id) to avoid hot spots; the `RANGE` key sorts rows within a shard and suits range queries.
 
 | Field | Type | Required | Description |
 |------|------|------|------|
-| `name` | string | ✅ | Table name |
-| `type` | enum | ✅ | Table type: `TABLE_STORE_C` (capacity) or `TABLE_STORE_H` (high-performance) |
-| `collection` | object | ❌ | Instance/store configuration |
-| `key_schema` | object[] | ✅ | Primary key structure |
-| `attributes` | object[] | ✅ | Attribute definitions |
-| `throughput` | object | ❌ | Throughput configuration |
+| `collection` | string | ✅ | owning instance name |
+| `name` | string | ✅ | table name |
+| `type` | string | ✅ | `TABLE_STORE_C` (capacity, pay-per-use, write-heavy) / `TABLE_STORE_H` (high-performance, reserved capacity, low latency) |
+| `desc` | string | ❌ | description, max 256 chars |
+| `key_schema` | object[] | ✅ | primary keys, see below |
+| `attributes` | object[] | ✅ | attribute columns, see below |
+| `throughput` | object | ❌ | reserved / on-demand read-write CU |
+| `network` | object | ❌ | access network |
 
-**collection fields:**
+**key_schema / attributes**:
 
-| Field | Type | Required | Description |
-|------|------|------|------|
-| `name` | string | ❌ | Name of a new instance/store |
-| `id` | string | ❌ | ID of an existing instance/store |
+| Field | Type | Description |
+|------|------|------|
+| `name` | string | key / attribute name |
+| `type` | string | key type: `HASH` (partition) or `RANGE` (sort); attribute types: `STRING` `INTEGER` `DOUBLE` `BOOLEAN` `BINARY` |
 
-> 💡 **Note**: Concepts differ across cloud vendors:
-> - **Aliyun**: Table storage belongs to an instance (Instance)
-> - **Huawei Cloud**: Table storage belongs to a store (Store)
-> - **AWS**: A DynamoDB table is a top-level unit; no collection needed
+> Every key in `key_schema` must have its type declared in `attributes` — schema validation rejects keys without types.
 
-**key_schema fields:**
+**throughput** (capacity-type tables usually need no reservation):
 
-| Field | Type | Required | Description |
-|------|------|------|------|
-| `name` | string | ✅ | Key name |
-| `type` | enum | ✅ | Key type: `HASH` (partition key) or `RANGE` (sort key) |
+| Field | Description |
+|------|------|
+| `reserved.read` / `reserved.write` | reserved read / write CU |
+| `on_demand.read` / `on_demand.write` | on-demand read / write CU caps |
 
-**attributes fields:**
-
-| Field | Type | Required | Description |
-|------|------|------|------|
-| `name` | string | ✅ | Attribute name |
-| `type` | enum | ✅ | Data type: `STRING`, `INTEGER`, `DOUBLE`, `BOOLEAN`, `BINARY` |
-
-**throughput fields:**
-
-| Field | Type | Required | Description |
-|------|------|------|------|
-| `reserved.read` | integer | ❌ | Reserved read CU (1-10000) |
-| `reserved.write` | integer | ❌ | Reserved write CU (1-10000) |
-| `on_demand.read` | integer | ❌ | Max on-demand read CU (AWS only) |
-| `on_demand.write` | integer | ❌ | Max on-demand write CU (AWS only) |
-
-> ⚠️ **Note**: Keys declared in `key_schema` must have their data types declared in `attributes`.
-
----
+**network**: `type` (`PUBLIC` / `PRIVATE`, required), `vpc_id`, `ingress_rules[]`.
 
 ### buckets
 
-Defines object storage bucket resources (e.g. Aliyun OSS, AWS S3).
+Object storage buckets serve three typical purposes: hosting static assets and frontend builds, storing function code packages and artifacts, and archiving logs and backups. Bucket names are globally unique — prefix them with your project:
 
 ```yaml
 buckets:
-  my_bucket:
-    name: my-app-bucket
+  assets:
+    name: my-app-assets
     storage:
       class: STANDARD
     versioning:
-      status: ENABLED
+      status: Enabled
     security:
       acl: PRIVATE
-      force_delete: false
       sse_algorithm: KMS
-      sse_kms_master_key_id: 1234567890
-    website:
-      code: dist/
-      domain: www.example.com
-      index: index.html
-      error_page: 404.html
-      error_code: 404
     domain:
       domain_name: static.example.com
       certificate_id: 12345678-xxxx-xxxx-xxxx-xxxxxxxxxxxx
       protocol: HTTPS
-      www_bind_apex: true
-      cdn:
-        enabled: true
-        cdn_type: web
-        scope: domestic
-        cache_ttl: 3600
-        origin_protocol: https
-        force_redirect_https: true
-      accelerate: true
-    iam:
-      resource:
-        statements:
-          - effect: Allow
-            principal:
-              AWS: '123456789012'
-            action:
-              - oss:GetObject
-              - oss:PutObject
-            resource:
-              - my-app-bucket/*
 ```
 
-**Top-level fields:**
+| Field | Type | Required | Description |
+|------|------|------|------|
+| `name` | string | ✅ | bucket name (globally unique, a-zA-Z0-9-_) |
+| `storage` | object | ❌ | `class` required: storage class (provider-passthrough, e.g. `STANDARD` / `IA` / `ARCHIVE`) |
+| `versioning` | object | ❌ | `status` required: versioning (provider-passthrough; Aliyun uses `Enabled` / `Suspended`) |
+| `security` | object | ❌ | ACL and encryption, see below |
+| `domain` | object | ❌ | custom domain (recommended, see below) |
+| `website` | object | ❌ | static website hosting, see below |
+| `iam` | object | ❌ | bucket resource policy |
 
-| Field | Type | Required | Default | Description |
-|------|------|------|--------|------|
-| `name` | string | ✅ | - | Bucket name (a-zA-Z0-9-_, 1-64 chars) |
-| `storage` | object | ❌ | - | Storage configuration |
-| `versioning` | object | ❌ | - | Versioning configuration |
-| `security` | object | ❌ | - | Security configuration |
-| `domain` | object | ❌ | - | Custom domain configuration (recommended; takes precedence over `website.domain`) |
-| `website` | object | ❌ | - | Static website hosting configuration |
-| `iam` | object | ❌ | - | Bucket IAM resource policy |
+**security**:
 
-**Storage classes (`storage.class`):**
-- `STANDARD` - Standard storage
-- `IA` - Infrequent access
-- `ARCHIVE` - Archive storage
-- `COLD` - Cold storage
+| Field | Type | Description |
+|------|------|------|
+| `acl` | string | `PRIVATE` (default) / `PUBLIC_READ` / `PUBLIC_READ_WRITE` |
+| `force_delete` | boolean | allow destroy to delete non-empty buckets (default false — a non-empty bucket fails teardown, by design) |
+| `sse_algorithm` | string | server-side encryption: `AES256` / `KMS` |
+| `sse_kms_master_key_id` | string | KMS key ID (used with `sse_algorithm: KMS`) |
 
-**Versioning (`versioning.status`):**
-- `ENABLED` - Enable versioning
-- `DISABLED` - Disable versioning
-
-**Security configuration (`security`):**
-
-| Field | Type | Required | Default | Description |
-|------|------|------|--------|------|
-| `acl` | string | ❌ | PRIVATE | Access control: `PRIVATE`, `PUBLIC_READ`, `PUBLIC_READ_WRITE` |
-| `force_delete` | boolean | ❌ | false | Force delete (non-recoverable) |
-| `sse_algorithm` | string | ❌ | - | Encryption algorithm: `AES256`, `KMS` |
-| `sse_kms_master_key_id` | string | ❌ | - | KMS key ID |
-
-**Static website hosting (`website`):**
-
-> ⚠️ **Note**: 
-> - Public access requires `acl` set to `PUBLIC_READ`
-> - Except for `code`, these settings cannot be modified after creation
-
-| Field | Type | Required | Default | Description |
-|------|------|------|--------|------|
-| `code` | string | ✅ | - | Website code package path |
-| `domain` | string/object | ❌ | - | Custom domain (string or object) |
-| `index` | string | ❌ | index.html | Default index page |
-| `error_page` | string | ❌ | 404.html | Error page |
-| `error_code` | integer | ❌ | 404 | Error code |
-
-**Top-level `domain` configuration (recommended; supports CDN and OSS acceleration):**
+**domain - custom domain (recommended)**: a plain string or an object. The object form adds certificates and CDN:
 
 ```yaml
-domain:
+domain: cdn.example.com        # shorthand
+
+domain:                        # full form
   domain_name: static.example.com
-  certificate_id: 12345678-xxxx-xxxx-xxxx-xxxxxxxxxxxx
   protocol: HTTPS
+  certificate_id: 12345678-xxxx-xxxx-xxxx-xxxxxxxxxxxx
   www_bind_apex: true
+  accelerate: true             # OSS transfer acceleration
   cdn:
     enabled: true
     cdn_type: web
     scope: domestic
     cache_ttl: 3600
-    origin_protocol: https
+    origin_protocol: follow
     force_redirect_https: true
-  accelerate: true
 ```
 
-**cdn configuration fields:**
+Certificate rules match `events.domain`: `certificate_id` and (`certificate_body` + `certificate_private_key`) are mutually exclusive. The `cdn` object is the same as the [events cdn](#cdn-configuration).
+
+**website - static website hosting**:
+
+```yaml
+website:
+  code: dist/
+  index: index.html
+```
 
 | Field | Type | Required | Description |
 |------|------|------|------|
-| `enabled` | boolean | ✅ | Whether CDN is enabled |
-| `cdn_type` | string | ❌ | CDN type: `web` (website), `download` (download), `video` (media) |
-| `scope` | string | ❌ | Acceleration scope: `domestic` (China), `overseas` (international), `global` |
-| `cache_ttl` | number | ❌ | Cache duration (seconds) |
-| `ignore_query_string` | boolean | ❌ | Whether to ignore query strings |
-| `origin_protocol` | string | ❌ | Origin protocol: `http`, `https`, `follow` |
-| `compression` | boolean | ❌ | Whether compression is enabled |
-| `force_redirect_https` | boolean | ❌ | Whether to force redirect to HTTPS |
+| `code` | string | ✅ | website build output / code package path |
+| `index` | string | ❌ | default index page (index.html) |
+| `domain` | string / object | ❌ | ⚠️ deprecated: use the top-level `domain` field |
 
-**IAM resource policy (`iam.resource.statements`):**
+> Public access requires `security.acl: PUBLIC_READ`; `website` only handles hosting behavior — domains and certificates go through the top-level `domain`.
+
+**iam - bucket resource policy**: cross-account or anonymous access control; statement structure mirrors function `iam.statements` (`effect` / `action` / `resource` required):
 
 ```yaml
 iam:
   resource:
     statements:
       - effect: Allow
-        principal:
-          AWS: '123456789012'
         action:
           - oss:GetObject
-          - oss:PutObject
         resource:
-          - my-app-bucket/*
+          - my-app-assets/*
 ```
-
-| Field | Type | Required | Description |
-|------|------|------|------|
-| `effect` | string | ✅ | `Allow` or `Deny` |
-| `principal` | object | ✅ | Principal (e.g. `AWS: 'account-id'`) |
-| `action` | string/array | ✅ | Allowed or denied actions |
-| `resource` | string/array | ✅ | Resource paths |
-| `condition` | object | ❌ | Policy conditions |
-
----
 
 ## Variable References
 
-ServerlessInsight supports several variable reference styles:
-
-### 1. vars variables
+Anything that varies across environments should go through variables instead of copy-pasted configs. The three forms have distinct jobs:
 
 ```yaml
+# ${vars.*} — team-defined variables, overridable via -p
 vars:
-  region: cn-hangzhou
-  memory: 512
+  db_password: change-me
 
-functions:
-  my_function:
-    memory: ${vars.memory}
-    environment:
-      REGION: ${vars.region}
-```
-
-### 2. stages variables
-
-```yaml
+# ${stages.*} — values defined in the current stage
 stages:
   dev:
-    memory: 512
-  prod:
-    memory: 2048
+    memory: 256
 
-functions:
-  my_function:
-    memory: ${stages.memory}
+# ${ctx.*} — CLI runtime context
+# ctx.stage is the stage being deployed
 ```
-
-### 3. Context variables
 
 ```yaml
-app: my-app
-service: my-app-service
+functions:
+  api_function:
+    memory: ${stages.memory}          # stages.<current>.memory
+    environment:
+      DB_PASSWORD: ${vars.db_password} # vars.db_password
+      STAGE: ${ctx.stage}              # dev / prod / ...
 ```
 
-**Predefined context variables:**
-- `${ctx.stage}` - the name of the current deployment stage
-
-> ⚠️ **Note**: `app` and `service` must be static strings — variables are not allowed. Other configuration may use variables such as `${ctx.stage}`.
+> `app` and `service` do not support variables — they participate in state-file resolution and must be literals before interpolation happens.
 
 ## Local Development
 
-ServerlessInsight can launch all defined resources locally for development and debugging.
-
-**Local run commands:**
+`si local` runs the defined functions in local processes, using your real handler code behind a local HTTP server that simulates cloud behavior — iterate without redeploying (currently Aliyun functions only):
 
 ```bash
-# Basic local run
 si local --stage dev
-
-# Debug mode
-si local --stage dev --debug
-
-# Watch mode (auto-reload on code changes)
-si local --stage dev --watch
 ```
 
-**Local development benefits:**
-- ✅ No local cloud resources needed
-- ✅ Dev environment consistent with production
-- ✅ Hot reload for higher productivity
-- ✅ Fast debugging and testing
+- Local server listens on port `4567`, routing requests per your `events` rules
+- `--watch` is on by default; saving code hot-reloads
+- `--debug` enables debug mode and IDE breakpoints
 
 ## Best Practices
 
-### 1. Environment isolation
+**Isolate environments with stages, not file copies.** When dev and prod differ only in parameters, one config + `${stages.*}` is the cheapest thing to maintain; split files only when the structure itself diverges.
 
-Use `stages` to manage environments:
+**Inject secrets, don't commit them.** Keep non-sensitive defaults in `vars`; pass passwords with `-p key=value` at deploy time or wire them from your CI's secret manager.
 
-```yaml
-stages:
-  dev:
-    region: cn-hangzhou
-    memory: 512
-  test:
-    region: cn-shanghai
-    memory: 1024
-  prod:
-    region: cn-beijing
-    memory: 2048
-```
+**Put the environment in function names.** Suffix resource names with `${ctx.stage}` (e.g. `user-api-${ctx.stage}`) so parallel environments are instantly identifiable and never collide.
 
-### 2. Variable reuse
+**Let destroy fail loudly.** Buckets refuse to delete while non-empty (`force_delete: false`) — that guard is protection, not friction. Enable it only for genuinely disposable scratch resources.
 
-Extract common configuration into `vars`:
-
-```yaml
-vars:
-  regions:
-    dev: cn-hangzhou
-    prod: cn-beijing
-  memory:
-    dev: 512
-    prod: 2048
-```
-
-### 3. Resource naming
-
-Use meaningful names with environment info:
-
-```yaml
-app: my-app
-service: my-app-service
-
-functions:
-  user_api:
-    name: user-api-${ctx.stage}
-```
-
-> ⚠️ **Note**: `app` and `service` must be static strings, but resource names (e.g. the `name` field) may use variables.
-
-### 4. Tag management
-
-Add tags to all resources for easier management:
-
-```yaml
-tags:
-  owner: team-name
-  project: project-name
-  environment: ${ctx.stage}
-  cost-center: cc-12345
-```
-
-### 5. Security configuration
-
-- Manage sensitive information via environment variables
-- Configure VPC and security groups for production
-- Enable bucket versioning and encryption
+**Validate before deploying.** `si validate` checks runtimes, enums, and required fields per provider — catching errors before any cloud resource is created is always cheaper than rolling back a failed deploy.
 
 ## FAQ
 
-### Q: How do I switch cloud providers?
+### Q: Why is API_GATEWAY the only event type?
 
-Change `provider.name` and adjust the region configuration:
+The schema currently implements only API gateway events. Timer and messaging triggers are not in the schema yet — writing `type: Timer` fails `validate` by design, not by bug. For simple HTTP, use `functions.triggers.http` meanwhile.
 
-```yaml
-provider:
-  name: aliyun  # or tencent, volcengine
-  region: cn-hangzhou
-```
+### Q: Why can't `app` / `service` use variables?
+
+Both fields participate in state-file resolution and resource naming; the CLI must know them as literals before interpolation. Every other field (`name`, `environment`, ...) may reference variables freely.
+
+### Q: Deployment fails with "runtime not supported"?
+
+`runtime` is validated per provider: Aliyun uses identifiers like `nodejs18`, Volcengine uses suffixed ones like `node20/v1`. Check the runtime table above and the provider page.
 
 ### Q: How do I update a deployed function?
 
-Redeploy after modifying configuration or code:
+Repackage and run `si deploy` again. The CLI diffs against the state file and only changes what actually changed.
 
-```bash
-# Repackage the code
-./scripts/package.sh
-
-# Redeploy (updates existing resources)
-si deploy --stage dev
-```
-
-### Q: How do I delete resources?
-
-Use the `destroy` command:
+### Q: How do I delete all resources?
 
 ```bash
 si destroy --stage dev
 ```
 
-> ⚠️ **Warning**: This deletes all related resources — proceed with caution.
-
-### Q: What if configuration validation fails?
-
-Use the `validate` command to check the configuration:
-
-```bash
-si validate
-```
-
-Fix issues according to the error messages.
-
-### Q: Why does deployment fail with "runtime not supported"?
-
-Check whether `functions.<name>.code.runtime` is a supported runtime identifier. Runtimes differ per cloud vendor; see the runtime list in [functions.code](#code---code-deployment).
-
-### Q: Which event trigger types are supported?
-
-Currently only `API_GATEWAY`. For timer or HTTP triggering, configure function-level triggers via `functions.<name>.triggers`.
+Destroy tears down resources recorded in the state file. Non-empty buckets fail teardown; after confirming, you can temporarily set `security.force_delete: true`.

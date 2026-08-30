@@ -469,7 +469,7 @@ AI 模型部署和推理服务。
 
 2. **学习基础知识**
    - [快速开始指南](/getting-started)
-   - [配置模型](/concepts)
+   - [配置手册](/reference)
    - [命令行工具](/cli)
 
 3. **构建你的第一个应用**
@@ -557,7 +557,7 @@ AI 模型部署和推理服务。
 ## 资源链接
 
 - [快速开始](/getting-started)
-- [配置模型](/concepts)
+- [配置手册](/reference)
 - [CLI 参考](/cli)
 - [常见问题](/faq)
 - [支持服务](/support)

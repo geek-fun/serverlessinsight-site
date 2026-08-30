@@ -10,8 +10,7 @@ description: ServerlessInsight 文档导航
 ## 入门
 
 - [介绍](/introduction) — 了解 ServerlessInsight 的核心理念与适用场景
-- [快速开始](/getting-started) — 5 分钟安装 CLI 并部署第一个应用
-- [配置模型](/concepts) — `serverlessinsight.yml` 的结构与核心理念
+- [快速开始](/getting-started) — 安装 CLI、理解配置模型并部署第一个应用
 - [配置手册](/reference) — 全部资源、字段与可选值
 
 ## 供应商

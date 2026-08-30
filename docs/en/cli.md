@@ -151,6 +151,6 @@ Manually remove a stuck deployment lock. Refuses to run against the SAAS state b
 
 ## Related Docs
 
-- [Configuration Model](/en/concepts) — YAML config reference
+- [Getting Started](/en/getting-started) — install and config model primer
 - [Configuration Reference](/en/reference) — all resources, fields, and valid values
 - [Provider Overview](/en/providers/) — capability differences

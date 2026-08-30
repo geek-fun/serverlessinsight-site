@@ -465,7 +465,7 @@ Ready to build your serverless application?
 
 2. **Learn the Basics**
    - [Quick Start Guide](/en/getting-started)
-   - [Configuration Model](/en/concepts)
+   - [Configuration Reference](/en/reference)
    - [CLI Reference](/en/cli)
 
 3. **Build Your First App**
@@ -545,7 +545,7 @@ Your case study should include:
 ## Resources
 
 - [Quick Start](/en/getting-started)
-- [Configuration Model](/en/concepts)
+- [Configuration Reference](/en/reference)
 - [CLI Reference](/en/cli)
 - [FAQ](/en/faq)
 - [Support](/en/support)

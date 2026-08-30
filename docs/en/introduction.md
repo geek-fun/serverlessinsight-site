@@ -120,7 +120,7 @@ Ready to get started? Head to the [Getting Started](/en/getting-started) guide a
 
 ## Resources
 
-- [Configuration Model](/en/concepts) — detailed YAML config docs
+- [Getting Started](/en/getting-started) — install the CLI and learn the config model
 - [Configuration Reference](/en/reference) — all resources, fields, and valid values
 - [CLI Reference](/en/cli) — command line tool reference
 - [Case Studies](/en/case-study) — real-world usage examples

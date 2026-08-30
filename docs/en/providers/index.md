@@ -39,4 +39,4 @@ ServerlessInsight hides cloud-provider differences behind a single `serverlessin
 
 ## Shared Configuration Model
 
-All providers share the same config syntax—see the [Configuration Model](/en/concepts). Differences in authentication, available regions, and runtimes are covered on each provider page.
+All providers share the same config syntax—see the [Configuration Reference](/en/reference). Differences in authentication, available regions, and runtimes are covered on each provider page.
