@@ -17,11 +17,6 @@
   min-height: min(900px, 100dvh);
 }
 
-.VPHome .si-hero-scene {
-  height: min(900px, 100dvh);
-  bottom: auto;
-}
-
 .VPHomeHero .main,
 .VPHomeHero .container {
   position: relative;
@@ -48,23 +43,69 @@
   max-height: none;
 }
 
-@media (min-width: 768px) {
-  .VPHomeHero .image-container {
-    max-width: 700px;
+/* ---- hero scene: a mechanical stack, right of the hero text on desktop,
+   a full-width block below the text on mobile ---- */
+
+.VPHome .si-hero-scene {
+  position: relative;
+  z-index: 0;
+  width: 100%;
+  height: 400px;
+  overflow: hidden;
+  pointer-events: none;
+  opacity: 0.92;
+}
+
+@media (min-width: 960px) {
+  .VPHome .si-hero-scene {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: auto;
+    width: 50%;
+    height: min(900px, 100dvh);
   }
 }
 
-@media (max-width: 767px) {
+@media (max-width: 959px) {
+  /* flow the canvas BELOW the hero text — text can never overlap it */
+  .VPHome {
+    display: flex;
+    flex-direction: column;
+  }
+
   .VPHomeHero {
-    min-height: 560px;
+    order: 1;
+    min-height: 500px;
   }
 
   .VPHome .si-hero-scene {
-    height: 560px;
+    order: 2;
   }
 
-  .VPHomeHero .main {
-    width: 100%;
+  .VPHomeFeatures,
+  .VPHomeContent {
+    order: 3;
+  }
+}
+
+/* ---- zh hero title: clean break 全栈 Serverless / 应用平台 ---- */
+
+@media (min-width: 640px) and (max-width: 959px) {
+  html[lang='zh-CN'] .VPHomeHero .text {
+    max-width: 420px;
+  }
+}
+
+@media (min-width: 960px) {
+  html[lang='zh-CN'] .VPHomeHero .text {
+    max-width: 470px;
+  }
+}
+
+@media (min-width: 768px) {
+  .VPHomeHero .image-container {
+    max-width: 700px;
   }
 }
 
