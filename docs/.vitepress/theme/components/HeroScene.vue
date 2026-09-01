@@ -70,9 +70,13 @@ const typedLines = computed(() => {
 const y0 = ref(0)
 const y1 = ref(0)
 const y2 = ref(0)
+const s1 = ref(1)
+const s2 = ref(1)
 // leaf-face opacity: [yaml, resources, providers]
 const faceOp = reactive([1, 0, 0])
 const wireOp = ref(0)
+const wireH = ref(0)
+const slabOp = ref(0)
 const tileOn = reactive([false, false, false, false, false])
 const chipOn = reactive([false, false, false])
 const isNarrow = ref(false)
@@ -82,22 +86,32 @@ const stackShift = ref(0)
 const asStep = ref(226)
 
 const cardH = () => (isNarrow.value ? 336 : 420)
-// pitch: typing = frontal (-90 shows the face-up plate dead-on), stack view = -40
+// pitch: typing = frontal (-90 shows the face-up plate dead-on); the stack view
+// tilts to maxPitch, and assembly rotates a little further (asPitch) so the
+// cuboid presents its top face
 const typingPitch = () => (isNarrow.value ? -85 : -90)
-const maxPitch = () => (isNarrow.value ? -30 : -40)
+const maxPitch = () => (isNarrow.value ? -28 : -38)
+const asPitch = () => (isNarrow.value ? -32 : -45)
 // expanded fan: plate projected depth ~ cardH*sin(pitch); sep keeps clear gaps
-const sep = () => cardH() + (isNarrow.value ? 30 : 40)
-const expScale = () => (isNarrow.value ? 0.55 : 0.6)
+const sep = () => cardH() + (isNarrow.value ? 20 : -20)
+// desktop keeps scale 1 through the whole reveal; mobile frames the taller fan
+// with a gentle pull-back spread over the tilt (not during the layer reveals)
+const expScale = () => (isNarrow.value ? 0.85 : 1)
 // screen-space shift (applied after rotation) centers the fan on the middle plate
-const fanShift = () => -sep() * Math.cos((-maxPitch() * Math.PI) / 180) * expScale() + (isNarrow.value ? -14 : -30)
+const fanShift = () => -sep() * Math.cos((-maxPitch() * Math.PI) / 180) * expScale() - 6
+// after the tilt the lid rests a touch higher than dead-center
+const raise = () => (isNarrow.value ? -20 : -36)
 // assembled cuboid: surfaces at -step / 0 / +step — air between the layers keeps
-// every layer's content visible and the silhouette reads as a real cuboid
-const asSpacing = () => (isNarrow.value ? 230 : 226)
-const cubScale = () => (isNarrow.value ? 0.78 : 1)
+// every layer's content visible and the silhouette reads as a slightly-flat cuboid
+const asSpacing = () => (isNarrow.value ? 200 : 190)
+const cubScale = () => (isNarrow.value ? 0.65 : 1)
 // mobile scene center sits below the first-viewport fold — pull the box up
-const cubShift = () => (isNarrow.value ? -150 : -12)
-// layers rise from below the fan ("从下到上") — start this far below their slot
-const riseFrom = () => 360
+const cubShift = () => (isNarrow.value ? -225 : -10)
+// derivation: a child layer is extruded from beneath its parent — it starts
+// just below the parent, smaller, and grows into place (layer 1 generates the
+// resources, the resources generate the providers)
+const deriveOffset = () => (isNarrow.value ? 96 : 110)
+const deriveScale = () => 0.72
 
 const RESOURCES = [
   {key: 'fn', en: 'Functions', zh: '函数', color: '#F89B40'},
@@ -119,17 +133,18 @@ const provTitle = computed(() => (isZh.value ? '供应商' : 'Providers'))
 
 /* ------------------------------ state machine ------------------------------ */
 
-// TYPE (4s) -> TILT (1.2s) -> L2 RISES (1s) -> L3 RISES (1s, camera pulls back)
-// -> EXPANDED hold (1.8s) -> ASSEMBLE (1.4s, dashed corners draw in)
-// -> CUBOID hold (1.6s) -> RESET (1s). Total 13s.
-const T1 = 4.0
-const T2 = 5.2
-const T3 = 6.2
-const T4 = 7.2
-const T5 = 9.0
-const T6 = 10.4
-const T7 = 12.0
-const CYCLE = 13.0
+// TYPE (3.6s) -> TILT (1.2s, lid settles + raises) -> L2 derives from L1 (1.8s)
+// -> L3 derives from L2 (1.8s) -> EXPANDED hold (1.4s) -> ASSEMBLE (1.4s:
+// layers close in, slabs grow thickness, guides extend downward)
+// -> CUBOID hold (1.6s) -> RESET (1s). Total 13.8s.
+const T1 = 3.6
+const T2 = 4.8
+const T3 = 6.6
+const T4 = 8.4
+const T5 = 9.8
+const T6 = 11.2
+const T7 = 12.8
+const CYCLE = 13.8
 
 const clamp01 = (v: number) => Math.min(1, Math.max(0, v))
 const easeInOutCubic = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2)
@@ -141,17 +156,21 @@ const apply = (s: number) => {
   const se = sep()
   const tp = typingPitch()
   const mp = maxPitch()
+  const ap = asPitch()
   const stp = asSpacing()
   const fs = fanShift()
   const cs = cubShift()
-  const rf = riseFrom()
+  const df = deriveOffset()
+  const ds = deriveScale()
   asStep.value = stp
 
   let pitch = tp
   let scale = 1
   let shift = 0
   let wire = 0
+  let slab = 0
   const y = [0, 0, 0]
+  const sc = [1, 1, 1]
   const op = [1, 0, 0]
 
   if (s < T1) {
@@ -161,32 +180,39 @@ const apply = (s: number) => {
     tileOn.fill(false)
     chipOn.fill(false)
   } else if (s < T2) {
-    // TILT: pitch -90 -> -40; the yaml card lays down into the lid position
+    // TILT: pitch -90 -> stack view; the lid settles and rests a touch higher
     const e = easeInOutCubic(seg(s, T1, T2))
     typed.value = YTOTAL
     cursorOn.value = false
     pitch = lerp(tp, mp, e)
+    scale = lerp(1, expScale(), e)
+    shift = lerp(0, raise(), e)
   } else if (s < T3) {
-    // L2 RISES from below up into its slot beneath the lid
+    // L2 DERIVES from L1: extruded from just beneath the lid, smaller, growing
+    // into its slot — layer 1 generates the resources
     typed.value = YTOTAL
     cursorOn.value = false
     pitch = mp
+    scale = expScale()
+    shift = raise()
     const e = easeOutCubic(seg(s, T2, T3))
-    y[1] = lerp(se + rf, se, e)
-    op[1] = clamp01(e * 1.8)
+    y[1] = lerp(df, se, e)
+    sc[1] = lerp(ds, 1, e)
+    op[1] = clamp01(e * 1.6)
     tileOn.fill(true)
   } else if (s < T4) {
-    // L3 RISES the same way while the camera pulls back to frame the fan
+    // L3 DERIVES from L2 the same way; the camera reframes to hold the fan
     typed.value = YTOTAL
     cursorOn.value = false
     pitch = mp
+    scale = expScale()
     const e = easeOutCubic(seg(s, T3, T4))
     y[1] = se
-    y[2] = lerp(2 * se + rf, 2 * se, e)
+    y[2] = lerp(se + df, 2 * se, e)
+    sc[2] = lerp(ds, 1, e)
     op[1] = 1
-    op[2] = clamp01(e * 1.8)
-    scale = lerp(1, expScale(), e)
-    shift = lerp(0, fs, e)
+    op[2] = clamp01(e * 1.6)
+    shift = lerp(raise(), fs, e)
     tileOn.fill(true)
     chipOn.fill(true)
   } else if (s < T5) {
@@ -202,46 +228,51 @@ const apply = (s: number) => {
     op[1] = 1
     op[2] = 1
   } else if (s < T6) {
-    // ASSEMBLE: layers close in to the cuboid spacing, dashed corner guides
-    // draw in, camera pushes to the box
+    // ASSEMBLE: from planes to blocks — layers close in, each plate grows a
+    // thin thickness edge, the whole level rotates a touch further, and the
+    // dashed corner guides extend downward from the lid corners
     const e = easeInOutCubic(seg(s, T5, T6))
     typed.value = YTOTAL
     cursorOn.value = false
-    pitch = mp
-    scale = lerp(expScale(), cubScale(), e)
+    pitch = lerp(mp, ap, e)
     shift = lerp(fs, cs, e)
     y[0] = lerp(0, -stp, e)
     y[1] = lerp(se, 0, e)
     y[2] = lerp(2 * se, stp, e)
     op[1] = 1
     op[2] = 1
+    slab = e
     wire = e
   } else if (s < T7) {
-    // CUBOID hold: three glass layers + dashed corner wireframe = one box
+    // CUBOID hold: three layered slabs + corner guides = one box with air inside
     typed.value = YTOTAL
     cursorOn.value = false
-    pitch = mp
-    scale = cubScale()
+    pitch = ap
     shift = cs
     y[0] = -stp
     y[1] = 0
     y[2] = stp
     op[1] = 1
     op[2] = 1
+    slab = 1
     wire = 1
   } else {
-    // RESET: guides fade, layers sink back down, pitch returns to frontal
+    // RESET: guides retract, slabs thin back to planes, layers sink and fade,
+    // pitch returns to frontal
     const e = easeInOutCubic(seg(s, T7, CYCLE))
     typed.value = Math.floor((1 - e) * YTOTAL)
     cursorOn.value = false
-    pitch = lerp(mp, tp, e)
+    pitch = lerp(ap, tp, e)
     scale = lerp(cubScale(), 1, e)
     shift = lerp(cs, 0, e)
     y[0] = lerp(-stp, 0, e)
-    y[1] = lerp(0, se + rf * 0.6, e)
-    y[2] = lerp(stp, 2 * se + rf * 0.6, e)
+    y[1] = lerp(0, df, e)
+    y[2] = lerp(stp, se + df, e)
+    sc[1] = lerp(1, ds, e)
+    sc[2] = lerp(1, ds, e)
     op[1] = 1 - e
     op[2] = 1 - e
+    slab = 1 - e
     wire = 1 - e
     tileOn.fill(false)
     chipOn.fill(false)
@@ -250,10 +281,14 @@ const apply = (s: number) => {
   y0.value = y[0]
   y1.value = y[1]
   y2.value = y[2]
+  s1.value = sc[0]
+  s2.value = sc[1]
   faceOp[0] = op[0]
   faceOp[1] = op[1]
   faceOp[2] = op[2]
   wireOp.value = wire
+  wireH.value = (2 * stp + (isNarrow.value ? 20 : 26)) * wire
+  slabOp.value = slab
   stackPitch.value = pitch
   stackScale.value = scale
   stackShift.value = shift
@@ -280,7 +315,9 @@ const showStaticCuboid = () => {
   faceOp[1] = 1
   faceOp[2] = 1
   wireOp.value = 1
-  stackPitch.value = maxPitch()
+  wireH.value = 2 * asSpacing() + (isNarrow.value ? 20 : 26)
+  slabOp.value = 1
+  stackPitch.value = asPitch()
   stackScale.value = cubScale()
   stackShift.value = cubShift()
   tileOn.fill(true)
@@ -328,7 +365,7 @@ onBeforeUnmount(() => {
           :key="`w${w}`"
           class="si-wire"
           :class="[w < 3 ? 'si-wire--l' : 'si-wire--r', w % 2 === 1 ? 'si-wire--f' : 'si-wire--b']"
-          :style="{opacity: wireOp, visibility: wireOp > 0 ? 'visible' : 'hidden'}"
+          :style="{opacity: wireOp, height: `${wireH}px`, visibility: wireOp > 0 && wireH > 0 ? 'visible' : 'hidden'}"
         />
 
         <div class="si-plate" :style="{transform: `translate3d(0, ${y0}px, 0)`}">
@@ -402,6 +439,7 @@ onBeforeUnmount(() => {
               </div>
             </div>
           </div>
+          <span class="si-slab" :style="{opacity: slabOp, visibility: slabOp > 0 ? 'visible' : 'hidden'}" />
         </div>
       </div>
     </div>
@@ -565,21 +603,40 @@ onBeforeUnmount(() => {
 
 /* ------- dashed corner guides (cuboid wireframe) ------- */
 
+/* corner guides: thin, quiet, extending downward from the lid corners */
 .si-wire {
   position: absolute;
-  width: 2px;
-  top: calc(-1 * var(--as, 226px) - 13px);
-  height: calc(2 * var(--as, 226px) + 26px);
-  background: repeating-linear-gradient(to bottom, rgba(154, 165, 180, 0.65) 0 7px, transparent 7px 15px);
+  width: 1.5px;
+  top: calc(-1 * var(--as, 190px) - 13px);
+  background: repeating-linear-gradient(to bottom, rgba(154, 165, 180, 0.42) 0 5px, transparent 5px 13px);
 }
 
-.si-wire--l { left: -201px; }
-.si-wire--r { left: 199px; }
+.si-wire--l { left: -200px; }
+.si-wire--r { left: 198.5px; }
 .si-wire--f { transform: translateZ(210px); }
 .si-wire--b { transform: translateZ(-210px); }
 
 .dark .si-wire {
-  background: repeating-linear-gradient(to bottom, rgba(160, 172, 188, 0.55) 0 7px, transparent 7px 15px);
+  background: repeating-linear-gradient(to bottom, rgba(165, 176, 192, 0.38) 0 5px, transparent 5px 13px);
+}
+
+/* slab thickness: each plate grows a subtle glass edge when the box forms
+   (planes become blocks) — leaf element, so opacity animation is safe */
+.si-slab {
+  position: absolute;
+  left: 1px;
+  top: 210px;
+  width: 398px;
+  height: 14px;
+  transform: translateZ(210px);
+  border-radius: 0 0 10px 10px;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.42), rgba(214, 222, 232, 0.28));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5), inset 0 -1px 0 rgba(148, 163, 184, 0.35);
+}
+
+.dark .si-slab {
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.05));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18), inset 0 -1px 0 rgba(0, 0, 0, 0.25);
 }
 
 /* ------- yaml ------- */
@@ -705,14 +762,21 @@ onBeforeUnmount(() => {
   }
 
   .si-wire {
-    top: calc(-1 * var(--as, 230px) - 10px);
-    height: calc(2 * var(--as, 230px) + 20px);
+    top: calc(-1 * var(--as, 200px) - 10px);
   }
 
-  .si-wire--l { left: -161px; }
-  .si-wire--r { left: 159px; }
+  .si-wire--l { left: -160px; }
+  .si-wire--r { left: 158.5px; }
   .si-wire--f { transform: translateZ(168px); }
   .si-wire--b { transform: translateZ(-168px); }
+
+  .si-slab {
+    left: 1px;
+    top: 168px;
+    width: 318px;
+    height: 12px;
+    transform: translateZ(168px);
+  }
 
   .si-face {
     border-radius: 20px;
