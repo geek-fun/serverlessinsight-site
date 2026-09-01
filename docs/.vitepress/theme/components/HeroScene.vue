@@ -27,11 +27,7 @@ const YLINES: YLine[] = [
   {toks: [{cls: 'key', text: '    triggers'}, {cls: 'punct', text: ':'}]},
   {toks: [{cls: 'punct', text: '      - '}, {cls: 'key', text: 'method'}, {cls: 'punct', text: ':'}, {cls: 'val', text: ' GET'}]},
   {toks: [{cls: 'key', text: '        path'}, {cls: 'punct', text: ':'}, {cls: 'val', text: ' /api/*'}]},
-  {toks: [{cls: 'key', text: '        backend'}, {cls: 'punct', text: ':'}, {cls: 'val', text: ' hello_fn'}]},
-  {toks: [{cls: 'key', text: 'databases'}, {cls: 'punct', text: ':'}]},
-  {toks: [{cls: 'key', text: '  main_db'}, {cls: 'punct', text: ':'}]},
-  {toks: [{cls: 'key', text: '    type'}, {cls: 'punct', text: ':'}, {cls: 'val', text: ' RDS_MYSQL_SERVERLESS'}]},
-  {toks: [{cls: 'key', text: '    version'}, {cls: 'punct', text: ':'}, {cls: 'val', text: ' MYSQL_8.0'}]},
+  {toks: [{cls: 'key', text: '        backend'}, {cls: 'punct', text: ':'}, {cls: 'val', text: ' \${functions.hello_fn}'}]},
   {toks: [{cls: 'key', text: 'buckets'}, {cls: 'punct', text: ':'}]},
   {toks: [{cls: 'key', text: '  assets'}, {cls: 'punct', text: ':'}]},
   {toks: [{cls: 'key', text: '    storage'}, {cls: 'punct', text: ':'}]},
@@ -64,20 +60,30 @@ const typedLines = computed(() => {
 
 /* --------------------------------- cards --------------------------------- */
 
-const c1 = reactive({opacity: 1, y: 0})
-const c2 = reactive({opacity: 0, y: 48})
-const c3 = reactive({opacity: 0, y: 64})
-const gap = ref(34)
+const c1 = reactive({opacity: 1, y: 0, z: 0})
+const c2 = reactive({opacity: 0, y: 0, z: 0})
+const c3 = reactive({opacity: 0, y: 0, z: 0})
 const tileOn = reactive([false, false, false, false, false])
 const chipOn = reactive([false, false, false])
-const typeOffset = ref(0)
 const isNarrow = ref(false)
+const stackScale = ref(1)
 
-const STACKED_GAP = 4
-const expandedGap = () => (isNarrow.value ? 18 : 34)
+const slabT = () => (isNarrow.value ? 20 : 26)
+const cardH = () => (isNarrow.value ? 336 : 420)
+const expScale = () => (isNarrow.value ? 0.48 : 0.6)
+// center-to-center separation (unscaled) in the stack plane. Must be >= card height
+// so the expanded cards never overlap; +60 gives a clear gap that stays visible after
+// the 0.62 pull-back (60*0.62 ≈ 37px). Composition 3*420 + 2*60 = 1380 * 0.62 ≈ 856px.
+const sep = () => cardH() + 60
 
-const cardStyle = (c: {opacity: number; y: number}) => ({
-  transform: `translate3d(0, ${c.y}px, 0)`,
+// assembled (cuboid): all y=0, z = [0,-slabT,-2*slabT]
+// expanded: yaml -sep (top) / resources 0 / providers +sep (bottom), z fan slightly behind
+const CARD_Y_EXPANDED = () => [-sep(), 0, sep()]
+const CARD_Z_ASSEMBLED = () => [0, -slabT(), -2 * slabT()]
+const CARD_Z_EXPANDED = [0, -40, -80]
+
+const cardStyle = (c: {opacity: number; y: number; z: number}) => ({
+  transform: `translate3d(0, ${c.y}px, ${c.z}px)`,
   opacity: c.opacity,
   visibility: c.opacity > 0 ? 'visible' : 'hidden'
 })
@@ -102,93 +108,122 @@ const provTitle = computed(() => (isZh.value ? '供应商' : 'Providers'))
 
 /* ------------------------------ state machine ------------------------------ */
 
-const CYCLE = 12.6
-const T1 = 4.5 // resources appear
-const T2 = 5.7 // providers appear
-const T3 = 7.1 // expanded hold end
+const CYCLE = 12.8
+const T1 = 4.0 // resources appear
+const T2 = 5.2 // providers appear
+const T3 = 6.9 // expanded hold end (scale-out lands here)
 const T4 = 9.1 // assemble end
 const T5 = 10.6 // stacked hold end
-const T6 = 11.8 // reset end
+const T6 = 12.0 // reset end
 
 const clamp01 = (v: number) => Math.min(1, Math.max(0, v))
+const easeInOutCubic = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2)
 
 const apply = (s: number) => {
-  const eg = expandedGap()
+  const az = CARD_Z_ASSEMBLED()
+  const ez = CARD_Z_EXPANDED
   if (s < T1) {
     // TYPE: only the yaml card centered, typing
     typed.value = Math.floor(clamp01((s - 0.2) / (T1 - 0.6)) * YTOTAL)
     cursorOn.value = Math.floor(s * 2) % 2 === 0
-    c1.y = typeOffset.value
+    c1.y = 0
+    c1.z = az[0]
     c1.opacity = 1
-    c2.y = 48
+    c2.y = 0
+    c2.z = az[1]
     c2.opacity = 0
-    c3.y = 64
+    c3.y = 0
+    c3.z = az[2]
     c3.opacity = 0
-    gap.value = eg
+    stackScale.value = 1
     tileOn.fill(false)
     chipOn.fill(false)
   } else if (s < T2) {
-    // RESOURCES: middle card slides in below, tiles stagger
+    // RESOURCES: middle card slides in, tiles stagger
     typed.value = YTOTAL
     cursorOn.value = false
     c1.y = 0
+    c1.z = az[0]
     c1.opacity = 1
     c2.y = 0
+    c2.z = az[1]
     c2.opacity = 1
-    c3.y = 64
+    c3.y = 0
+    c3.z = az[2]
     c3.opacity = 0
-    gap.value = eg
+    stackScale.value = 1
     tileOn.fill(true)
     chipOn.fill(false)
   } else if (s < T3) {
-    // PROVIDERS: base card slides in, chips stagger
-    c1.y = 0
+    // PROVIDERS appear + EXPLODE: cards separate along the stack axis, stack scales out
+    const e = easeInOutCubic(clamp01((s - T2) / (T3 - T2)))
+    const ey = CARD_Y_EXPANDED()
+    c1.y = ey[0] * e
+    c1.z = az[0] + (ez[0] - az[0]) * e
     c1.opacity = 1
-    c2.y = 0
+    c2.y = ey[1] * e
+    c2.z = az[1] + (ez[1] - az[1]) * e
     c2.opacity = 1
-    c3.y = 0
+    c3.y = ey[2] * e
+    c3.z = az[2] + (ez[2] - az[2]) * e
     c3.opacity = 1
-    gap.value = eg
+    stackScale.value = 1 + (expScale() - 1) * e
     chipOn.fill(true)
+    tileOn.fill(true)
   } else if (s < T4) {
-    // EXPANDED hold
-    c1.y = 0
+    // EXPANDED hold: fully separated, scaled out
+    const ey = CARD_Y_EXPANDED()
+    c1.y = ey[0]
+    c1.z = ez[0]
     c1.opacity = 1
-    c2.y = 0
+    c2.y = ey[1]
+    c2.z = ez[1]
     c2.opacity = 1
-    c3.y = 0
+    c3.y = ey[2]
+    c3.z = ez[2]
     c3.opacity = 1
-    gap.value = eg
+    stackScale.value = expScale()
   } else if (s < T5) {
-    // ASSEMBLE
-    c1.y = 0
+    // ASSEMBLE: cards slide back to the cuboid, stack scales back in
+    const e = easeInOutCubic(clamp01((s - T4) / (T5 - T4)))
+    const ey = CARD_Y_EXPANDED()
+    c1.y = ey[0] * (1 - e)
+    c1.z = az[0] + (ez[0] - az[0]) * (1 - e)
     c1.opacity = 1
-    c2.y = 0
+    c2.y = ey[1] * (1 - e)
+    c2.z = az[1] + (ez[1] - az[1]) * (1 - e)
     c2.opacity = 1
-    c3.y = 0
+    c3.y = ey[2] * (1 - e)
+    c3.z = az[2] + (ez[2] - az[2]) * (1 - e)
     c3.opacity = 1
-    gap.value = STACKED_GAP
+    stackScale.value = 1 + (expScale() - 1) * (1 - e)
   } else if (s < T6) {
-    // STACKED hold
+    // STACKED hold (cuboid)
     c1.y = 0
+    c1.z = az[0]
     c1.opacity = 1
     c2.y = 0
+    c2.z = az[1]
     c2.opacity = 1
     c3.y = 0
+    c3.z = az[2]
     c3.opacity = 1
-    gap.value = STACKED_GAP
+    stackScale.value = 1
   } else {
     // RESET
     const e = clamp01((s - T6) / (CYCLE - T6))
     typed.value = Math.floor((1 - e) * YTOTAL)
     cursorOn.value = false
     c1.y = 0
+    c1.z = az[0]
     c1.opacity = 1
     c2.y = 48 * e
+    c2.z = az[1]
     c2.opacity = 1 - e
     c3.y = 64 * e
+    c3.z = az[2]
     c3.opacity = 1 - e
-    gap.value = STACKED_GAP
+    stackScale.value = 1
     tileOn.fill(false)
     chipOn.fill(false)
   }
@@ -201,9 +236,7 @@ const c2Ref = ref<HTMLElement | null>(null)
 const c3Ref = ref<HTMLElement | null>(null)
 
 const measure = () => {
-  const h2 = c2Ref.value?.offsetHeight ?? 104
-  const h3 = c3Ref.value?.offsetHeight ?? 88
-  typeOffset.value = (h2 + h3 + 2 * expandedGap()) / 2
+  // cards are centered; nothing to compute for the typing offset
 }
 
 let rafId = 0
@@ -219,13 +252,18 @@ const tick = (now: number) => {
 const showStaticExpanded = () => {
   typed.value = YTOTAL
   cursorOn.value = false
-  c1.y = 0
+  const ey = CARD_Y_EXPANDED()
+  const ez = CARD_Z_EXPANDED
+  c1.y = ey[0]
+  c1.z = ez[0]
   c1.opacity = 1
-  c2.y = 0
+  c2.y = ey[1]
+  c2.z = ez[1]
   c2.opacity = 1
-  c3.y = 0
+  c3.y = ey[2]
+  c3.z = ez[2]
   c3.opacity = 1
-  gap.value = expandedGap()
+  stackScale.value = expScale()
   tileOn.fill(true)
   chipOn.fill(true)
 }
@@ -265,7 +303,7 @@ onBeforeUnmount(() => {
     </div>
 
     <div class="si-3d">
-      <div ref="stackRef" class="si-stack" :style="{ '--gap': `${gap}px` }">
+      <div ref="stackRef" class="si-stack" :style="{ '--ss': String(stackScale) }">
         <div class="si-card" :style="cardStyle(c1)">
           <span class="si-card__top" aria-hidden="true" />
           <div class="si-card__front si-card__front--yml">
@@ -280,6 +318,7 @@ onBeforeUnmount(() => {
               </div>
             </div>
           </div>
+          <span class="si-card__bottom" aria-hidden="true" />
         </div>
 
         <div ref="c2Ref" class="si-card" :style="cardStyle(c2)">
@@ -316,6 +355,7 @@ onBeforeUnmount(() => {
               </div>
             </div>
           </div>
+          <span class="si-card__bottom" aria-hidden="true" />
         </div>
 
         <div ref="c3Ref" class="si-card" :style="cardStyle(c3)">
@@ -330,6 +370,7 @@ onBeforeUnmount(() => {
               </div>
             </div>
           </div>
+          <span class="si-card__bottom" aria-hidden="true" />
         </div>
       </div>
     </div>
@@ -361,27 +402,27 @@ onBeforeUnmount(() => {
 }
 
 .si-blob--a {
-  width: 360px;
-  height: 360px;
+  width: 400px;
+  height: 400px;
   left: 6%;
-  top: 4%;
-  background: radial-gradient(circle, rgba(248, 155, 64, 0.4), rgba(248, 155, 64, 0) 70%);
+  top: 2%;
+  background: radial-gradient(circle, rgba(248, 155, 64, 0.7), rgba(248, 155, 64, 0) 70%);
 }
 
 .si-blob--b {
-  width: 440px;
-  height: 440px;
+  width: 480px;
+  height: 480px;
   right: -4%;
-  top: 28%;
-  background: radial-gradient(circle, rgba(0, 82, 217, 0.32), rgba(0, 82, 217, 0) 70%);
+  top: 26%;
+  background: radial-gradient(circle, rgba(0, 82, 217, 0.6), rgba(0, 82, 217, 0) 70%);
 }
 
 .si-blob--c {
-  width: 320px;
-  height: 320px;
-  left: 16%;
-  bottom: 2%;
-  background: radial-gradient(circle, rgba(248, 155, 64, 0.24), rgba(2, 90, 249, 0) 72%);
+  width: 360px;
+  height: 360px;
+  left: 14%;
+  bottom: 0;
+  background: radial-gradient(circle, rgba(248, 155, 64, 0.45), rgba(2, 90, 249, 0) 72%);
 }
 
 @keyframes si-drift {
@@ -404,85 +445,115 @@ onBeforeUnmount(() => {
 .si-3d {
   position: absolute;
   inset: 0;
-  perspective: 1200px;
+  perspective: 1100px;
 }
 
-/* ------- the stack: flex column along the stack axis, tilted once ------- */
+/* ------- the stack: preserve-3d, tilted once, cards overlap in depth ------- */
 
 .si-stack {
   position: absolute;
   left: 50%;
   top: 50%;
-  transform: translate(-50%, -50%) rotateX(14deg);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--gap, 34px);
-  padding: 10px 12px;
-  transition: gap 0.9s cubic-bezier(0.4, 0, 0.2, 1);
+  width: 0;
+  height: 0;
+  transform: rotateX(22deg) scale(var(--ss, 1));
+  transform-style: preserve-3d;
+  transition: transform 0.9s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform;
 }
 
-/* ------- slab cards: top face strip + frosted front face ------- */
+/* ------- true 3D slab cards (absolute, centered; JS drives y/z) ------- */
 
 .si-card {
-  position: relative;
-  width: 360px;
-  max-width: 100%;
+  --si-text: #1f2937;
+  --si-muted: #6b7280;
+  position: absolute;
+  left: -200px;
+  top: -210px;
+  width: 400px;
+  height: 420px;
+  transform-style: preserve-3d;
   transition: transform 0.9s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.9s cubic-bezier(0.4, 0, 0.2, 1);
   will-change: transform, opacity;
 }
 
+.dark .si-card {
+  --si-text: #eef2f6;
+  --si-muted: #a8b2bd;
+}
+
 .si-card__top {
-  display: block;
-  height: 16px;
-  border-radius: 24px 24px 0 0;
-  background: linear-gradient(to bottom, rgba(226, 230, 236, 0.95), rgba(208, 213, 221, 0.95));
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5), inset 0 -1px 0 rgba(255, 255, 255, 0.25);
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 26px;
+  transform-origin: top center;
+  transform: rotateX(90deg);
+  border-radius: 26px 26px 0 0;
+  background: linear-gradient(to bottom, #eef1f6, #d8dde4);
+  box-shadow: inset 0 -2px 0 rgba(255, 255, 255, 0.5);
 }
 
 .dark .si-card__top {
-  background: linear-gradient(to bottom, rgba(52, 58, 70, 0.95), rgba(38, 43, 52, 0.95));
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.09), inset 0 -1px 0 rgba(255, 255, 255, 0.03);
+  background: linear-gradient(to bottom, #6a7482, #4a525f);
+  box-shadow: inset 0 -2px 0 rgba(255, 255, 255, 0.12);
 }
 
-/* ------- liquid glass front faces ------- */
+.si-card__bottom {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 26px;
+  transform-origin: bottom center;
+  transform: rotateX(-90deg);
+  border-radius: 0 0 26px 26px;
+  background: linear-gradient(to top, #e3e7ec, #ccd2da);
+  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.4);
+}
+
+.dark .si-card__bottom {
+  background: linear-gradient(to top, #5a626f, #3c434e);
+  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.08);
+}
+
+/* ------- translucent front faces (no backdrop-filter — unlocks true 3D) ------- */
 
 .si-card__front {
-  --si-text: #1f2937;
-  --si-muted: #6b7280;
-  position: relative;
-  border-radius: 0 0 24px 24px;
-  background: rgba(255, 255, 255, 0.55);
-  -webkit-backdrop-filter: blur(20px) saturate(1.4);
-  backdrop-filter: blur(20px) saturate(1.4);
+  position: absolute;
+  inset: 0;
+  border-radius: 26px;
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.62), rgba(238, 243, 249, 0.5));
   box-shadow:
-    inset 0 0 0 1px rgba(255, 255, 255, 0.25),
-    inset 0 1px 0 rgba(255, 255, 255, 0.4),
-    0 4px 12px rgba(31, 41, 55, 0.06),
-    0 18px 40px rgba(31, 41, 55, 0.1),
-    0 2px 4px rgba(31, 41, 55, 0.04);
+    inset 0 0 0 1px rgba(148, 163, 184, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    0 4px 12px rgba(31, 41, 55, 0.12),
+    0 18px 40px rgba(31, 41, 55, 0.2),
+    0 2px 4px rgba(31, 41, 55, 0.06);
+  display: flex;
+  flex-direction: column;
 }
 
 .dark .si-card__front {
-  --si-text: #e6e9ed;
-  --si-muted: #9aa3ad;
-  background: rgba(22, 24, 29, 0.55);
+  background: linear-gradient(160deg, rgba(52, 58, 70, 0.88), rgba(38, 43, 52, 0.82));
   box-shadow:
-    inset 0 0 0 1px rgba(255, 255, 255, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.06),
-    0 4px 12px rgba(0, 0, 0, 0.25),
-    0 18px 40px rgba(0, 0, 0, 0.35);
+    inset 0 0 0 1px rgba(255, 255, 255, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    0 4px 12px rgba(0, 0, 0, 0.4),
+    0 18px 40px rgba(0, 0, 0, 0.6);
 }
 
-.si-card__front--yml { padding: 12px 16px 14px; }
-.si-card__front--res { padding: 14px 16px 16px; }
-.si-card__front--prov { padding: 14px 16px 16px; }
+.si-card__front--yml { padding: 18px 22px 20px; }
+.si-card__front--res { padding: 18px 22px 20px; }
+.si-card__front--prov { padding: 18px 22px 20px; }
 
 .si-card__head {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 8px;
+  margin-bottom: 14px;
+  flex-shrink: 0;
 }
 
 .si-card__file-dot {
@@ -512,7 +583,7 @@ onBeforeUnmount(() => {
   white-space: pre;
   font-family: 'SF Mono', ui-monospace, 'Menlo', 'Consolas', monospace;
   font-size: 12.5px;
-  line-height: 1.5;
+  line-height: 1.48;
   color: var(--si-text);
 }
 
@@ -539,12 +610,15 @@ onBeforeUnmount(() => {
   .si-yaml__cursor { animation: none; opacity: 1; }
 }
 
-/* ------- resources ------- */
+/* ------- resources: centered within the fixed card ------- */
 
 .si-res {
   display: flex;
   justify-content: space-between;
   gap: 8px;
+  align-items: center;
+  flex: 1;
+  padding: 8px 0;
 }
 
 .si-res__tile {
@@ -553,59 +627,63 @@ onBeforeUnmount(() => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 7px;
-  padding: 11px 2px 9px;
+  gap: 9px;
+  padding: 16px 2px 12px;
   border-radius: 16px;
-  background: rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.6);
+  box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.25);
   transition: opacity 0.55s cubic-bezier(0.4, 0, 0.2, 1);
   transition-delay: calc(var(--i, 0) * 0.12s);
 }
 
 .dark .si-res__tile {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.06);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
 }
 
 .si-res__tile svg {
-  width: 24px;
-  height: 24px;
+  width: 30px;
+  height: 30px;
   color: var(--c);
 }
 
 .si-res__label {
-  font-size: 10.5px;
+  font-size: 11px;
   line-height: 1;
   white-space: nowrap;
   color: var(--si-muted);
 }
 
-/* ------- providers ------- */
+/* ------- providers: centered within the fixed card ------- */
 
 .si-prov {
   display: flex;
   justify-content: center;
-  gap: 14px;
+  align-items: center;
+  gap: 18px;
+  flex: 1;
 }
 
 .si-prov__chip {
-  width: 58px;
-  height: 58px;
-  border-radius: 16px;
+  width: 72px;
+  height: 72px;
+  border-radius: 18px;
   display: flex;
   align-items: center;
   justify-content: center;
   border: 1.5px solid var(--c);
-  background: rgba(255, 255, 255, 0.55);
+  background: rgba(255, 255, 255, 0.7);
   transition: opacity 0.55s cubic-bezier(0.4, 0, 0.2, 1);
   transition-delay: calc(var(--i, 0) * 0.3s);
 }
 
 .dark .si-prov__chip {
-  background: rgba(255, 255, 255, 0.07);
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .si-prov__chip img {
-  width: 30px;
-  height: 30px;
+  width: 38px;
+  height: 38px;
   object-fit: contain;
 }
 
@@ -613,45 +691,51 @@ onBeforeUnmount(() => {
 
 @media (max-width: 959px) {
   .si-3d {
-    perspective: 1000px;
+    perspective: 900px;
   }
 
   .si-stack {
-    padding: 6px 12px;
-    transform: translate(-50%, -50%) rotateX(8deg);
+    transform: rotateX(13deg) scale(var(--ss, 1));
   }
 
   .si-card {
-    width: 330px;
-    max-width: 100%;
+    left: -160px;
+    top: -168px;
+    width: 320px;
+    height: 336px;
   }
 
-  .si-card__top {
-    height: 12px;
+  .si-card__top,
+  .si-card__bottom {
+    height: 20px;
     border-radius: 20px 20px 0 0;
   }
 
-  .si-card__front {
+  .si-card__bottom {
     border-radius: 0 0 20px 20px;
   }
 
-  .si-card__front--yml { padding: 10px 12px 12px; }
-  .si-card__front--res { padding: 9px 12px 11px; }
-  .si-card__front--prov { padding: 9px 12px 11px; }
-
-  .si-yaml {
-    font-size: 10.5px;
-    line-height: 1.42;
+  .si-card__front {
+    border-radius: 20px;
   }
 
-  .si-card__head { margin-bottom: 7px; }
+  .si-card__front--yml { padding: 14px 16px 16px; }
+  .si-card__front--res { padding: 14px 16px 16px; }
+  .si-card__front--prov { padding: 14px 16px 16px; }
 
-  .si-res__tile svg { width: 21px; height: 21px; }
-  .si-res__label { font-size: 9.5px; }
-  .si-res__tile { gap: 6px; padding: 9px 2px 7px; }
+  .si-yaml {
+    font-size: 11px;
+    line-height: 1.5;
+  }
 
-  .si-prov__chip { width: 48px; height: 48px; border-radius: 13px; }
-  .si-prov__chip img { width: 25px; height: 25px; }
+  .si-card__head { margin-bottom: 10px; }
+
+  .si-res__tile svg { width: 24px; height: 24px; }
+  .si-res__label { font-size: 10px; }
+  .si-res__tile { gap: 7px; padding: 12px 2px 10px; }
+
+  .si-prov__chip { width: 56px; height: 56px; border-radius: 15px; }
+  .si-prov__chip img { width: 30px; height: 30px; }
 
   .si-blob--a { width: 260px; height: 260px; }
   .si-blob--b { width: 300px; height: 300px; }
