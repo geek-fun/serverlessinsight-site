@@ -16,11 +16,26 @@ type YLine = {toks: Tok[]; len: number}
 const YLINES: YLine[] = [
   {toks: [{cls: 'key', text: 'service'}, {cls: 'punct', text: ':'}, {cls: 'val', text: ' hello-world'}]},
   {toks: [{cls: 'key', text: 'functions'}, {cls: 'punct', text: ':'}]},
-  {toks: [{cls: 'key', text: '  hello_fn'}]},
+  {toks: [{cls: 'key', text: '  hello_fn'}, {cls: 'punct', text: ':'}]},
+  {toks: [{cls: 'key', text: '    code'}, {cls: 'punct', text: ':'}]},
+  {toks: [{cls: 'key', text: '      runtime'}, {cls: 'punct', text: ':'}, {cls: 'val', text: ' nodejs18'}]},
+  {toks: [{cls: 'key', text: '      handler'}, {cls: 'punct', text: ':'}, {cls: 'val', text: ' index.handler'}]},
+  {toks: [{cls: 'key', text: '      path'}, {cls: 'punct', text: ':'}, {cls: 'val', text: ' artifacts/app.zip'}]},
   {toks: [{cls: 'key', text: 'events'}, {cls: 'punct', text: ':'}]},
-  {toks: [{cls: 'key', text: '  gateway'}]},
+  {toks: [{cls: 'key', text: '  gateway'}, {cls: 'punct', text: ':'}]},
+  {toks: [{cls: 'key', text: '    type'}, {cls: 'punct', text: ':'}, {cls: 'val', text: ' API_GATEWAY'}]},
+  {toks: [{cls: 'key', text: '    triggers'}, {cls: 'punct', text: ':'}]},
+  {toks: [{cls: 'punct', text: '      - '}, {cls: 'key', text: 'method'}, {cls: 'punct', text: ':'}, {cls: 'val', text: ' GET'}]},
+  {toks: [{cls: 'key', text: '        path'}, {cls: 'punct', text: ':'}, {cls: 'val', text: ' /api/*'}]},
+  {toks: [{cls: 'key', text: '        backend'}, {cls: 'punct', text: ':'}, {cls: 'val', text: ' hello_fn'}]},
   {toks: [{cls: 'key', text: 'databases'}, {cls: 'punct', text: ':'}]},
-  {toks: [{cls: 'key', text: '  main_db'}]}
+  {toks: [{cls: 'key', text: '  main_db'}, {cls: 'punct', text: ':'}]},
+  {toks: [{cls: 'key', text: '    type'}, {cls: 'punct', text: ':'}, {cls: 'val', text: ' RDS_MYSQL_SERVERLESS'}]},
+  {toks: [{cls: 'key', text: '    version'}, {cls: 'punct', text: ':'}, {cls: 'val', text: ' MYSQL_8.0'}]},
+  {toks: [{cls: 'key', text: 'buckets'}, {cls: 'punct', text: ':'}]},
+  {toks: [{cls: 'key', text: '  assets'}, {cls: 'punct', text: ':'}]},
+  {toks: [{cls: 'key', text: '    storage'}, {cls: 'punct', text: ':'}]},
+  {toks: [{cls: 'key', text: '      class'}, {cls: 'punct', text: ':'}, {cls: 'val', text: ' STANDARD'}]}
 ].map((l) => ({toks: l.toks, len: l.toks.reduce((n, t) => n + t.text.length, 0)}))
 
 const YTOTAL = YLINES.reduce((n, l) => n + l.len, 0)
@@ -52,13 +67,17 @@ const typedLines = computed(() => {
 const c1 = reactive({opacity: 1, y: 0})
 const c2 = reactive({opacity: 0, y: 48})
 const c3 = reactive({opacity: 0, y: 64})
-const gap = ref(28)
+const gap = ref(34)
 const tileOn = reactive([false, false, false, false, false])
 const chipOn = reactive([false, false, false])
 const typeOffset = ref(0)
+const isNarrow = ref(false)
+
+const STACKED_GAP = 4
+const expandedGap = () => (isNarrow.value ? 18 : 34)
 
 const cardStyle = (c: {opacity: number; y: number}) => ({
-  transform: `translateY(${c.y}px)`,
+  transform: `translate3d(0, ${c.y}px, 0)`,
   opacity: c.opacity,
   visibility: c.opacity > 0 ? 'visible' : 'hidden'
 })
@@ -83,17 +102,18 @@ const provTitle = computed(() => (isZh.value ? '供应商' : 'Providers'))
 
 /* ------------------------------ state machine ------------------------------ */
 
-const CYCLE = 11.6
-const T1 = 3.5 // resources appear
-const T2 = 4.7 // providers appear
-const T3 = 6.1 // expanded hold end
-const T4 = 8.1 // assemble end
-const T5 = 9.6 // stacked hold end
-const T6 = 10.8 // reset end
+const CYCLE = 12.6
+const T1 = 4.5 // resources appear
+const T2 = 5.7 // providers appear
+const T3 = 7.1 // expanded hold end
+const T4 = 9.1 // assemble end
+const T5 = 10.6 // stacked hold end
+const T6 = 11.8 // reset end
 
 const clamp01 = (v: number) => Math.min(1, Math.max(0, v))
 
 const apply = (s: number) => {
+  const eg = expandedGap()
   if (s < T1) {
     // TYPE: only the yaml card centered, typing
     typed.value = Math.floor(clamp01((s - 0.2) / (T1 - 0.6)) * YTOTAL)
@@ -104,7 +124,7 @@ const apply = (s: number) => {
     c2.opacity = 0
     c3.y = 64
     c3.opacity = 0
-    gap.value = 28
+    gap.value = eg
     tileOn.fill(false)
     chipOn.fill(false)
   } else if (s < T2) {
@@ -117,7 +137,7 @@ const apply = (s: number) => {
     c2.opacity = 1
     c3.y = 64
     c3.opacity = 0
-    gap.value = 28
+    gap.value = eg
     tileOn.fill(true)
     chipOn.fill(false)
   } else if (s < T3) {
@@ -128,7 +148,7 @@ const apply = (s: number) => {
     c2.opacity = 1
     c3.y = 0
     c3.opacity = 1
-    gap.value = 28
+    gap.value = eg
     chipOn.fill(true)
   } else if (s < T4) {
     // EXPANDED hold
@@ -138,7 +158,7 @@ const apply = (s: number) => {
     c2.opacity = 1
     c3.y = 0
     c3.opacity = 1
-    gap.value = 28
+    gap.value = eg
   } else if (s < T5) {
     // ASSEMBLE
     c1.y = 0
@@ -147,7 +167,7 @@ const apply = (s: number) => {
     c2.opacity = 1
     c3.y = 0
     c3.opacity = 1
-    gap.value = 10
+    gap.value = STACKED_GAP
   } else if (s < T6) {
     // STACKED hold
     c1.y = 0
@@ -156,7 +176,7 @@ const apply = (s: number) => {
     c2.opacity = 1
     c3.y = 0
     c3.opacity = 1
-    gap.value = 10
+    gap.value = STACKED_GAP
   } else {
     // RESET
     const e = clamp01((s - T6) / (CYCLE - T6))
@@ -168,7 +188,7 @@ const apply = (s: number) => {
     c2.opacity = 1 - e
     c3.y = 64 * e
     c3.opacity = 1 - e
-    gap.value = 10
+    gap.value = STACKED_GAP
     tileOn.fill(false)
     chipOn.fill(false)
   }
@@ -183,12 +203,13 @@ const c3Ref = ref<HTMLElement | null>(null)
 const measure = () => {
   const h2 = c2Ref.value?.offsetHeight ?? 104
   const h3 = c3Ref.value?.offsetHeight ?? 88
-  typeOffset.value = (h2 + h3 + 56) / 2
+  typeOffset.value = (h2 + h3 + 2 * expandedGap()) / 2
 }
 
 let rafId = 0
 let start = 0
 let resizeObserver: ResizeObserver | undefined
+let mqCleanup: (() => void) | undefined
 
 const tick = (now: number) => {
   apply(((now - start) * 0.001) % CYCLE)
@@ -204,12 +225,17 @@ const showStaticExpanded = () => {
   c2.opacity = 1
   c3.y = 0
   c3.opacity = 1
-  gap.value = 28
+  gap.value = expandedGap()
   tileOn.fill(true)
   chipOn.fill(true)
 }
 
 onMounted(() => {
+  isNarrow.value = window.matchMedia('(max-width: 959px)').matches
+  const mq = window.matchMedia('(max-width: 959px)')
+  const onMq = (e: MediaQueryListEvent) => { isNarrow.value = e.matches }
+  mq.addEventListener('change', onMq)
+  mqCleanup = () => mq.removeEventListener('change', onMq)
   measure()
   resizeObserver = new ResizeObserver(() => measure())
   if (stackRef.value) resizeObserver.observe(stackRef.value)
@@ -226,6 +252,7 @@ watch(isZh, () => { void nextTick(measure) })
 onBeforeUnmount(() => {
   cancelAnimationFrame(rafId)
   resizeObserver?.disconnect()
+  mqCleanup?.()
 })
 </script>
 
@@ -237,60 +264,71 @@ onBeforeUnmount(() => {
       <span class="si-blob si-blob--c" />
     </div>
 
-    <div ref="stackRef" class="si-stack" :style="{ '--gap': `${gap}px` }">
-      <div class="si-card si-card--yml" :style="cardStyle(c1)">
-        <div class="si-card__head">
-          <span class="si-card__file-dot" />
-          <span class="si-card__title si-card__title--mono">serverlessinsight.yml</span>
-        </div>
-        <div class="si-yaml">
-          <div v-for="(line, li) in typedLines.lines" :key="li" class="si-yaml__line">
-            <span v-for="(tok, ti) in line" :key="ti" :class="`si-tok si-tok--${tok.cls}`">{{ tok.text }}</span>
-            <span v-if="cursorOn && li === typedLines.cursorLine" class="si-yaml__cursor" />
+    <div class="si-3d">
+      <div ref="stackRef" class="si-stack" :style="{ '--gap': `${gap}px` }">
+        <div class="si-card" :style="cardStyle(c1)">
+          <span class="si-card__top" aria-hidden="true" />
+          <div class="si-card__front si-card__front--yml">
+            <div class="si-card__head">
+              <span class="si-card__file-dot" />
+              <span class="si-card__title si-card__title--mono">serverlessinsight.yml</span>
+            </div>
+            <div class="si-yaml">
+              <div v-for="(line, li) in typedLines.lines" :key="li" class="si-yaml__line">
+                <span v-for="(tok, ti) in line" :key="ti" :class="`si-tok si-tok--${tok.cls}`">{{ tok.text }}</span>
+                <span v-if="cursorOn && li === typedLines.cursorLine" class="si-yaml__cursor" />
+              </div>
+            </div>
           </div>
         </div>
-      </div>
 
-      <div ref="c2Ref" class="si-card si-card--res" :style="cardStyle(c2)">
-        <div class="si-card__head">
-          <span class="si-card__title">{{ resTitle }}</span>
-        </div>
-        <div class="si-res">
-          <div v-for="(r, i) in resourceList" :key="r.key" class="si-res__tile" :style="{ '--c': r.color, '--i': i, opacity: tileOn[i] ? 1 : 0 }">
-            <svg v-if="r.key === 'fn'" viewBox="0 0 24 24" aria-hidden="true">
-              <text x="12" y="17.5" text-anchor="middle" font-size="19" font-family="Georgia, 'Times New Roman', serif" font-style="italic" font-weight="700" fill="currentColor">ƒ</text>
-            </svg>
-            <svg v-else-if="r.key === 'event'" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-              <path d="M13 2 3 14h6l-2 8 10-12h-6z" />
-            </svg>
-            <svg v-else-if="r.key === 'db'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
-              <ellipse cx="12" cy="6" rx="7" ry="2.6" />
-              <path d="M5 6v12c0 1.4 3.1 2.6 7 2.6s7-1.2 7-2.6V6" />
-              <path d="M5 12c0 1.4 3.1 2.6 7 2.6s7-1.2 7-2.6" />
-            </svg>
-            <svg v-else-if="r.key === 'bucket'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <path d="M12 3 19 7v10l-7 4-7-4V7z" />
-              <path d="M5 7l7 4 7-4" />
-              <path d="M12 11v10" />
-            </svg>
-            <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-              <rect x="3" y="3" width="8" height="8" rx="1.5" />
-              <rect x="13" y="3" width="8" height="8" rx="1.5" />
-              <rect x="3" y="13" width="8" height="8" rx="1.5" />
-              <rect x="13" y="13" width="8" height="8" rx="1.5" />
-            </svg>
-            <span class="si-res__label">{{ r.label }}</span>
+        <div ref="c2Ref" class="si-card" :style="cardStyle(c2)">
+          <span class="si-card__top" aria-hidden="true" />
+          <div class="si-card__front si-card__front--res">
+            <div class="si-card__head">
+              <span class="si-card__title">{{ resTitle }}</span>
+            </div>
+            <div class="si-res">
+              <div v-for="(r, i) in resourceList" :key="r.key" class="si-res__tile" :style="{ '--c': r.color, '--i': i, opacity: tileOn[i] ? 1 : 0 }">
+                <svg v-if="r.key === 'fn'" viewBox="0 0 24 24" aria-hidden="true">
+                  <text x="12" y="17.5" text-anchor="middle" font-size="19" font-family="Georgia, 'Times New Roman', serif" font-style="italic" font-weight="700" fill="currentColor">ƒ</text>
+                </svg>
+                <svg v-else-if="r.key === 'event'" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                  <path d="M13 2 3 14h6l-2 8 10-12h-6z" />
+                </svg>
+                <svg v-else-if="r.key === 'db'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+                  <ellipse cx="12" cy="6" rx="7" ry="2.6" />
+                  <path d="M5 6v12c0 1.4 3.1 2.6 7 2.6s7-1.2 7-2.6V6" />
+                  <path d="M5 12c0 1.4 3.1 2.6 7 2.6s7-1.2 7-2.6" />
+                </svg>
+                <svg v-else-if="r.key === 'bucket'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M12 3 19 7v10l-7 4-7-4V7z" />
+                  <path d="M5 7l7 4 7-4" />
+                  <path d="M12 11v10" />
+                </svg>
+                <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                  <rect x="3" y="3" width="8" height="8" rx="1.5" />
+                  <rect x="13" y="3" width="8" height="8" rx="1.5" />
+                  <rect x="3" y="13" width="8" height="8" rx="1.5" />
+                  <rect x="13" y="13" width="8" height="8" rx="1.5" />
+                </svg>
+                <span class="si-res__label">{{ r.label }}</span>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
 
-      <div ref="c3Ref" class="si-card si-card--prov" :style="cardStyle(c3)">
-        <div class="si-card__head">
-          <span class="si-card__title">{{ provTitle }}</span>
-        </div>
-        <div class="si-prov">
-          <div v-for="(p, i) in PROVIDERS" :key="p.key" class="si-prov__chip" :style="{ '--c': p.color, '--i': i, opacity: chipOn[i] ? 1 : 0 }">
-            <img :src="p.icon" alt="" />
+        <div ref="c3Ref" class="si-card" :style="cardStyle(c3)">
+          <span class="si-card__top" aria-hidden="true" />
+          <div class="si-card__front si-card__front--prov">
+            <div class="si-card__head">
+              <span class="si-card__title">{{ provTitle }}</span>
+            </div>
+            <div class="si-prov">
+              <div v-for="(p, i) in PROVIDERS" :key="p.key" class="si-prov__chip" :style="{ '--c': p.color, '--i': i, opacity: chipOn[i] ? 1 : 0 }">
+                <img :src="p.icon" alt="" />
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -361,27 +399,59 @@ onBeforeUnmount(() => {
   .si-blob { animation: none !important; }
 }
 
-/* ------- the stack: dead-front flex column, animated gap ------- */
+/* ------- 3D stage: fixed pitch, zero yaw ------- */
+
+.si-3d {
+  position: absolute;
+  inset: 0;
+  perspective: 1200px;
+}
+
+/* ------- the stack: flex column along the stack axis, tilted once ------- */
 
 .si-stack {
   position: absolute;
-  inset: 0;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%) rotateX(14deg);
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: var(--gap, 28px);
-  padding: 14px 18px;
+  gap: var(--gap, 34px);
+  padding: 10px 12px;
   transition: gap 0.9s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* ------- liquid glass cards ------- */
+/* ------- slab cards: top face strip + frosted front face ------- */
 
 .si-card {
+  position: relative;
+  width: 360px;
+  max-width: 100%;
+  transition: transform 0.9s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.9s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform, opacity;
+}
+
+.si-card__top {
+  display: block;
+  height: 16px;
+  border-radius: 24px 24px 0 0;
+  background: linear-gradient(to bottom, rgba(226, 230, 236, 0.95), rgba(208, 213, 221, 0.95));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5), inset 0 -1px 0 rgba(255, 255, 255, 0.25);
+}
+
+.dark .si-card__top {
+  background: linear-gradient(to bottom, rgba(52, 58, 70, 0.95), rgba(38, 43, 52, 0.95));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.09), inset 0 -1px 0 rgba(255, 255, 255, 0.03);
+}
+
+/* ------- liquid glass front faces ------- */
+
+.si-card__front {
   --si-text: #1f2937;
   --si-muted: #6b7280;
-  width: min(360px, 100%);
-  border-radius: 24px;
+  position: relative;
+  border-radius: 0 0 24px 24px;
   background: rgba(255, 255, 255, 0.55);
   -webkit-backdrop-filter: blur(20px) saturate(1.4);
   backdrop-filter: blur(20px) saturate(1.4);
@@ -391,11 +461,9 @@ onBeforeUnmount(() => {
     0 4px 12px rgba(31, 41, 55, 0.06),
     0 18px 40px rgba(31, 41, 55, 0.1),
     0 2px 4px rgba(31, 41, 55, 0.04);
-  transition: transform 0.9s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.9s cubic-bezier(0.4, 0, 0.2, 1);
-  will-change: transform, opacity;
 }
 
-.dark .si-card {
+.dark .si-card__front {
   --si-text: #e6e9ed;
   --si-muted: #9aa3ad;
   background: rgba(22, 24, 29, 0.55);
@@ -406,15 +474,15 @@ onBeforeUnmount(() => {
     0 18px 40px rgba(0, 0, 0, 0.35);
 }
 
-.si-card--yml { padding: 16px 18px 18px; }
-.si-card--res { padding: 14px 16px 16px; }
-.si-card--prov { padding: 14px 16px 16px; }
+.si-card__front--yml { padding: 12px 16px 14px; }
+.si-card__front--res { padding: 14px 16px 16px; }
+.si-card__front--prov { padding: 14px 16px 16px; }
 
 .si-card__head {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
 }
 
 .si-card__file-dot {
@@ -434,7 +502,7 @@ onBeforeUnmount(() => {
 
 .si-card__title--mono {
   font-family: 'SF Mono', ui-monospace, 'Menlo', 'Consolas', monospace;
-  font-size: 12.5px;
+  font-size: 12px;
   color: var(--si-text);
 }
 
@@ -443,8 +511,8 @@ onBeforeUnmount(() => {
 .si-yaml {
   white-space: pre;
   font-family: 'SF Mono', ui-monospace, 'Menlo', 'Consolas', monospace;
-  font-size: 13.5px;
-  line-height: 1.7;
+  font-size: 12.5px;
+  line-height: 1.5;
   color: var(--si-text);
 }
 
@@ -454,10 +522,10 @@ onBeforeUnmount(() => {
 
 .si-yaml__cursor {
   display: inline-block;
-  width: 7px;
-  height: 15px;
+  width: 0.55em;
+  height: 1.15em;
   margin-left: 2px;
-  vertical-align: -2px;
+  vertical-align: -0.18em;
   background: var(--si-text);
   animation: si-blink 1s steps(1) infinite;
 }
@@ -544,30 +612,46 @@ onBeforeUnmount(() => {
 /* ------- mobile: the scene is a full-width block below the hero text ------- */
 
 @media (max-width: 959px) {
+  .si-3d {
+    perspective: 1000px;
+  }
+
   .si-stack {
-    padding: 8px 14px;
+    padding: 6px 12px;
+    transform: translate(-50%, -50%) rotateX(8deg);
   }
 
   .si-card {
-    width: min(340px, 100%);
+    width: 330px;
+    max-width: 100%;
   }
 
-  .si-card--yml { padding: 12px 14px 14px; }
-  .si-card--res { padding: 10px 12px 12px; }
-  .si-card--prov { padding: 10px 12px 12px; }
+  .si-card__top {
+    height: 12px;
+    border-radius: 20px 20px 0 0;
+  }
+
+  .si-card__front {
+    border-radius: 0 0 20px 20px;
+  }
+
+  .si-card__front--yml { padding: 10px 12px 12px; }
+  .si-card__front--res { padding: 9px 12px 11px; }
+  .si-card__front--prov { padding: 9px 12px 11px; }
 
   .si-yaml {
-    font-size: 12px;
-    line-height: 1.6;
+    font-size: 10.5px;
+    line-height: 1.42;
   }
 
-  .si-card__head { margin-bottom: 8px; }
+  .si-card__head { margin-bottom: 7px; }
 
   .si-res__tile svg { width: 21px; height: 21px; }
   .si-res__label { font-size: 9.5px; }
+  .si-res__tile { gap: 6px; padding: 9px 2px 7px; }
 
-  .si-prov__chip { width: 50px; height: 50px; border-radius: 14px; }
-  .si-prov__chip img { width: 26px; height: 26px; }
+  .si-prov__chip { width: 48px; height: 48px; border-radius: 13px; }
+  .si-prov__chip img { width: 25px; height: 25px; }
 
   .si-blob--a { width: 260px; height: 260px; }
   .si-blob--b { width: 300px; height: 300px; }
