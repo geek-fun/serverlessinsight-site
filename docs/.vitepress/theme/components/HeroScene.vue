@@ -60,40 +60,44 @@ const typedLines = computed(() => {
 
 /* --------------------------------- plates --------------------------------- */
 // Model: plates are always HORIZONTAL (content face rotateX(90deg) = normal up in
-// group space). The whole stack pitches via ONE variable --pitch: -90deg shows a
-// plate's face dead-frontal (typing); -40deg reads as "camera above" (stack view).
-// Plates move ONLY along group Y (translate3d) — never rotated individually.
-// CSS 3D law: opacity/filter/will-change on a preserve-3d container FLATTENS its
-// 3D children — fades live on leaf faces (.si-face/.si-edge) only.
+// group space). ONE animated pitch: -90deg shows a plate's face dead-frontal
+// (typing); -40deg reads as "camera above" (stack view). Plates move ONLY along
+// group Y. CSS 3D law: opacity/filter/will-change on a preserve-3d container
+// FLATTENS its 3D children — fades live on leaf faces only. Assembled cuboid =
+// three glass layers with air between, corners tied by dashed vertical guide
+// lines (边角虚线连接).
 
-const yPlates = reactive([0, 0, 0])
+const y0 = ref(0)
+const y1 = ref(0)
+const y2 = ref(0)
 // leaf-face opacity: [yaml, resources, providers]
 const faceOp = reactive([1, 0, 0])
-// yaml plate's front wall: invisible while typing (frontal), fades in with the tilt
-const edgeOp = ref(0)
+const wireOp = ref(0)
 const tileOn = reactive([false, false, false, false, false])
 const chipOn = reactive([false, false, false])
 const isNarrow = ref(false)
 const stackPitch = ref(0)
 const stackScale = ref(1)
 const stackShift = ref(0)
+const asStep = ref(226)
 
-const slabT = () => (isNarrow.value ? 20 : 26)
 const cardH = () => (isNarrow.value ? 336 : 420)
 // pitch: typing = frontal (-90 shows the face-up plate dead-on), stack view = -40
 const typingPitch = () => (isNarrow.value ? -85 : -90)
 const maxPitch = () => (isNarrow.value ? -30 : -40)
-// expanded fan: plate projected depth ~ cardH*sin(40°) ≈ 270; adjacent surfaces
-// sit sep*cos(40°) apart → sep = cardH + 40 keeps ~85px clear gaps (zero occlusion).
+// expanded fan: plate projected depth ~ cardH*sin(pitch); sep keeps clear gaps
 const sep = () => cardH() + (isNarrow.value ? 30 : 40)
 const expScale = () => (isNarrow.value ? 0.55 : 0.6)
 // screen-space shift (applied after rotation) centers the fan on the middle plate
 const fanShift = () => -sep() * Math.cos((-maxPitch() * Math.PI) / 180) * expScale() + (isNarrow.value ? -14 : -30)
-// assembled box: plates touching (spacing = slab thickness), box recentered a touch
-const yAssembled = () => [0, slabT(), 2 * slabT()]
-const boxShift = () => (isNarrow.value ? -150 : -26)
-
-const plateStyle = (y: number) => ({transform: `translate3d(0, ${y}px, 0)`})
+// assembled cuboid: surfaces at -step / 0 / +step — air between the layers keeps
+// every layer's content visible and the silhouette reads as a real cuboid
+const asSpacing = () => (isNarrow.value ? 230 : 226)
+const cubScale = () => (isNarrow.value ? 0.78 : 1)
+// mobile scene center sits below the first-viewport fold — pull the box up
+const cubShift = () => (isNarrow.value ? -150 : -12)
+// layers rise from below the fan ("从下到上") — start this far below their slot
+const riseFrom = () => 360
 
 const RESOURCES = [
   {key: 'fn', en: 'Functions', zh: '函数', color: '#F89B40'},
@@ -115,18 +119,21 @@ const provTitle = computed(() => (isZh.value ? '供应商' : 'Providers'))
 
 /* ------------------------------ state machine ------------------------------ */
 
-// TYPE (4s) -> TILT+L2 (1.4s) -> L3 (1.2s) -> EXPANDED hold (2s) -> ASSEMBLE (1.5s)
-// -> CUBOID hold (1.4s) -> RESET (1s). Total 12.5s.
+// TYPE (4s) -> TILT (1.2s) -> L2 RISES (1s) -> L3 RISES (1s, camera pulls back)
+// -> EXPANDED hold (1.8s) -> ASSEMBLE (1.4s, dashed corners draw in)
+// -> CUBOID hold (1.6s) -> RESET (1s). Total 13s.
 const T1 = 4.0
-const T2 = 5.4
-const T3 = 6.6
-const T4 = 8.6
-const T5 = 10.1
-const T6 = 11.5
-const CYCLE = 12.5
+const T2 = 5.2
+const T3 = 6.2
+const T4 = 7.2
+const T5 = 9.0
+const T6 = 10.4
+const T7 = 12.0
+const CYCLE = 13.0
 
 const clamp01 = (v: number) => Math.min(1, Math.max(0, v))
 const easeInOutCubic = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2)
+const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3)
 const seg = (s: number, a: number, b: number) => clamp01((s - a) / (b - a))
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t
 
@@ -134,14 +141,16 @@ const apply = (s: number) => {
   const se = sep()
   const tp = typingPitch()
   const mp = maxPitch()
-  const ay = yAssembled()
+  const stp = asSpacing()
   const fs = fanShift()
-  const bs = boxShift()
+  const cs = cubShift()
+  const rf = riseFrom()
+  asStep.value = stp
 
   let pitch = tp
   let scale = 1
   let shift = 0
-  let eop = 0
+  let wire = 0
   const y = [0, 0, 0]
   const op = [1, 0, 0]
 
@@ -149,40 +158,39 @@ const apply = (s: number) => {
     // TYPE: stack frontal (pitch -90), only the yaml plate, typing
     typed.value = Math.floor(clamp01((s - 0.2) / (T1 - 0.6)) * YTOTAL)
     cursorOn.value = Math.floor(s * 2) % 2 === 0
-    eop = 0
     tileOn.fill(false)
     chipOn.fill(false)
   } else if (s < T2) {
-    // TILT + REVEAL L2: pitch -90 -> -40 lays the yaml card down into the lid
-    // position while L2's leaf faces fade in and it slides out beneath
+    // TILT: pitch -90 -> -40; the yaml card lays down into the lid position
     const e = easeInOutCubic(seg(s, T1, T2))
     typed.value = YTOTAL
     cursorOn.value = false
     pitch = lerp(tp, mp, e)
-    scale = 1 + (expScale() - 1) * e
-    shift = fs * e
-    y[1] = se * e
-    op[1] = e
-    eop = e
-    tileOn.fill(true)
-    chipOn.fill(false)
   } else if (s < T3) {
-    // REVEAL L3: slides out beneath L2, chips stagger as it arrives
-    const e = easeInOutCubic(seg(s, T2, T3))
+    // L2 RISES from below up into its slot beneath the lid
     typed.value = YTOTAL
     cursorOn.value = false
     pitch = mp
-    scale = expScale()
-    shift = fs
+    const e = easeOutCubic(seg(s, T2, T3))
+    y[1] = lerp(se + rf, se, e)
+    op[1] = clamp01(e * 1.8)
+    tileOn.fill(true)
+  } else if (s < T4) {
+    // L3 RISES the same way while the camera pulls back to frame the fan
+    typed.value = YTOTAL
+    cursorOn.value = false
+    pitch = mp
+    const e = easeOutCubic(seg(s, T3, T4))
     y[1] = se
-    y[2] = 2 * se * e
+    y[2] = lerp(2 * se + rf, 2 * se, e)
     op[1] = 1
-    op[2] = e
-    eop = 1
+    op[2] = clamp01(e * 1.8)
+    scale = lerp(1, expScale(), e)
+    shift = lerp(0, fs, e)
     tileOn.fill(true)
     chipOn.fill(true)
-  } else if (s < T4) {
-    // EXPANDED hold: three flat plates fanned below the lid, gentle float
+  } else if (s < T5) {
+    // EXPANDED hold: three flat plates fanned, gentle float
     const float = Math.sin(s * 2.2) * 6
     typed.value = YTOTAL
     cursorOn.value = false
@@ -193,58 +201,59 @@ const apply = (s: number) => {
     y[2] = 2 * se + float
     op[1] = 1
     op[2] = 1
-    eop = 1
-  } else if (s < T5) {
-    // ASSEMBLE: plates slide together until touching (spacing = thickness) and
-    // the camera pushes back in — one solid cuboid, lid = yaml
-    const e = easeInOutCubic(seg(s, T4, T5))
-    typed.value = YTOTAL
-    cursorOn.value = false
-    pitch = mp
-    scale = lerp(expScale(), 1, e)
-    shift = lerp(fs, bs, e)
-    y[1] = lerp(se, ay[1], e)
-    y[2] = lerp(2 * se, ay[2], e)
-    op[1] = 1
-    op[2] = 1
-    eop = 1
   } else if (s < T6) {
-    // CUBOID hold: solid box — lid readable, front wall = stacked plate edges;
-    // lower faces are physically occluded by the lid (no display hacks)
+    // ASSEMBLE: layers close in to the cuboid spacing, dashed corner guides
+    // draw in, camera pushes to the box
+    const e = easeInOutCubic(seg(s, T5, T6))
     typed.value = YTOTAL
     cursorOn.value = false
     pitch = mp
-    scale = 1
-    shift = bs
-    y[1] = ay[1]
-    y[2] = ay[2]
+    scale = lerp(expScale(), cubScale(), e)
+    shift = lerp(fs, cs, e)
+    y[0] = lerp(0, -stp, e)
+    y[1] = lerp(se, 0, e)
+    y[2] = lerp(2 * se, stp, e)
     op[1] = 1
     op[2] = 1
-    eop = 1
+    wire = e
+  } else if (s < T7) {
+    // CUBOID hold: three glass layers + dashed corner wireframe = one box
+    typed.value = YTOTAL
+    cursorOn.value = false
+    pitch = mp
+    scale = cubScale()
+    shift = cs
+    y[0] = -stp
+    y[1] = 0
+    y[2] = stp
+    op[1] = 1
+    op[2] = 1
+    wire = 1
   } else {
-    // RESET: pitch back to frontal, L2/L3 faces fade + tuck under, yaml clears
-    const e = easeInOutCubic(seg(s, T6, CYCLE))
+    // RESET: guides fade, layers sink back down, pitch returns to frontal
+    const e = easeInOutCubic(seg(s, T7, CYCLE))
     typed.value = Math.floor((1 - e) * YTOTAL)
     cursorOn.value = false
     pitch = lerp(mp, tp, e)
-    scale = 1
-    shift = lerp(bs, 0, e)
-    y[1] = lerp(ay[1], 0, e)
-    y[2] = lerp(ay[2], 0, e)
+    scale = lerp(cubScale(), 1, e)
+    shift = lerp(cs, 0, e)
+    y[0] = lerp(-stp, 0, e)
+    y[1] = lerp(0, se + rf * 0.6, e)
+    y[2] = lerp(stp, 2 * se + rf * 0.6, e)
     op[1] = 1 - e
     op[2] = 1 - e
-    eop = 1 - e
+    wire = 1 - e
     tileOn.fill(false)
     chipOn.fill(false)
   }
 
-  yPlates[0] = y[0]
-  yPlates[1] = y[1]
-  yPlates[2] = y[2]
+  y0.value = y[0]
+  y1.value = y[1]
+  y2.value = y[2]
   faceOp[0] = op[0]
   faceOp[1] = op[1]
   faceOp[2] = op[2]
-  edgeOp.value = eop
+  wireOp.value = wire
   stackPitch.value = pitch
   stackScale.value = scale
   stackShift.value = shift
@@ -264,17 +273,16 @@ const tick = (now: number) => {
 const showStaticCuboid = () => {
   typed.value = YTOTAL
   cursorOn.value = false
-  const ay = yAssembled()
-  yPlates[0] = ay[0]
-  yPlates[1] = ay[1]
-  yPlates[2] = ay[2]
+  y0.value = -asSpacing()
+  y1.value = 0
+  y2.value = asSpacing()
   faceOp[0] = 1
-  faceOp[1] = 0
-  faceOp[2] = 0
-  edgeOp.value = 1
+  faceOp[1] = 1
+  faceOp[2] = 1
+  wireOp.value = 1
   stackPitch.value = maxPitch()
-  stackScale.value = 1
-  stackShift.value = boxShift()
+  stackScale.value = cubScale()
+  stackShift.value = cubShift()
   tileOn.fill(true)
   chipOn.fill(true)
 }
@@ -312,11 +320,19 @@ onBeforeUnmount(() => {
     <div class="si-3d">
       <div
         class="si-stack"
-        :style="{'--pitch': `${stackPitch}deg`, '--ss': String(stackScale), '--shift': `${stackShift}px`}"
+        :style="{'--pitch': `${stackPitch}deg`, '--ss': String(stackScale), '--shift': `${stackShift}px`, '--as': `${asStep}px`}"
       >
-        <div v-for="p in 3" :key="p" class="si-plate" :style="plateStyle(yPlates[p - 1])">
-          <!-- yaml plate -->
-          <div v-if="p === 1" class="si-face si-face--yml" :style="{opacity: faceOp[0], visibility: faceOp[0] > 0 ? 'visible' : 'hidden'}">
+        <!-- dashed corner guides: tie the three layers into one cuboid -->
+        <span
+          v-for="w in 4"
+          :key="`w${w}`"
+          class="si-wire"
+          :class="[w < 3 ? 'si-wire--l' : 'si-wire--r', w % 2 === 1 ? 'si-wire--f' : 'si-wire--b']"
+          :style="{opacity: wireOp, visibility: wireOp > 0 ? 'visible' : 'hidden'}"
+        />
+
+        <div class="si-plate" :style="{transform: `translate3d(0, ${y0}px, 0)`}">
+          <div class="si-face si-face--yml" :style="{opacity: faceOp[0], visibility: faceOp[0] > 0 ? 'visible' : 'hidden'}">
             <div class="si-card__head">
               <span class="si-card__file-dot" />
               <span class="si-card__title si-card__title--mono">serverlessinsight.yml</span>
@@ -328,71 +344,64 @@ onBeforeUnmount(() => {
               </div>
             </div>
           </div>
+        </div>
 
-          <!-- resources plate -->
-          <template v-else-if="p === 2">
-            <div class="si-face si-face--res" :style="{opacity: faceOp[1], visibility: faceOp[1] > 0 ? 'visible' : 'hidden'}">
-              <div class="si-card__head">
-                <span class="si-card__title">{{ resTitle }}</span>
-              </div>
-              <div class="si-res">
-                <div
-                  v-for="(r, i) in resourceList"
-                  :key="r.key"
-                  class="si-res__tile"
-                  :style="{'--c': r.color, '--i': i, opacity: tileOn[i] ? 1 : 0}"
-                >
-                  <svg v-if="r.key === 'fn'" viewBox="0 0 24 24" aria-hidden="true">
-                    <text x="12" y="17.5" text-anchor="middle" font-size="19" font-family="Georgia, 'Times New Roman', serif" font-style="italic" font-weight="700" fill="currentColor">ƒ</text>
-                  </svg>
-                  <svg v-else-if="r.key === 'event'" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                    <path d="M13 2 3 14h6l-2 8 10-12h-6z" />
-                  </svg>
-                  <svg v-else-if="r.key === 'db'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
-                    <ellipse cx="12" cy="6" rx="7" ry="2.6" />
-                    <path d="M5 6v12c0 1.4 3.1 2.6 7 2.6s7-1.2 7-2.6V6" />
-                    <path d="M5 12c0 1.4 3.1 2.6 7 2.6s7-1.2 7-2.6" />
-                  </svg>
-                  <svg v-else-if="r.key === 'bucket'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                    <path d="M12 3 19 7v10l-7 4-7-4V7z" />
-                    <path d="M5 7l7 4 7-4" />
-                    <path d="M12 11v10" />
-                  </svg>
-                  <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                    <rect x="3" y="3" width="8" height="8" rx="1.5" />
-                    <rect x="13" y="3" width="8" height="8" rx="1.5" />
-                    <rect x="3" y="13" width="8" height="8" rx="1.5" />
-                    <rect x="13" y="13" width="8" height="8" rx="1.5" />
-                  </svg>
-                  <span class="si-res__label">{{ r.label }}</span>
-                </div>
+        <div class="si-plate" :style="{transform: `translate3d(0, ${y1}px, 0)`}">
+          <div class="si-face si-face--res" :style="{opacity: faceOp[1], visibility: faceOp[1] > 0 ? 'visible' : 'hidden'}">
+            <div class="si-card__head">
+              <span class="si-card__title">{{ resTitle }}</span>
+            </div>
+            <div class="si-res">
+              <div
+                v-for="(r, i) in resourceList"
+                :key="r.key"
+                class="si-res__tile"
+                :style="{'--c': r.color, '--i': i, opacity: tileOn[i] ? 1 : 0}"
+              >
+                <svg v-if="r.key === 'fn'" viewBox="0 0 24 24" aria-hidden="true">
+                  <text x="12" y="17.5" text-anchor="middle" font-size="19" font-family="Georgia, 'Times New Roman', serif" font-style="italic" font-weight="700" fill="currentColor">ƒ</text>
+                </svg>
+                <svg v-else-if="r.key === 'event'" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                  <path d="M13 2 3 14h6l-2 8 10-12h-6z" />
+                </svg>
+                <svg v-else-if="r.key === 'db'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+                  <ellipse cx="12" cy="6" rx="7" ry="2.6" />
+                  <path d="M5 6v12c0 1.4 3.1 2.6 7 2.6s7-1.2 7-2.6V6" />
+                  <path d="M5 12c0 1.4 3.1 2.6 7 2.6s7-1.2 7-2.6" />
+                </svg>
+                <svg v-else-if="r.key === 'bucket'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M12 3 19 7v10l-7 4-7-4V7z" />
+                  <path d="M5 7l7 4 7-4" />
+                  <path d="M12 11v10" />
+                </svg>
+                <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                  <rect x="3" y="3" width="8" height="8" rx="1.5" />
+                  <rect x="13" y="3" width="8" height="8" rx="1.5" />
+                  <rect x="3" y="13" width="8" height="8" rx="1.5" />
+                  <rect x="13" y="13" width="8" height="8" rx="1.5" />
+                </svg>
+                <span class="si-res__label">{{ r.label }}</span>
               </div>
             </div>
-            <span class="si-edge" :style="{opacity: faceOp[1], visibility: faceOp[1] > 0 ? 'visible' : 'hidden'}" />
-          </template>
+          </div>
+        </div>
 
-          <!-- providers plate -->
-          <template v-else>
-            <div class="si-face si-face--prov" :style="{opacity: faceOp[2], visibility: faceOp[2] > 0 ? 'visible' : 'hidden'}">
-              <div class="si-card__head">
-                <span class="si-card__title">{{ provTitle }}</span>
-              </div>
-              <div class="si-prov">
-                <div
-                  v-for="(pr, i) in PROVIDERS"
-                  :key="pr.key"
-                  class="si-prov__chip"
-                  :style="{'--c': pr.color, '--i': i, opacity: chipOn[i] ? 1 : 0}"
-                >
-                  <img :src="pr.icon" alt="" />
-                </div>
+        <div class="si-plate" :style="{transform: `translate3d(0, ${y2}px, 0)`}">
+          <div class="si-face si-face--prov" :style="{opacity: faceOp[2], visibility: faceOp[2] > 0 ? 'visible' : 'hidden'}">
+            <div class="si-card__head">
+              <span class="si-card__title">{{ provTitle }}</span>
+            </div>
+            <div class="si-prov">
+              <div
+                v-for="(pr, i) in PROVIDERS"
+                :key="pr.key"
+                class="si-prov__chip"
+                :style="{'--c': pr.color, '--i': i, opacity: chipOn[i] ? 1 : 0}"
+              >
+                <img :src="pr.icon" alt="" />
               </div>
             </div>
-            <span class="si-edge" :style="{opacity: faceOp[2], visibility: faceOp[2] > 0 ? 'visible' : 'hidden'}" />
-          </template>
-
-          <!-- yaml plate front wall: hidden while typing (frontal), fades in with the tilt -->
-          <span v-if="p === 1" class="si-edge" :style="{opacity: edgeOp, visibility: edgeOp > 0 ? 'visible' : 'hidden'}" />
+          </div>
         </div>
       </div>
     </div>
@@ -503,10 +512,7 @@ onBeforeUnmount(() => {
   backface-visibility: hidden;
   border-radius: 26px;
   background: linear-gradient(160deg, rgba(255, 255, 255, 0.97), rgba(247, 249, 252, 0.95));
-  box-shadow:
-    inset 0 0 0 1px rgba(148, 163, 184, 0.5),
-    0 4px 12px rgba(31, 41, 55, 0.12),
-    0 18px 40px rgba(31, 41, 55, 0.2);
+  box-shadow: 0 6px 18px rgba(31, 41, 55, 0.1);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -515,35 +521,13 @@ onBeforeUnmount(() => {
 .dark .si-face {
   --si-text: #eef2f6;
   --si-muted: #a8b2bd;
-  background: linear-gradient(160deg, rgba(58, 65, 78, 1), rgba(46, 52, 62, 1));
-  box-shadow:
-    inset 0 0 0 1px rgba(255, 255, 255, 0.14),
-    0 4px 12px rgba(0, 0, 0, 0.4),
-    0 18px 40px rgba(0, 0, 0, 0.55);
-}
-
-/* front thickness wall: vertical strip at the plate's FRONT edge plane
-   (group z = +210 = where the face's near edge lies). Stacked plates then
-   present one contiguous front wall; centered face content stays hidden
-   under the lid when assembled and clear of the walls when expanded. */
-.si-edge {
-  position: absolute;
-  left: 0;
-  top: 210px;
-  width: 400px;
-  height: 26px;
-  transform: translateZ(210px);
-  background: linear-gradient(to bottom, #5d6775, #39404c);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
-}
-
-.dark .si-edge {
-  background: linear-gradient(to bottom, #5d6775, #39404c);
+  background: linear-gradient(160deg, rgba(58, 65, 78, 0.98), rgba(46, 52, 62, 0.98));
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.35);
 }
 
 .si-face--yml { padding: 18px 22px 20px; }
-/* res/prov: title + content cluster at the face center — visible when expanded,
-   fully hidden under the lid when assembled */
+/* res/prov: title + content cluster at the face center — visible when expanded
+   and in the layered cuboid, fully clear of neighbouring plates */
 .si-face--res,
 .si-face--prov { padding: 18px 22px 20px; justify-content: center; gap: 6px; }
 
@@ -577,6 +561,25 @@ onBeforeUnmount(() => {
   font-family: 'SF Mono', ui-monospace, 'Menlo', 'Consolas', monospace;
   font-size: 12px;
   color: var(--si-text);
+}
+
+/* ------- dashed corner guides (cuboid wireframe) ------- */
+
+.si-wire {
+  position: absolute;
+  width: 2px;
+  top: calc(-1 * var(--as, 226px) - 13px);
+  height: calc(2 * var(--as, 226px) + 26px);
+  background: repeating-linear-gradient(to bottom, rgba(154, 165, 180, 0.65) 0 7px, transparent 7px 15px);
+}
+
+.si-wire--l { left: -201px; }
+.si-wire--r { left: 199px; }
+.si-wire--f { transform: translateZ(210px); }
+.si-wire--b { transform: translateZ(-210px); }
+
+.dark .si-wire {
+  background: repeating-linear-gradient(to bottom, rgba(160, 172, 188, 0.55) 0 7px, transparent 7px 15px);
 }
 
 /* ------- yaml ------- */
@@ -701,12 +704,15 @@ onBeforeUnmount(() => {
     height: 336px;
   }
 
-  .si-edge {
-    top: 168px;
-    width: 320px;
-    height: 20px;
-    transform: translateZ(168px);
+  .si-wire {
+    top: calc(-1 * var(--as, 230px) - 10px);
+    height: calc(2 * var(--as, 230px) + 20px);
   }
+
+  .si-wire--l { left: -161px; }
+  .si-wire--r { left: 159px; }
+  .si-wire--f { transform: translateZ(168px); }
+  .si-wire--b { transform: translateZ(-168px); }
 
   .si-face {
     border-radius: 20px;
