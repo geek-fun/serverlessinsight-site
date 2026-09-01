@@ -1,140 +1,56 @@
+---
+title: 快速开始
+description: 安装 ServerlessInsight CLI，理解配置模型，并部署你的第一个 Serverless 应用
+---
+
 # 快速开始
 
-让我们基于 ServerlessInsight 快速从零构建一个简单的全栈 Serverless 应用程序。我们将创建一个简单的 API，在浏览器中显示"Hello World"。本文档以阿里云为例。
+本指南带你完成一次完整的 ServerlessInsight 旅程：安装 CLI、理解 `serverlessinsight.yml` 的配置模型、部署第一个应用、再到本地调试。读完它，你不仅知道"怎么做"，也知道"为什么这么配"。字段级的完整取值请查阅[配置手册](/reference)。
 
-## 前提条件
+## 1. 安装 CLI
 
-在开始之前，请确保您的开发环境满足以下要求：
-
-- ✅ Node.js >= 18.x
-- ✅ npm >= 8.x
-- ✅ 阿里云账号（已开通函数计算 FC 和 API 网关服务）
-
-如果尚未安装 Node.js，请访问 [Node.js 官网](https://nodejs.org/en/download/) 下载安装。
-
-## 步骤 1: 安装 ServerlessInsight CLI
-
-使用 npm 全局安装 ServerlessInsight CLI：
+前置条件：Node.js >= 18，npm >= 8。
 
 ```bash
 npm install -g @geek-fun/serverlessinsight
-```
-
-验证安装是否成功：
-
-```bash
 si --version
 ```
 
-如果安装成功，将会显示版本号，例如：`0.6.12`
+`si` 是唯一的交互入口：校验、部署、销毁、本地调试都通过它完成。
 
-## 步骤 2: 配置云供应商密钥
-
-ServerlessInsight 需要访问云供应商的资源。以阿里云为例，您需要配置以下环境变量：
+## 2. 创建项目
 
 ```bash
-export ALIYUN_ACCESS_KEY_ID="your-access-key-id"
-export ALIYUN_ACCESS_KEY_SECRET="your-access-key-secret"
-export ALIYUN_REGION="cn-hangzhou"
+mkdir hello-world && cd hello-world
 ```
 
-> 💡 **提示**: 可以将上述命令添加到 `~/.bashrc` 或 `~/.zshrc` 文件中，避免每次终端会话都重新设置。
-
-### 支持的阿里云区域
-
-**中国大陆:**
-- `cn-qingdao`, `cn-beijing`, `cn-zhangjiakou`, `cn-huhehaote`, `cn-wulanchabu`
-- `cn-hangzhou`, `cn-shanghai`, `cn-shenzhen`, `cn-heyuan`, `cn-guangzhou`, `cn-chengdu`
-
-**亚太地区:**
-- `cn-hongkong`, `ap-southeast-1`, `ap-southeast-3`, `ap-southeast-5`
-- `ap-southeast-6`, `ap-southeast-7`, `ap-northeast-1`, `ap-northeast-2`
-
-**欧洲&美洲:**
-- `eu-central-1`, `eu-west-1`, `us-east-1`, `us-west-1`, `na-south-1`
-
-**中东:**
-- `me-east-1`, `me-central-1`
-
-![阿里云 AccessKey 生成示意](/aliyun-access-key.png)
-
-> ⚠️ **安全警告**
-> 
-> - 请务必妥善保管您的密钥信息，切勿通过任何方式（如 GitHub）将 AccessKey 公开
-> - 强烈建议使用 **RAM 子用户**的 AccessKey 进行 API 调用
-> - 遵循 [阿里云安全最佳实践](https://help.aliyun.com/document_detail/54577.html)
-> - ServerlessInsight 不会保存任何供应商密钥信息
-
-### 其他云供应商凭证
-
-**腾讯云:**
-```bash
-export TENCENTCLOUD_SECRET_ID="your-secret-id"
-export TENCENTCLOUD_SECRET_KEY="your-secret-key"
-export TENCENTCLOUD_SECURITY_TOKEN="your-security-token"  # 可选，临时凭证
-```
-
-**火山引擎:**
-```bash
-export VOLCENGINE_ACCESS_KEY_ID="your-access-key-id"
-export VOLCENGINE_ACCESS_KEY_SECRET="your-access-key-secret"
-export VOLCENGINE_SESSION_TOKEN="your-session-token"  # 可选
-```
-
-**华为云:**
-```bash
-export HUAWEICLOUD_ACCESS_KEY="your-access-key"
-export HUAWEICLOUD_SECRET_KEY="your-secret-key"
-```
-
-## 步骤 3: 初始化项目
-
-创建项目目录：
-
-```bash
-mkdir hello-world-proj && cd hello-world-proj
-```
-
-### 推荐的项目结构
-
-ServerlessInsight 不强制要求特定的目录结构，但我们建议按以下方式组织项目（以 TypeScript 项目为例）：
+推荐的项目结构：
 
 ```
-hello-world-proj/
-├── artifacts/              # 打包后的应用程序代码
-│   └── hello-world-api.zip
-├── scripts/                # 自动化脚本
-│   └── package.sh
+hello-world/
+├── artifacts/              # 打包后的函数代码（zip 产物）
 ├── src/                    # 源代码
-│   └── index.ts
-├── tests/                  # 测试代码
-├── serverlessinsight.yml   # ServerlessInsight 配置文件
-├── package.json            # Node.js 项目配置
-├── package-lock.json       # 依赖锁定文件
-├── tsconfig.json           # TypeScript 配置
-└── Dockerfile              # Docker 构建配置
+└── serverlessinsight.yml   # 资源配置文件（唯一必需）
 ```
 
-## 步骤 4: 配置 serverlessinsight.yml
+`serverlessinsight.yml` 是 ServerlessInsight 的全部。它以声明式的方式描述"你要哪些云资源"，`si deploy` 负责把这份声明落到云上。传统方式里你需要手工在控制台建函数、配网关、开数据库；在这里，它们都是文件里的一段 YAML。
 
-在项目根目录创建 `serverlessinsight.yml` 文件：
+## 3. 理解配置模型
+
+在写第一份配置前，先花一分钟理解它的骨架。一个 `serverlessinsight.yml` 由两部分组成：
+
+- **全局骨架**：`version`（配置格式版本）、`provider`（部署到哪朵云的哪个地域）、`app` / `service`（项目与服务标识，参与所有资源命名）、`vars` / `stages`（变量与多环境）；
+- **资源声明**：`functions`（函数）、`events`（API 网关入口）、`databases` / `tables` / `buckets`（数据与存储层）。
+
+写出最小可部署配置（以阿里云为例）：
 
 ```yaml
 version: 0.1.0
-provider: aliyun
-
-vars:
+provider:
+  name: aliyun
   region: cn-hangzhou
-
-stages:
-  dev:
-    region: ${vars.region}
-
 app: hello-world
 service: hello-world-api
-
-tags:
-  owner: geek-fun
 
 functions:
   hello_world_fn:
@@ -143,308 +59,158 @@ functions:
       runtime: nodejs18
       handler: index.handler
       path: artifacts/hello-world-api.zip
-    memory: 512
-    timeout: 10
-    environment:
-      NODE_ENV: prod
+```
 
+逐段看这份配置在说什么：
+
+- `provider` 决定所有资源的落点。当前可部署的供应商为 `aliyun`、`tencent`、`volcengine`（`huawei` 与 `aws` 暂不可部署）。平台间的能力矩阵、地域与凭证差异见[配置手册](/reference)。
+- `app` 与 `service` 必须是静态字符串（小写字母、数字、`-`），因为它们要在解析变量之前就确定，并作为前缀出现在每个云资源的名字里。
+- `functions` 的键名 `hello_world_fn` 是**引用名**，后续 `events` 里的 `backend` 就用它指向这个函数；内部的 `name` 才是云上的实际函数名。函数支持两种形态：`code`（代码包）或 `container`（容器镜像），二选一。
+- `code` 三要素缺一不可：`runtime` 是云上的执行环境（按供应商校验，如阿里云的 `nodejs18`、火山引擎的 `node20/v1`），`handler` 是 `文件.导出函数` 格式的入口，`path` 指向 `artifacts/` 里的打包产物。
+- 没写的字段都有合理默认：`memory` 默认 128 MB，`timeout` 默认 3 秒，起步足够，之后按需调整。
+
+### 给函数接一个 HTTP 入口
+
+上面的函数还没有任何触发方式。最快的路径是声明一个 API 网关，把 `GET /api/*` 的请求转发给它：
+
+```yaml
 events:
   gateway_event:
+    name: hello-world-gateway
     type: API_GATEWAY
-    name: insight-poc-gateway
     triggers:
       - method: GET
         path: /api/*
-        backend: hello_world_fn
+        backend: hello_world_fn   # 函数的引用名，不是 name
 ```
 
-### 配置说明
+`triggers` 数组里每条规则就是一个路由：`method` 支持 `GET` / `POST` / `PUT` / `DELETE` / `ANY`，`path` 以 `/` 开头、支持 `*` 通配，`backend` 填函数的引用名。多条规则可以指向不同函数，这就是"一组接口"的标准形态。
 
-- **version**: 配置文件版本，当前支持 `0.1`
-- **provider**: 云供应商配置（aliyun/huawei/tencent）
-- **vars**: 可重用的变量，可在配置中通过 `${vars.variableName}` 引用
-- **stages**: 不同环境的配置（dev/test/prod），通过 `--stage` 参数指定
-- **service**: 服务名称，全局唯一标识符
-- **tags**: 资源标签，用于资源管理和成本分摊
-- **functions**: 函数计算配置
-- **events**: 事件触发器配置
+> ⚠️ **腾讯云不支持 `events`**。腾讯云函数通过函数自身的 `triggers.http` 暴露 HTTP 入口。
 
-## 步骤 5: 编写应用程序代码
+### 函数之外：数据与存储
 
-在 `src` 目录下创建 `index.ts` 文件：
+真实应用往往还需要数据层。在同一个文件里声明它们，部署时由 CLI 一并创建并打通网络：
 
-```typescript
-export async function handler(event: any, context: any) {
-  return {
-    statusCode: 200,
-    body: JSON.stringify({
-      message: 'Hello World!',
-    }),
-  };
-}
+```yaml
+databases:
+  main_db:
+    name: main-db
+    type: RDS_MYSQL_SERVERLESS
+    version: MYSQL_8.0
+    cu:
+      min: 0
+      max: 8
+    security:
+      basic_auth:
+        master_user: dbadmin
+        password: "${vars.db_password}"
+
+buckets:
+  assets:
+    name: hello-world-assets
+    storage:
+      class: STANDARD
 ```
 
-创建 `package.json` 文件：
+`cu.min/max` 控制 Serverless 数据库的弹性算力：空闲时缩到 0 CU 不计费，高峰自动扩容。各资源类型的完整字段与枚举值见[配置手册](/reference)。
 
-```json
-{
-  "name": "hello-world-api",
-  "version": "1.0.0",
-  "description": "Hello World API with ServerlessInsight",
-  "main": "dist/index.js",
-  "scripts": {
-    "build": "tsc",
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "dependencies": {},
-  "devDependencies": {
-    "@types/node": "^18.0.0",
-    "typescript": "^5.0.0"
-  }
-}
+### 变量与多环境
+
+到目前为止配置里都是"写死的值"。把它们抽成变量，同一份文件就能在多个环境间复用：
+
+```yaml
+vars:
+  memory: 512
+
+stages:
+  dev:
+    memory: 256
+  prod:
+    memory: 1024
+
+functions:
+  hello_world_fn:
+    name: hello-world-fn
+    code:
+      runtime: nodejs18
+      handler: index.handler
+      path: artifacts/hello-world-api.zip
+    memory: ${stages.memory}        # 取当前 stage 的 memory
+    environment:
+      STAGE: ${ctx.stage}           # 内置上下文：当前 stage 名
 ```
 
-创建 `tsconfig.json` 文件：
+三种引用各有分工：`${vars.*}` 是团队自定义变量（可用 `-p` 在部署时覆盖，适合放密钥）；`${stages.*}` 取当前环境的覆盖值；`${ctx.stage}` 是 CLI 注入的运行时上下文。敏感值永远不要写进文件，部署时用 `si deploy -p db_password=xxx` 注入。
 
-```json
-{
-  "compilerOptions": {
-    "target": "ES2020",
-    "module": "commonjs",
-    "lib": ["ES2020"],
-    "declaration": true,
-    "strict": true,
-    "noImplicitAny": true,
-    "strictNullChecks": true,
-    "noImplicitThis": true,
-    "alwaysStrict": true,
-    "noUnusedLocals": false,
-    "noUnusedParameters": false,
-    "noImplicitReturns": true,
-    "noFallthroughCasesInSwitch": false,
-    "inlineSourceMap": true,
-    "inlineSources": true,
-    "experimentalDecorators": true,
-    "strictPropertyInitialization": false,
-    "outDir": "./dist",
-    "rootDir": "./src"
-  },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules"]
-}
+## 4. 配置云凭证
+
+凭证不写在配置里，通过环境变量注入。在页面顶部选择你的平台，查看对应的变量（默认展示阿里云）：
+
+::: platform aliyun
+```bash
+export ALIYUN_ACCESS_KEY_ID="your-access-key-id"
+export ALIYUN_ACCESS_KEY_SECRET="your-access-key-secret"
+export ALIYUN_REGION="cn-hangzhou"
 ```
 
-## 步骤 6: 配置打包脚本
+完整变量别名与 STS 临时凭证见[配置手册](/reference)。
+:::
 
-### 创建 Dockerfile
-
-在项目根目录创建 `Dockerfile`：
-
-```dockerfile
-# 构建阶段
-FROM node:18.20.3-buster-slim@sha256:95fb3cf1d1ab1834c0fd65cdd2246198662460ae8f982a6cfab187889dd54bbe AS builder
-WORKDIR /app
-
-ENV NODE_ENV=development
-COPY ./package.json .
-COPY ./package-lock.json .
-RUN npm install
-COPY ./tsconfig.json .
-COPY ./src ./src
-RUN npm run build
-
-# 运行阶段
-FROM node:18.20.3-buster-slim@sha256:95fb3cf1d1ab1834c0fd65cdd2246198662460ae8f982a6cfab187889dd54bbe
-WORKDIR /app
-
-ENV NODE_ENV=production
-COPY --from=builder /app/dist .
-COPY ./package.json .
-COPY ./package-lock.json .
-RUN npm install --only=production
+::: platform tencent
+```bash
+export TENCENTCLOUD_SECRET_ID="your-secret-id"
+export TENCENTCLOUD_SECRET_KEY="your-secret-key"
 ```
 
-该 Dockerfile 使用多阶段构建：
-- **第一阶段**：安装依赖并编译 TypeScript 代码
-- **第二阶段**：仅保留必要的运行时文件，最小化包体积
+完整变量别名与 STS 临时凭证见[配置手册](/reference)。
+:::
 
-### 创建打包脚本
+::: platform volcengine
+```bash
+export VOLCENGINE_ACCESS_KEY_ID="your-access-key-id"
+export VOLCENGINE_ACCESS_KEY_SECRET="your-access-key-secret"
+```
 
-在 `scripts` 目录下创建 `package.sh` 文件：
+完整变量别名与临时凭证 Token 见[配置手册](/reference)。
+:::
+
+> ⚠️ 使用 RAM 子用户的 AccessKey，不要用主账号；密钥切勿提交到仓库。
+
+## 5. 部署
 
 ```bash
-#!/bin/bash -eux
-set -o pipefail
-
-cd "$(dirname "$0")/.." || exit
-
-mkdir -p "artifacts"
-rm -rf ./dist ./artifacts/*
-
-IMAGE_NAME="hello-world-api"
-docker build -t "${IMAGE_NAME}" .
-
-docker run --rm \
-  -v "$(pwd)"/dist:/dist \
-  --name "${IMAGE_NAME}-package" "${IMAGE_NAME}:latest" \
-  sh -c "cp -r /app/. /dist"
-
-cd dist && zip -r -D "../artifacts/${IMAGE_NAME}.zip" ./*
-```
-
-赋予脚本执行权限并运行打包：
-
-```bash
-chmod +x scripts/package.sh
-./scripts/package.sh
-```
-
-打包完成后，您应该在 `artifacts` 目录下看到 `hello-world-api.zip` 文件。
-
-## 步骤 7: 验证配置
-
-在部署之前，建议先验证配置文件是否正确：
-
-```bash
+# 校验配置：运行时、枚举、必填字段都会在此检查
 si validate
-```
 
-如果配置正确，您将看到类似以下的成功提示：
+# 打包代码到 artifacts/（或使用你自己的构建脚本）
 
-![validate 校验成功示例](/cli-validate-success.png)
-
-## 步骤 8: 部署服务
-
-使用以下命令将服务部署到阿里云：
-
-```bash
+# 部署
 si deploy --stage dev
 ```
 
-**参数说明：**
-- `--stage dev`: 指定部署环境为开发环境（对应配置文件中的 `stages.dev`）
+`si deploy` 依据状态文件计算"这次要改什么"：新建缺失的资源、更新变化的资源、回收删掉的资源。首次部署会全量创建，之后都是增量。
 
-部署成功后，您将看到类似以下输出：
+## 6. 本地调试
 
-```bash
-Deploying service hello-world-api to stage dev
-Service hello-world-api deployed successfully
-```
-
-## 步骤 9: 调用服务
-
-部署完成后，ServerlessInsight 会输出 API 的访问地址。您可以通过以下方式调用：
+改一行代码就要部署一次，太慢。`si local` 把函数拉到本地进程运行，用真实的 handler 代码响应请求（目前支持阿里云函数）：
 
 ```bash
-curl https://<your-api-gateway-url>/api/hello
-```
-
-或者在浏览器中直接访问该 URL，您将看到：
-
-```json
-{
-  "message": "Hello World!"
-}
-```
-
-## 步骤 10: 本地开发调试
-
-ServerlessInsight 支持在本地运行和调试您的应用：
-
-```bash
-# 基本本地运行
 si local --stage dev
-
-# 启用调试模式
-si local --stage dev --debug
-
-# 启用文件监视模式（代码变更自动重载）
-si local --stage dev --watch
 ```
 
-本地开发环境会自动启动所有定义的资源，无需配置任何本地云服务。
+本地服务监听 `4567` 端口，按 `events` 的路由规则转发请求；`--watch` 默认开启，保存代码即热重载；`--debug` 可配合 IDE 断点。
 
-## 步骤 11: 清理资源
-
-如果您不再需要该应用，可以使用以下命令清理所有资源：
+## 7. 清理资源
 
 ```bash
 si destroy --stage dev
 ```
 
-> ⚠️ **警告**
-> 
-> 删除资源栈会删除所有声明的资源，导致服务完全不可用，并丢失所有有状态资源的数据。请确保：
-> - 相关数据已备份
-> - 确认不再需要这些资源
-> 
-> 然后再执行此操作。
+销毁基于状态文件逐个回收资源。桶非空时销毁会失败，这是防止误删的保护；确认无误后可临时设置 `security.force_delete: true`。
 
 ## 下一步
 
-恭喜！您已经成功使用 ServerlessInsight 构建并部署了第一个 Serverless 应用。
-
-接下来，您可以：
-
-- 📖 阅读 [配置手册](/reference) 了解更多资源配置选项
-- 🔧 查看 [命令行工具](/cli) 学习更多 CLI 命令
-- 💡 浏览 [实践案例](/case-study) 了解真实应用场景
-- 🌐 尝试配置其他云供应商（华为云、腾讯云等）
-
-## 常见问题
-
-### Q: 部署失败怎么办？
-
-检查以下几点：
-1. 确认环境变量（AccessKey、Region）已正确设置
-2. 确认阿里云账号已开通函数计算 FC 和 API 网关服务
-3. 运行 `si validate` 检查配置是否正确
-4. 查看错误日志，根据具体错误信息排查
-
-### Q: 如何切换不同的部署环境？
-
-使用 `--stage` 参数指定不同环境：
-
-```bash
-# 部署到测试环境
-si deploy --stage test
-
-# 部署到生产环境
-si deploy --stage prod
-```
-
-在配置文件中定义不同环境的变量：
-
-```yaml
-stages:
-  dev:
-    region: cn-hangzhou
-  test:
-    region: cn-shanghai
-  prod:
-    region: cn-beijing
-```
-
-### Q: 如何更新已部署的应用？
-
-修改代码后重新打包并部署：
-
-```bash
-# 重新打包
-./scripts/package.sh
-
-# 重新部署（会更新现有资源）
-si deploy --stage dev
-```
-
-### Q: 支持哪些运行时？
-
-阿里云函数计算支持以下运行时：
-- Node.js: `nodejs20`, `nodejs18`, `nodejs16`, `nodejs14`, `nodejs12`, `nodejs10`, `nodejs8`
-- Python: `python3.10`, `python3.9`, `python3`
-- PHP: `PHP7.2`
-- Java: `Java11`
-- .NET: `.NETCore3.1`
-- Go: `Go1.x`
-
-更多运行时请参考 [阿里云函数计算文档](https://help.aliyun.com/product/50980.html)
+- [配置手册](/reference) — 全部资源、字段与可选值
+- [CLI 参考](/cli) — 全部命令与参数
+- [实践案例](/case-study) — 真实场景示例

@@ -1,118 +1,56 @@
-# Quick Start
+---
+title: Getting Started
+description: Install the ServerlessInsight CLI, understand the configuration model, and deploy your first Serverless app
+---
 
-Let's build a simple full-stack serverless application from scratch using ServerlessInsight. We'll create a simple API that displays "Hello World" in the browser. This guide uses Alibaba Cloud as an example.
+# Getting Started
 
-## Prerequisites
+This guide walks a complete ServerlessInsight journey: installing the CLI, understanding the `serverlessinsight.yml` configuration model, deploying your first app, and debugging it locally. You'll learn not just *how* but *why* each piece of configuration exists. For field-level values, see the [Configuration Reference](/en/reference).
 
-Before you begin, ensure your development environment meets the following requirements:
+## 1. Install the CLI
 
-- ✅ Node.js >= 18.x
-- ✅ npm >= 8.x
-- ✅ Alibaba Cloud account (with Function Compute FC and API Gateway services enabled)
-
-If you haven't installed Node.js yet, please visit the [Node.js website](https://nodejs.org/en/download/) to download and install it.
-
-## Step 1: Install ServerlessInsight CLI
-
-Install ServerlessInsight CLI globally using npm:
+Prerequisites: Node.js >= 18, npm >= 8.
 
 ```bash
 npm install -g @geek-fun/serverlessinsight
-```
-
-Verify the installation:
-
-```bash
 si --version
 ```
 
-If installed successfully, it will display the version number, e.g., `0.6.12`
+`si` is the single entry point: validate, deploy, destroy, and local debugging all go through it.
 
-## Step 2: Configure Cloud Provider Credentials
-
-ServerlessInsight needs access to your cloud provider's resources. Taking Alibaba Cloud as an example, you need to configure the following environment variables:
+## 2. Create a project
 
 ```bash
-export ALIYUN_ACCESS_KEY_ID="your-access-key-id"
-export ALIYUN_ACCESS_KEY_SECRET="your-access-key-secret"
-export ALIYUN_REGION="cn-hangzhou"
+mkdir hello-world && cd hello-world
 ```
 
-> 💡 **Tip**: You can add these commands to your `~/.bashrc` or `~/.zshrc` file to avoid setting them for every terminal session.
-
-### Supported Alibaba Cloud Regions
-
-**Mainland China:**
-- `cn-qingdao`, `cn-beijing`, `cn-zhangjiakou`, `cn-huhehaote`, `cn-wulanchabu`
-- `cn-hangzhou`, `cn-shanghai`, `cn-shenzhen`, `cn-heyuan`, `cn-guangzhou`, `cn-chengdu`
-
-**Asia Pacific:**
-- `cn-hongkong`, `ap-southeast-1`, `ap-southeast-3`, `ap-southeast-5`
-- `ap-southeast-6`, `ap-southeast-7`, `ap-northeast-1`, `ap-northeast-2`
-
-**Europe & Americas:**
-- `eu-central-1`, `eu-west-1`, `us-east-1`, `us-west-1`, `na-south-1`
-
-**Middle East:**
-- `me-east-1`, `me-central-1`
-
-![Alibaba Cloud AccessKey Generation](/aliyun-access-key.png)
-
-> ⚠️ **Security Warning**
-> 
-> - Keep your credentials secure. Never expose your AccessKey publicly (e.g., on GitHub)
-> - It's strongly recommended to use **RAM user** AccessKey for API calls
-> - Follow [Alibaba Cloud Security Best Practices](https://www.alibabacloud.com/help/doc-detail/54577.htm)
-> - ServerlessInsight does not store any provider credentials
-
-## Step 3: Initialize Project
-
-Create a project directory:
-
-```bash
-mkdir hello-world-proj && cd hello-world-proj
-```
-
-### Recommended Project Structure
-
-ServerlessInsight doesn't enforce a specific directory structure, but we recommend organizing your project as follows (TypeScript example):
+Recommended project structure:
 
 ```
-hello-world-proj/
-├── artifacts/              # Packaged application code
-│   └── hello-world-api.zip
-├── scripts/                # Automation scripts
-│   └── package.sh
-├── src/                    # Source code
-│   └── index.ts
-├── tests/                  # Test code
-├── serverlessinsight.yml   # ServerlessInsight configuration
-├── package.json            # Node.js project configuration
-├── package-lock.json       # Dependency lock file
-├── tsconfig.json           # TypeScript configuration
-└── Dockerfile              # Docker build configuration
+hello-world/
+├── artifacts/              # packaged function code (zip artifacts)
+├── src/                    # source code
+└── serverlessinsight.yml   # resource config (the only required file)
 ```
 
-## Step 4: Configure serverlessinsight.yml
+`serverlessinsight.yml` is everything to ServerlessInsight. It declaratively describes *which* cloud resources you want, and `si deploy` turns that declaration into real infrastructure. The traditional route of clicking through consoles to create functions, gateways, and databases becomes sections of YAML in one file.
 
-Create a `serverlessinsight.yml` file in the project root:
+## 3. Understand the configuration model
+
+Before writing your first config, spend a minute on its skeleton. A `serverlessinsight.yml` has two parts:
+
+- **Global skeleton**: `version` (config format version), `provider` (which cloud and region), `app` / `service` (project and service identity used in all resource naming), `vars` / `stages` (variables and environments);
+- **Resource declarations**: `functions`, `events` (API gateway entry), and `databases` / `tables` / `buckets` (the data and storage layer).
+
+A minimal deployable config (Aliyun example):
 
 ```yaml
 version: 0.1.0
-provider: aliyun
-
-vars:
+provider:
+  name: aliyun
   region: cn-hangzhou
-
-stages:
-  dev:
-    region: ${vars.region}
-
 app: hello-world
 service: hello-world-api
-
-tags:
-  owner: geek-fun
 
 functions:
   hello_world_fn:
@@ -121,308 +59,158 @@ functions:
       runtime: nodejs18
       handler: index.handler
       path: artifacts/hello-world-api.zip
-    memory: 512
-    timeout: 10
-    environment:
-      NODE_ENV: prod
+```
 
+What each piece is saying:
+
+- `provider` decides where every resource lands. Deployable providers today are `aliyun`, `tencent`, and `volcengine` (`huawei` and `aws` are not yet deployable). Per-platform capability, region, and credential differences are covered in the [Configuration Reference](/en/reference).
+- `app` and `service` must be static strings (lowercase letters, digits, `-`) because they must be known before variable resolution, and they prefix every cloud resource name.
+- In `functions`, the key `hello_world_fn` is the **reference name**; later, `events` uses it in `backend` to point at this function. The inner `name` is the actual cloud function name. A function takes one of two shapes: `code` (code package) or `container` (image), never both.
+- The `code` triple is all required: `runtime` is the cloud execution environment (validated per provider: Aliyun's `nodejs18`, Volcengine's `node20/v1`), `handler` is the `file.exportedFunction` entry, `path` points at the build artifact in `artifacts/`.
+- Unspecified fields have sensible defaults: `memory` defaults to 128 MB, `timeout` to 3 seconds. Enough to start; adjust as you grow.
+
+### Give the function an HTTP entry
+
+The function above has no trigger yet. The quickest path is an API gateway that forwards `GET /api/*` to it:
+
+```yaml
 events:
   gateway_event:
+    name: hello-world-gateway
     type: API_GATEWAY
-    name: insight-poc-gateway
     triggers:
       - method: GET
         path: /api/*
-        backend: hello_world_fn
+        backend: hello_world_fn   # the function's reference name, not its `name`
 ```
 
-### Configuration Explanation
+Each entry in `triggers` is a route: `method` accepts `GET` / `POST` / `PUT` / `DELETE` / `ANY`, `path` starts with `/` and supports the `*` wildcard, and `backend` holds the function's reference name. Multiple rules can target different functions, the standard shape for "a set of endpoints".
 
-- **version**: Configuration file version, currently supports `0.1`
-- **provider**: Cloud provider (aliyun/huawei/tencent)
-- **vars**: Reusable variables, can be referenced via `${vars.variableName}`
-- **stages**: Environment-specific configurations (dev/test/prod), specified via `--stage` parameter
-- **service**: Service name, a globally unique identifier
-- **tags**: Resource tags for management and cost allocation
-- **functions**: Function Compute configuration
-- **events**: Event trigger configuration
+> ⚠️ **Tencent Cloud does not support `events`.** Tencent functions expose HTTP via `triggers.http` on the function itself.
 
-## Step 5: Write Application Code
+### Beyond functions: data and storage
 
-Create an `index.ts` file in the `src` directory:
+Real applications need a data layer. Declare it in the same file and the CLI creates it, network wiring included, during deploy:
 
-```typescript
-export async function handler(event: any, context: any) {
-  return {
-    statusCode: 200,
-    body: JSON.stringify({
-      message: 'Hello World!',
-    }),
-  };
-}
+```yaml
+databases:
+  main_db:
+    name: main-db
+    type: RDS_MYSQL_SERVERLESS
+    version: MYSQL_8.0
+    cu:
+      min: 0
+      max: 8
+    security:
+      basic_auth:
+        master_user: dbadmin
+        password: "${vars.db_password}"
+
+buckets:
+  assets:
+    name: hello-world-assets
+    storage:
+      class: STANDARD
 ```
 
-Create a `package.json` file:
+`cu.min/max` controls the elastic compute range: scale to 0 CU when idle (no compute cost), burst automatically under load. Full fields and enum values for every resource are in the [Configuration Reference](/en/reference).
 
-```json
-{
-  "name": "hello-world-api",
-  "version": "1.0.0",
-  "description": "Hello World API with ServerlessInsight",
-  "main": "dist/index.js",
-  "scripts": {
-    "build": "tsc",
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "dependencies": {},
-  "devDependencies": {
-    "@types/node": "^18.0.0",
-    "typescript": "^5.0.0"
-  }
-}
+### Variables and environments
+
+Everything so far is hard-coded. Extract it into variables and one file serves all environments:
+
+```yaml
+vars:
+  memory: 512
+
+stages:
+  dev:
+    memory: 256
+  prod:
+    memory: 1024
+
+functions:
+  hello_world_fn:
+    name: hello-world-fn
+    code:
+      runtime: nodejs18
+      handler: index.handler
+      path: artifacts/hello-world-api.zip
+    memory: ${stages.memory}        # the current stage's memory
+    environment:
+      STAGE: ${ctx.stage}           # built-in context: current stage name
 ```
 
-Create a `tsconfig.json` file:
+The three references have distinct jobs: `${vars.*}` is team-defined (overridable at deploy time with `-p`, the right place for secrets), `${stages.*}` reads the current environment's overrides, and `${ctx.stage}` is CLI-injected runtime context. Never commit secrets; inject them with `si deploy -p db_password=xxx`.
 
-```json
-{
-  "compilerOptions": {
-    "target": "ES2020",
-    "module": "commonjs",
-    "lib": ["ES2020"],
-    "declaration": true,
-    "strict": true,
-    "noImplicitAny": true,
-    "strictNullChecks": true,
-    "noImplicitThis": true,
-    "alwaysStrict": true,
-    "noUnusedLocals": false,
-    "noUnusedParameters": false,
-    "noImplicitReturns": true,
-    "noFallthroughCasesInSwitch": false,
-    "inlineSourceMap": true,
-    "inlineSources": true,
-    "experimentalDecorators": true,
-    "strictPropertyInitialization": false,
-    "outDir": "./dist",
-    "rootDir": "./src"
-  },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules"]
-}
+## 4. Configure cloud credentials
+
+Credentials never live in the config; they are injected via environment variables. Pick your platform at the top of the page to see the matching variables (Aliyun is the default):
+
+::: platform aliyun
+```bash
+export ALIYUN_ACCESS_KEY_ID="your-access-key-id"
+export ALIYUN_ACCESS_KEY_SECRET="your-access-key-secret"
+export ALIYUN_REGION="cn-hangzhou"
 ```
 
-## Step 6: Configure Build Script
+Full variable aliases and STS session tokens are in the [Configuration Reference](/en/reference).
+:::
 
-### Create Dockerfile
-
-Create a `Dockerfile` in the project root:
-
-```dockerfile
-# Build stage
-FROM node:18.20.3-buster-slim@sha256:95fb3cf1d1ab1834c0fd65cdd2246198662460ae8f982a6cfab187889dd54bbe AS builder
-WORKDIR /app
-
-ENV NODE_ENV=development
-COPY ./package.json .
-COPY ./package-lock.json .
-RUN npm install
-COPY ./tsconfig.json .
-COPY ./src ./src
-RUN npm run build
-
-# Runtime stage
-FROM node:18.20.3-buster-slim@sha256:95fb3cf1d1ab1834c0fd65cdd2246198662460ae8f982a6cfab187889dd54bbe
-WORKDIR /app
-
-ENV NODE_ENV=production
-COPY --from=builder /app/dist .
-COPY ./package.json .
-COPY ./package-lock.json .
-RUN npm install --only=production
+::: platform tencent
+```bash
+export TENCENTCLOUD_SECRET_ID="your-secret-id"
+export TENCENTCLOUD_SECRET_KEY="your-secret-key"
 ```
 
-This Dockerfile uses multi-stage builds:
-- **First stage**: Install dependencies and compile TypeScript code
-- **Second stage**: Keep only necessary runtime files to minimize package size
+Full variable aliases and session tokens are in the [Configuration Reference](/en/reference).
+:::
 
-### Create Package Script
+::: platform volcengine
+```bash
+export VOLCENGINE_ACCESS_KEY_ID="your-access-key-id"
+export VOLCENGINE_ACCESS_KEY_SECRET="your-access-key-secret"
+```
 
-Create a `package.sh` file in the `scripts` directory:
+Full variable aliases and session tokens are in the [Configuration Reference](/en/reference).
+:::
+
+> ⚠️ Use a RAM sub-user's AccessKey, not the root account; never commit keys to a repository.
+
+## 5. Deploy
 
 ```bash
-#!/bin/bash -eux
-set -o pipefail
-
-cd "$(dirname "$0")/.." || exit
-
-mkdir -p "artifacts"
-rm -rf ./dist ./artifacts/*
-
-IMAGE_NAME="hello-world-api"
-docker build -t "${IMAGE_NAME}" .
-
-docker run --rm \
-  -v "$(pwd)"/dist:/dist \
-  --name "${IMAGE_NAME}-package" "${IMAGE_NAME}:latest" \
-  sh -c "cp -r /app/. /dist"
-
-cd dist && zip -r -D "../artifacts/${IMAGE_NAME}.zip" ./*
-```
-
-Make the script executable and run packaging:
-
-```bash
-chmod +x scripts/package.sh
-./scripts/package.sh
-```
-
-After packaging, you should see the `hello-world-api.zip` file in the `artifacts` directory.
-
-## Step 7: Validate Configuration
-
-Before deployment, it's recommended to validate your configuration:
-
-```bash
+# Validate: runtimes, enums, and required fields are all checked here
 si validate
-```
 
-If the configuration is correct, you'll see a success message similar to:
+# Package code into artifacts/ (or use your own build script)
 
-![validate success example](/cli-validate-success.png)
-
-## Step 8: Deploy Service
-
-Deploy the service to Alibaba Cloud using:
-
-```bash
+# Deploy
 si deploy --stage dev
 ```
 
-**Parameters:**
-- `--stage dev`: Specify deployment environment as development (corresponds to `stages.dev` in config)
+`si deploy` diffs against the state file to decide "what changes this time": creates missing resources, updates changed ones, and tears down removed ones. The first deploy provisions everything; every later one is incremental.
 
-After successful deployment, you'll see output similar to:
+## 6. Local debugging
 
-```bash
-Deploying service hello-world-api to stage dev
-Service hello-world-api deployed successfully
-```
-
-## Step 9: Invoke the Service
-
-After deployment, ServerlessInsight will output the API endpoint URL. You can invoke it using:
+Deploying on every change is too slow. `si local` runs your functions in local processes, with your real handler code answering requests (currently Aliyun functions only):
 
 ```bash
-curl https://<your-api-gateway-url>/api/hello
-```
-
-Or visit the URL directly in your browser. You'll see:
-
-```json
-{
-  "message": "Hello World!"
-}
-```
-
-## Step 10: Local Development & Debugging
-
-ServerlessInsight supports running and debugging your application locally:
-
-```bash
-# Basic local run
 si local --stage dev
-
-# Enable debug mode
-si local --stage dev --debug
-
-# Enable file watch mode (auto-reload on code changes)
-si local --stage dev --watch
 ```
 
-The local development environment automatically starts all defined resources without configuring any local cloud services.
+The local server listens on port `4567` and routes requests per your `events` rules; `--watch` is on by default so saving code hot-reloads; `--debug` works with IDE breakpoints.
 
-## Step 11: Clean Up Resources
-
-If you no longer need the application, clean up all resources using:
+## 7. Clean up
 
 ```bash
 si destroy --stage dev
 ```
 
-> ⚠️ **Warning**
-> 
-> Destroying the stack will delete all declared resources, making the service completely unavailable and losing all data from stateful resources. Ensure:
-> - Relevant data is backed up
-> - You confirm these resources are no longer needed
-> 
-> before executing this operation.
+Destroy tears down resources one by one from the state file. Non-empty buckets fail teardown; that's protection against accidental deletion, once confirmed, temporarily set `security.force_delete: true`.
 
 ## Next Steps
 
-Congratulations! You've successfully built and deployed your first Serverless application using ServerlessInsight.
-
-Next, you can:
-
-- 📖 Read the [Configuration Guide](/en/reference) to learn more about resource configuration options
-- 🔧 Check the [CLI Reference](/en/cli) for more CLI commands
-- 💡 Browse [Case Studies](/en/case-study) for real-world application scenarios
-- 🌐 Try configuring other cloud providers (Huawei Cloud, Tencent Cloud, etc.)
-
-## Troubleshooting
-
-### Q: Deployment failed?
-
-Check the following:
-1. Ensure environment variables (AccessKey, Region) are correctly set
-2. Verify your Alibaba Cloud account has Function Compute FC and API Gateway services enabled
-3. Run `si validate` to check configuration correctness
-4. Review error logs and troubleshoot based on specific error messages
-
-### Q: How to switch between different deployment environments?
-
-Use the `--stage` parameter to specify different environments:
-
-```bash
-# Deploy to test environment
-si deploy --stage test
-
-# Deploy to production environment
-si deploy --stage prod
-```
-
-Define environment-specific variables in your configuration:
-
-```yaml
-stages:
-  dev:
-    region: cn-hangzhou
-  test:
-    region: cn-shanghai
-  prod:
-    region: cn-beijing
-```
-
-### Q: How to update a deployed application?
-
-Re-package and redeploy after modifying code:
-
-```bash
-# Re-package
-./scripts/package.sh
-
-# Re-deploy (updates existing resources)
-si deploy --stage dev
-```
-
-### Q: Which runtimes are supported?
-
-Alibaba Cloud Function Compute supports the following runtimes:
-- Node.js: `nodejs20`, `nodejs18`, `nodejs16`, `nodejs14`, `nodejs12`, `nodejs10`, `nodejs8`
-- Python: `python3.10`, `python3.9`, `python3`
-- PHP: `PHP7.2`
-- Java: `Java11`
-- .NET: `.NETCore3.1`
-- Go: `Go1.x`
-
-For more runtimes, please refer to the [Alibaba Cloud Function Compute documentation](https://www.alibabacloud.com/help/doc-detail/50980.htm)
+- [Configuration Reference](/en/reference) — every resource, field, and valid value
+- [CLI Reference](/en/cli) — all commands and options
+- [Case Studies](/en/case-study) — real-world examples

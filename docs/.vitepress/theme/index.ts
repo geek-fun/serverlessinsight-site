@@ -1,10 +1,19 @@
 import DefaultTheme from 'vitepress/theme'
 import {inBrowser, useData} from "vitepress";
-import {watchEffect} from "vue";
+import {h, watchEffect} from "vue";
+import PlatformSelector from './components/PlatformSelector.vue'
+import HeroScene from './components/HeroScene.vue'
 import './custom.css'
+import './styles/platform.css'
 
 export default {
-    ...DefaultTheme,
+    extends: DefaultTheme,
+    Layout() {
+        return h(DefaultTheme.Layout, null, {
+            'home-hero-before': () => h(HeroScene),
+            'sidebar-nav-before': () => h(PlatformSelector)
+        })
+    },
     setup() {
         const { lang } = useData()
         watchEffect(() => {

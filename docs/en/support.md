@@ -216,7 +216,7 @@ When sharing configuration and logs:
 > Title: Function creation fails when deploying to cn-hangzhou
 >
 > Environment:
-> - ServerlessInsight CLI: 0.7.9
+> - ServerlessInsight CLI version (output of `si --version`)
 > - Node.js: 18.16.0
 > - Cloud provider: Alibaba Cloud cn-hangzhou
 >
@@ -235,8 +235,11 @@ When sharing configuration and logs:
 >   region: cn-hangzhou
 > functions:
 >   my_fn:
->     runtime: nodejs18
->     ...
+>     name: my-fn
+>     code:
+>       runtime: nodejs18
+>       handler: index.handler
+>       path: artifacts/my-fn.zip
 > ```
 >
 > Error log: [attached full log]

@@ -1,10 +1,47 @@
-# 文档
+---
+title: 文档中心
+description: ServerlessInsight 文档导航
+---
 
-欢迎使用`ServerlessInsight`:rocket::rocket::rocket:，这里是`ServerlessInsight`的文档中心，您可以在这里找到
-`ServerlessInsight`的所有文档。
+# 文档中心
 
-## [ServerlessInsight快速开始](/getting-started.md)
+欢迎使用 ServerlessInsight 文档中心。下面的入口按主题组织，帮助你从入门到精通。
 
-## [ServerlessInsight配置手册](/reference.md)
+## 入门
 
-## [ServerlessInsight命令行](/cli.md)
+- [介绍](/introduction) — 了解 ServerlessInsight 的核心理念与适用场景
+- [快速开始](/getting-started) — 安装 CLI、理解配置模型并部署第一个应用
+- [配置手册](/reference) — 全部资源、字段与可选值
+
+## 平台支持
+
+- 可部署平台：**阿里云 · 腾讯云 · 火山引擎** —— 文档页面顶部的选择器可切换平台视角（默认阿里云）
+- 能力矩阵、命令差异、地域与凭证见[配置手册](/reference)
+
+## 参考与帮助
+
+- [CLI 参考](/cli) — 全部命令与参数
+- [常见问题](/faq) — 使用中的常见疑问
+- [实践案例](/case-study) — 真实场景示例
+- [支持服务](/support) — 获取帮助与反馈渠道
+
+## 最小示例
+
+```yaml
+version: 0.1.0
+provider:
+  name: aliyun
+  region: cn-hangzhou
+app: hello-world
+service: hello-world-api
+
+functions:
+  hello_world_fn:
+    name: hello-world-fn
+    code:
+      runtime: nodejs18
+      handler: index.handler
+      path: artifacts/hello-world-api.zip
+```
+
+> 华为云与 AWS 暂不可部署，仅出现在供应商枚举中。

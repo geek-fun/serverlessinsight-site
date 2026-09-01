@@ -1,4 +1,5 @@
 import {defineConfig} from 'vitepress'
+import container from 'markdown-it-container'
 
 const siteOrigin = 'https://www.serverlessinsight.com';
 const titleZh = 'ServerlessInsight | 全栈 Serverless 应用开发运维平台';
@@ -69,6 +70,23 @@ export default defineConfig({
   },
   outDir: '../dist',
   cacheDir: '../cache',
+  markdown: {
+    // ::: platform <aliyun|tencent|volcengine> ... :::
+    // Rendered as a div toggled by the platform selector (see theme/styles/platform.css)
+    config(md) {
+      md.use(container, 'platform', {
+        validate: (params: string) => /^platform\s+(aliyun|tencent|volcengine)\s*$/.test(params.trim()),
+        render(tokens: any[], idx: number) {
+          const token = tokens[idx]
+          if (token.nesting === 1) {
+            const name = token.info.trim().split(/\s+/)[1] ?? 'aliyun'
+            return `<div class="vp-platform-block" data-platform="${name}">\n`
+          }
+          return '</div>\n'
+        }
+      })
+    }
+  },
   transformPageData: addPageMetadata,
   locales: {
     root: {
@@ -111,13 +129,13 @@ gtag('config', 'G-FSJWB3QKGJ');`],
           {
             text: 'ServerlessInsight',
             items: [
-              {text: 'ServerlessInsight介绍', link: 'introduction'},
-              {text: '快速开始', link: 'getting-started'},
-              {text: '配置手册', link: 'reference'},
-              {text: '命令行', link: 'cli'},
-              {text: '支持服务', link: 'support'},
-              {text: '常见问题', link: 'faq'},
-              {text: '实践案例', link: 'case-study'},
+              {text: 'ServerlessInsight介绍', link: '/introduction'},
+              {text: '快速开始', link: '/getting-started'},
+              {text: '配置手册', link: '/reference'},
+              {text: '命令行', link: '/cli'},
+              {text: '支持服务', link: '/support'},
+              {text: '常见问题', link: '/faq'},
+              {text: '实践案例', link: '/case-study'},
             ]
           }
         ],
@@ -171,7 +189,7 @@ gtag('config', 'G-FSJWB3QKGJ');`],
             items: [
               {text: 'Introduction', link: '/en/introduction'},
               {text: 'Quick Start', link: '/en/getting-started'},
-              {text: 'Configuration Guide', link: '/en/reference'},
+              {text: 'Configuration Reference', link: '/en/reference'},
               {text: 'CLI Reference', link: '/en/cli'},
               {text: 'Support', link: '/en/support'},
               {text: 'FAQ', link: '/en/faq'},
