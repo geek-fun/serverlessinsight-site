@@ -76,7 +76,7 @@ const s2 = ref(1)
 const faceOp = reactive([1, 0, 0])
 const wireOp = ref(0)
 const wireH = ref(0)
-const slabOp = ref(0)
+const wallOp = ref(0)
 const tileOn = reactive([false, false, false, false, false])
 const chipOn = reactive([false, false, false])
 const isNarrow = ref(false)
@@ -91,7 +91,7 @@ const cardH = () => (isNarrow.value ? 336 : 420)
 // cuboid presents its top face
 const typingPitch = () => (isNarrow.value ? -85 : -90)
 const maxPitch = () => (isNarrow.value ? -28 : -38)
-const asPitch = () => (isNarrow.value ? -32 : -45)
+const asPitch = () => (isNarrow.value ? -26 : -34)
 // expanded fan: plate projected depth ~ cardH*sin(pitch); sep keeps clear gaps
 const sep = () => cardH() + (isNarrow.value ? 20 : -20)
 // desktop keeps scale 1 through the whole reveal; mobile frames the taller fan
@@ -101,12 +101,15 @@ const expScale = () => (isNarrow.value ? 0.85 : 1)
 const fanShift = () => -sep() * Math.cos((-maxPitch() * Math.PI) / 180) * expScale() - 6
 // after the tilt the lid rests a touch higher than dead-center
 const raise = () => (isNarrow.value ? -20 : -36)
-// assembled cuboid: surfaces at -step / 0 / +step — air between the layers keeps
-// every layer's content visible and the silhouette reads as a slightly-flat cuboid
-const asSpacing = () => (isNarrow.value ? 200 : 190)
+// assembled cuboid: surfaces at -step / 0 / +step — spacing keeps every layer's
+// content clear of the block above it (block front-bottom edge vs content top)
+const asSpacing = () => (isNarrow.value ? 200 : 280)
+// block thickness: each layer grows glass walls and becomes a slightly-flat cuboid
+const blockH = () => (isNarrow.value ? 48 : 56)
 const cubScale = () => (isNarrow.value ? 0.65 : 1)
-// mobile scene center sits below the first-viewport fold — pull the box up
-const cubShift = () => (isNarrow.value ? -225 : -10)
+// mobile: seat the box in the upper part of the 620px scene (lid clears the
+// scene's top edge, providers peek past the first-viewport fold)
+const cubShift = () => (isNarrow.value ? -104 : -10)
 // derivation: a child layer is extruded from beneath its parent — it starts
 // just below the parent, smaller, and grows into place (layer 1 generates the
 // resources, the resources generate the providers)
@@ -127,6 +130,9 @@ const PROVIDERS = [
   {key: 'tencent', color: '#0052D9', icon: '/icons/platform-tencent.png'},
   {key: 'volcengine', color: '#025AF9', icon: '/icons/platform-volcengine.png'}
 ]
+
+// the four side walls of each layer's block (front / back / left / right)
+const WALLS = ['f', 'b', 'l', 'r']
 
 const resTitle = computed(() => (isZh.value ? '资源' : 'Resources'))
 const provTitle = computed(() => (isZh.value ? '供应商' : 'Providers'))
@@ -168,7 +174,7 @@ const apply = (s: number) => {
   let scale = 1
   let shift = 0
   let wire = 0
-  let slab = 0
+  let wall = 0
   const y = [0, 0, 0]
   const sc = [1, 1, 1]
   const op = [1, 0, 0]
@@ -228,9 +234,9 @@ const apply = (s: number) => {
     op[1] = 1
     op[2] = 1
   } else if (s < T6) {
-    // ASSEMBLE: from planes to blocks — layers close in, each plate grows a
-    // thin thickness edge, the whole level rotates a touch further, and the
-    // dashed corner guides extend downward from the lid corners
+    // ASSEMBLE: from planes to blocks — layers close in with air between, every
+    // plate grows glass walls (paper becomes a slightly-flat cuboid), the view
+    // opens up a touch, and the dashed corner guides extend down the corners
     const e = easeInOutCubic(seg(s, T5, T6))
     typed.value = YTOTAL
     cursorOn.value = false
@@ -241,10 +247,10 @@ const apply = (s: number) => {
     y[2] = lerp(2 * se, stp, e)
     op[1] = 1
     op[2] = 1
-    slab = e
+    wall = e
     wire = e
   } else if (s < T7) {
-    // CUBOID hold: three layered slabs + corner guides = one box with air inside
+    // CUBOID hold: three glass blocks + corner guides = one box with air inside
     typed.value = YTOTAL
     cursorOn.value = false
     pitch = ap
@@ -254,10 +260,10 @@ const apply = (s: number) => {
     y[2] = stp
     op[1] = 1
     op[2] = 1
-    slab = 1
+    wall = 1
     wire = 1
   } else {
-    // RESET: guides retract, slabs thin back to planes, layers sink and fade,
+    // RESET: guides retract, walls thin back to planes, layers sink and fade,
     // pitch returns to frontal
     const e = easeInOutCubic(seg(s, T7, CYCLE))
     typed.value = Math.floor((1 - e) * YTOTAL)
@@ -272,7 +278,7 @@ const apply = (s: number) => {
     sc[2] = lerp(1, ds, e)
     op[1] = 1 - e
     op[2] = 1 - e
-    slab = 1 - e
+    wall = 1 - e
     wire = 1 - e
     tileOn.fill(false)
     chipOn.fill(false)
@@ -287,8 +293,8 @@ const apply = (s: number) => {
   faceOp[1] = op[1]
   faceOp[2] = op[2]
   wireOp.value = wire
-  wireH.value = (2 * stp + (isNarrow.value ? 20 : 26)) * wire
-  slabOp.value = slab
+  wireH.value = (2 * stp + blockH()) * wire
+  wallOp.value = wall
   stackPitch.value = pitch
   stackScale.value = scale
   stackShift.value = shift
@@ -315,8 +321,8 @@ const showStaticCuboid = () => {
   faceOp[1] = 1
   faceOp[2] = 1
   wireOp.value = 1
-  wireH.value = 2 * asSpacing() + (isNarrow.value ? 20 : 26)
-  slabOp.value = 1
+  wireH.value = 2 * asSpacing() + blockH()
+  wallOp.value = 1
   stackPitch.value = asPitch()
   stackScale.value = cubScale()
   stackShift.value = cubShift()
@@ -357,7 +363,7 @@ onBeforeUnmount(() => {
     <div class="si-3d">
       <div
         class="si-stack"
-        :style="{'--pitch': `${stackPitch}deg`, '--ss': String(stackScale), '--shift': `${stackShift}px`, '--as': `${asStep}px`}"
+        :style="{'--pitch': `${stackPitch}deg`, '--ss': String(stackScale), '--shift': `${stackShift}px`, '--as': `${asStep}px`, '--wg': String(wallOp)}"
       >
         <!-- dashed corner guides: tie the three layers into one cuboid -->
         <span
@@ -381,6 +387,13 @@ onBeforeUnmount(() => {
               </div>
             </div>
           </div>
+          <i
+            v-for="d in WALLS"
+            :key="`w1-${d}`"
+            class="si-wall"
+            :class="`si-wall--${d}`"
+            :style="{opacity: wallOp, visibility: wallOp > 0 ? 'visible' : 'hidden'}"
+          />
         </div>
 
         <div class="si-plate" :style="{transform: `translate3d(0, ${y1}px, 0)`}">
@@ -421,6 +434,13 @@ onBeforeUnmount(() => {
               </div>
             </div>
           </div>
+          <i
+            v-for="d in WALLS"
+            :key="`w2-${d}`"
+            class="si-wall"
+            :class="`si-wall--${d}`"
+            :style="{opacity: wallOp, visibility: wallOp > 0 ? 'visible' : 'hidden'}"
+          />
         </div>
 
         <div class="si-plate" :style="{transform: `translate3d(0, ${y2}px, 0)`}">
@@ -439,7 +459,13 @@ onBeforeUnmount(() => {
               </div>
             </div>
           </div>
-          <span class="si-slab" :style="{opacity: slabOp, visibility: slabOp > 0 ? 'visible' : 'hidden'}" />
+          <i
+            v-for="d in WALLS"
+            :key="`w3-${d}`"
+            class="si-wall"
+            :class="`si-wall--${d}`"
+            :style="{opacity: wallOp, visibility: wallOp > 0 ? 'visible' : 'hidden'}"
+          />
         </div>
       </div>
     </div>
@@ -516,7 +542,9 @@ onBeforeUnmount(() => {
   perspective: 1600px;
 }
 
-/* the stack: ONE pitch variable (-90 typing -> -40 stack view), zero yaw */
+/* the stack: ONE pitch variable (-90 typing -> -40 stack view), zero yaw.
+   On desktop it shifts left inside the right-half canvas so the 3D scene and
+   the hero text split the main area visually 50/50. */
 
 .si-stack {
   position: absolute;
@@ -526,6 +554,12 @@ onBeforeUnmount(() => {
   height: 0;
   transform: translateY(var(--shift, 0px)) rotateX(var(--pitch, -90deg)) scale(var(--ss, 1));
   transform-style: preserve-3d;
+}
+
+@media (min-width: 960px) {
+  .si-stack {
+    left: calc(50% - 80px);
+  }
 }
 
 /* horizontal plates: content = top face; plates only translate along group Y.
@@ -607,7 +641,7 @@ onBeforeUnmount(() => {
 .si-wire {
   position: absolute;
   width: 1.5px;
-  top: calc(-1 * var(--as, 190px) - 13px);
+  top: calc(-1 * var(--as, 280px) - 2px);
   background: repeating-linear-gradient(to bottom, rgba(154, 165, 180, 0.42) 0 5px, transparent 5px 13px);
 }
 
@@ -620,23 +654,51 @@ onBeforeUnmount(() => {
   background: repeating-linear-gradient(to bottom, rgba(165, 176, 192, 0.38) 0 5px, transparent 5px 13px);
 }
 
-/* slab thickness: each plate grows a subtle glass edge when the box forms
-   (planes become blocks) — leaf element, so opacity animation is safe */
-.si-slab {
+/* layer blocks: during assembly every plate grows four glass walls hanging
+   from its sheet edge (planes become slightly-flat cuboids). Walls are leaf
+   elements, so the opacity animation is safe. --wg scales them up from the
+   sheet plane; height = block thickness (56px desktop / 48px mobile). */
+.si-wall {
   position: absolute;
-  left: 1px;
   top: 210px;
-  width: 398px;
-  height: 14px;
-  transform: translateZ(210px);
-  border-radius: 0 0 10px 10px;
-  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.42), rgba(214, 222, 232, 0.28));
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5), inset 0 -1px 0 rgba(148, 163, 184, 0.35);
+  height: 56px;
+  transform-origin: 50% 0;
+  backface-visibility: visible;
 }
 
-.dark .si-slab {
-  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.05));
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18), inset 0 -1px 0 rgba(0, 0, 0, 0.25);
+.si-wall--f,
+.si-wall--b {
+  left: 0;
+  width: 400px;
+  border-radius: 0 0 10px 10px;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.5), rgba(214, 222, 232, 0.22));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5), inset 0 -1px 0 rgba(148, 163, 184, 0.35), inset 1px 0 0 rgba(148, 163, 184, 0.2), inset -1px 0 0 rgba(148, 163, 184, 0.2);
+}
+
+.si-wall--f { transform: translateZ(210px) scaleY(var(--wg, 0)); }
+.si-wall--b { transform: translateZ(-210px) scaleY(var(--wg, 0)); }
+
+.si-wall--l,
+.si-wall--r {
+  top: 210px;
+  width: 420px;
+  background: linear-gradient(to bottom, rgba(226, 233, 242, 0.42), rgba(198, 208, 222, 0.2));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), inset 0 -1px 0 rgba(148, 163, 184, 0.3);
+}
+
+.si-wall--l { left: -210px; transform: rotateY(90deg) scaleY(var(--wg, 0)); }
+.si-wall--r { left: 190px; transform: rotateY(90deg) scaleY(var(--wg, 0)); }
+
+.dark .si-wall--f,
+.dark .si-wall--b {
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.04));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), inset 0 -1px 0 rgba(0, 0, 0, 0.25), inset 1px 0 0 rgba(255, 255, 255, 0.08), inset -1px 0 0 rgba(255, 255, 255, 0.08);
+}
+
+.dark .si-wall--l,
+.dark .si-wall--r {
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.02));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14), inset 0 -1px 0 rgba(0, 0, 0, 0.3);
 }
 
 /* ------- yaml ------- */
@@ -762,21 +824,33 @@ onBeforeUnmount(() => {
   }
 
   .si-wire {
-    top: calc(-1 * var(--as, 200px) - 10px);
+    top: calc(-1 * var(--as, 200px) - 2px);
   }
+
+  .si-wall {
+    height: 48px;
+  }
+
+  .si-wall--f,
+  .si-wall--b {
+    width: 320px;
+  }
+
+  .si-wall--f { transform: translateZ(168px) scaleY(var(--wg, 0)); }
+  .si-wall--b { transform: translateZ(-168px) scaleY(var(--wg, 0)); }
+
+  .si-wall--l,
+  .si-wall--r {
+    width: 336px;
+  }
+
+  .si-wall--l { left: -168px; }
+  .si-wall--r { left: 152px; }
 
   .si-wire--l { left: -160px; }
   .si-wire--r { left: 158.5px; }
   .si-wire--f { transform: translateZ(168px); }
   .si-wire--b { transform: translateZ(-168px); }
-
-  .si-slab {
-    left: 1px;
-    top: 168px;
-    width: 318px;
-    height: 12px;
-    transform: translateZ(168px);
-  }
 
   .si-face {
     border-radius: 20px;
