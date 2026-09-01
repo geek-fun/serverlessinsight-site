@@ -91,7 +91,7 @@ const cardH = () => (isNarrow.value ? 336 : 420)
 // cuboid presents its top face
 const typingPitch = () => (isNarrow.value ? -85 : -90)
 const maxPitch = () => (isNarrow.value ? -28 : -38)
-const asPitch = () => (isNarrow.value ? -26 : -34)
+const asPitch = () => (isNarrow.value ? -24 : -28)
 // expanded fan: plate projected depth ~ cardH*sin(pitch); sep keeps clear gaps
 const sep = () => cardH() + (isNarrow.value ? 20 : -20)
 // desktop keeps scale 1 through the whole reveal; mobile frames the taller fan
@@ -101,15 +101,15 @@ const expScale = () => (isNarrow.value ? 0.85 : 1)
 const fanShift = () => -sep() * Math.cos((-maxPitch() * Math.PI) / 180) * expScale() - 6
 // after the tilt the lid rests a touch higher than dead-center
 const raise = () => (isNarrow.value ? -20 : -36)
-// assembled cuboid: surfaces at -step / 0 / +step — spacing keeps every layer's
-// content clear of the block above it (block front-bottom edge vs content top)
-const asSpacing = () => (isNarrow.value ? 200 : 280)
+// assembled cuboid: surfaces at -step / 0 / +step — 2*step + blockH stays just
+// under the plate width, so the final box is a slightly-flat CUBE, not a pillar
+const asSpacing = () => (isNarrow.value ? 130 : 165)
 // block thickness: each layer grows glass walls and becomes a slightly-flat cuboid
 const blockH = () => (isNarrow.value ? 48 : 56)
-const cubScale = () => (isNarrow.value ? 0.65 : 1)
+const cubScale = () => (isNarrow.value ? 0.75 : 1)
 // mobile: seat the box in the upper part of the 620px scene (lid clears the
 // scene's top edge, providers peek past the first-viewport fold)
-const cubShift = () => (isNarrow.value ? -104 : -10)
+const cubShift = () => (isNarrow.value ? -136 : -10)
 // derivation: a child layer is extruded from beneath its parent — it starts
 // just below the parent, smaller, and grows into place (layer 1 generates the
 // resources, the resources generate the providers)
@@ -601,7 +601,7 @@ onBeforeUnmount(() => {
 /* res/prov: title + content cluster at the face center — visible when expanded
    and in the layered cuboid, fully clear of neighbouring plates */
 .si-face--res,
-.si-face--prov { padding: 18px 22px 20px; justify-content: center; gap: 6px; }
+.si-face--prov { padding: 18px 22px 16px; justify-content: flex-end; gap: 6px; }
 
 .si-card__head {
   display: flex;
@@ -857,8 +857,8 @@ onBeforeUnmount(() => {
   }
 
   .si-face--yml { padding: 14px 16px 16px; }
-  .si-face--res { padding: 14px 16px 16px; }
-  .si-face--prov { padding: 14px 16px 16px; }
+  .si-face--res { padding: 14px 16px 14px; }
+  .si-face--prov { padding: 14px 16px 14px; }
 
   .si-yaml {
     font-size: 11px;
