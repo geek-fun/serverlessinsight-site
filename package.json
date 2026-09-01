@@ -13,8 +13,5 @@
   "devDependencies": {
     "markdown-it-container": "^4.0.0",
     "vitepress": "^1.6.4"
-  },
-  "dependencies": {
-    "three": "^0.185.1"
   }
 }
