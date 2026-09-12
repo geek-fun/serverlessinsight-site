@@ -117,8 +117,8 @@ const deriveOffset = () => (isNarrow.value ? 96 : 110)
 const deriveScale = () => 0.72
 
 const RESOURCES = [
-  {key: 'fn', en: 'Functions', zh: '函数', color: '#F89B40'},
-  {key: 'event', en: 'Events', zh: '事件', color: '#8b5cf6'},
+  {key: 'fn', en: 'Functions', zh: '函数', color: '#8F6AE7'},
+  {key: 'event', en: 'Events', zh: '事件', color: '#F89B40'},
   {key: 'db', en: 'Database', zh: '数据库', color: '#10b981'},
   {key: 'bucket', en: 'Storage', zh: '存储', color: '#3b82f6'},
   {key: 'table', en: 'Table', zh: '表格', color: '#06b6d4'}
@@ -500,7 +500,7 @@ onBeforeUnmount(() => {
   height: 400px;
   left: 6%;
   top: 2%;
-  background: radial-gradient(circle, rgba(248, 155, 64, 0.7), rgba(248, 155, 64, 0) 70%);
+  background: radial-gradient(circle, rgba(143, 106, 231, 0.7), rgba(143, 106, 231, 0) 70%);
 }
 
 .si-blob--b {
@@ -516,7 +516,7 @@ onBeforeUnmount(() => {
   height: 360px;
   left: 14%;
   bottom: 0;
-  background: radial-gradient(circle, rgba(248, 155, 64, 0.45), rgba(2, 90, 249, 0) 72%);
+  background: radial-gradient(circle, rgba(143, 106, 231, 0.45), rgba(2, 90, 249, 0) 72%);
 }
 
 @keyframes si-drift {
@@ -618,8 +618,8 @@ onBeforeUnmount(() => {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #f89b40;
-  box-shadow: 0 0 0 3px rgba(248, 155, 64, 0.18);
+  background: #8F6AE7;
+  box-shadow: 0 0 0 3px rgba(143, 106, 231, 0.18);
 }
 
 .si-card__title {
@@ -711,7 +711,8 @@ onBeforeUnmount(() => {
   color: var(--si-text);
 }
 
-.si-tok--key { color: #f89b40; }
+.si-tok--key { color: #6640BF; }
+.dark .si-tok--key { color: #A384EB; }
 .si-tok--punct { color: var(--si-muted); }
 .si-tok--val { color: var(--si-text); }
 

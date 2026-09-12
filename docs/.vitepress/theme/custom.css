@@ -1,5 +1,10 @@
 :root {
-  --vp-c-brand-1: #F89B40;
+  /* V3 Mono + Violet Accent (aligned with the console theme) */
+  --vp-c-brand-1: #6640BF;
+}
+
+.dark {
+  --vp-c-brand-1: #A384EB;
 }
 
 .VPHomeHero .image-container {
