@@ -6,9 +6,6 @@ hero:
   name: "ServerlessInsight"
   text: '全栈 Serverless 应用平台'
   tagline: "构建全生命周期的跨供应商 Serverless 应用管理，助力快速发展的业务"
-  image:
-    src: /si-archtecture.drawio.png
-    alt: ServerlessInsight Architecture
   actions:
     - theme: brand
       text: 快速开始

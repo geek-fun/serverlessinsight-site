@@ -6,9 +6,6 @@ hero:
   name: "ServerlessInsight"
   text: "Full-stack Serverless Application Platform"
   tagline: "Full lifecycle cross-provider serverless application management for your fast-growing business"
-  image:
-    src: /si-archtecture.drawio.png
-    alt: ServerlessInsight Architecture
   actions:
     - theme: brand
       text: Get Started

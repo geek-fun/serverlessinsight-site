@@ -51,14 +51,14 @@ ServerlessInsight 提供从开发到运维的全生命周期管理：
 
 ServerlessInsight 支持多个主流云供应商，帮助您灵活选择最适合的云服务商：
 
-**已支持：**
+**已支持（可部署）：**
 - ✅ **阿里云 (Aliyun)** - 完整支持函数计算 FC3、API 网关、OSS、RDS、TableStore、ES Serverless、CDN、DNS 等服务
-- ✅ **腾讯云 (Tencent Cloud)** - 完整支持 SCF、COS、ES Serverless、TDSQL-C 等服务
-- ✅ **火山引擎 (Volcengine)** - 完整支持 veFaaS、API 网关、TOS 对象存储等服务
-- 🚧 **华为云 (Huawei Cloud)** - Beta 阶段，支持 FunctionGraph
+- ✅ **腾讯云 (Tencent Cloud)** - 完整支持 SCF、COS、ES Serverless、TDSQL-C 等服务（无独立 API 网关资源，使用函数 HTTP 触发器）
+- ✅ **火山引擎 (Volcengine)** - 完整支持 veFaaS、API 网关、TOS 对象存储等服务（暂不支持数据库与表格存储）
 
-**规划中：**
-- AWS Lambda & API Gateway
+**规划中 / 暂不可部署：**
+- 🚧 **华为云 (Huawei Cloud)** - 仅生成 HCL/Terraform 模板，`deploy` 尚未支持
+- AWS Lambda & API Gateway（当前仅枚举）
 - Google Cloud Functions
 - Azure Functions
 
@@ -122,7 +122,8 @@ ServerlessInsight 适用于以下场景：
 
 ## 学习资源
 
-- [配置手册](/reference) - 详细的 YAML 配置说明
+- [快速开始](/getting-started) - 安装 CLI 并理解配置模型
+- [配置手册](/reference) - 全部资源、字段与可选值
 - [命令行工具](/cli) - CLI 命令参考
 - [实践案例](/case-study) - 真实应用场景分享
 - [常见问题](/faq) - 常见问题解答

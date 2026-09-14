@@ -1,6 +1,6 @@
 # ServerlessInsight 实践案例
 
-本页面收集了使用 ServerlessInsight 构建真实应用的成功案例，展示如何在不同场景下应用 Serverless 架构。
+本页面收集了团队使用 ServerlessInsight 构建真实应用的案例。
 
 ## 目录
 
@@ -108,24 +108,37 @@ service: ecommerce-api
 
 functions:
   user_service:
-    runtime: nodejs18
-    handler: user.handler
+    name: user-service
+    code:
+      runtime: nodejs18
+      handler: user.handler
+      path: artifacts/user-service.zip
     memory: 512
-  
+
   order_service:
-    runtime: nodejs18
-    handler: order.handler
+    name: order-service
+    code:
+      runtime: nodejs18
+      handler: order.handler
+      path: artifacts/order-service.zip
     memory: 1024
-  
+
   payment_service:
-    runtime: nodejs18
-    handler: payment.handler
+    name: payment-service
+    code:
+      runtime: nodejs18
+      handler: payment.handler
+      path: artifacts/payment-service.zip
     memory: 512
 
 databases:
   mysql_db:
+    name: mysql-db
     type: RDS_MYSQL_SERVERLESS
     version: MYSQL_8.0
+    security:
+      basic_auth:
+        password: "${vars.db_password}"
 ```
 
 **成果**:
@@ -161,31 +174,36 @@ service: iot-data-processing
 
 functions:
   data_ingestion:
-    runtime: python3.9
-    handler: ingest.handler
+    name: data-ingestion
+    code:
+      runtime: python3.9
+      handler: ingest.handler
+      path: artifacts/data-ingestion.zip
     timeout: 60
-  
+
   data_processing:
-    runtime: python3.9
-    handler: process.handler
+    name: data-processing
+    code:
+      runtime: python3.9
+      handler: process.handler
+      path: artifacts/data-processing.zip
     memory: 1024
-  
+
   data_storage:
-    runtime: python3.9
-    handler: store.handler
+    name: data-storage
+    code:
+      runtime: python3.9
+      handler: store.handler
+      path: artifacts/data-storage.zip
 
 events:
   iot_trigger:
-    type: HTTP
+    name: iot-trigger
+    type: API_GATEWAY
     triggers:
       - method: POST
         path: /iot/data
         backend: data_ingestion
-  
-  timer_trigger:
-    type: Timer
-    schedule: 'every 5 minutes'
-    backend: data_processing
 ```
 
 **成果**:
@@ -221,16 +239,20 @@ service: media-processing
 
 functions:
   video_transcode:
+    name: video-transcode
     container:
       image: registry.cn-hangzhou.aliyuncs.com/myrepo/ffmpeg:latest
       port: 8080
     memory: 8192
     timeout: 900
     gpu: AMPERE_16
-  
+
   thumbnail_gen:
-    runtime: python3.9
-    handler: thumbnail.handler
+    name: thumbnail-gen
+    code:
+      runtime: python3.9
+      handler: thumbnail.handler
+      path: artifacts/thumbnail-gen.zip
     memory: 1024
 
 buckets:
@@ -273,8 +295,11 @@ service: risk-assessment
 
 functions:
   risk_assessment:
-    runtime: java11
-    handler: com.example.RiskHandler
+    name: risk-assessment
+    code:
+      runtime: java11
+      handler: com.example.RiskHandler
+      path: artifacts/risk-assessment.zip
     memory: 2048
     timeout: 30
     network:
@@ -282,13 +307,18 @@ functions:
       subnet_ids:
         - vsw-xxx
       security_group:
+        name: risk-sg
         ingress:
           - TCP:10.0.0.0/8:443
 
 databases:
-  redis_db:
-    type: RDS_REDIS_SERVERLESS
-    version: REDIS_6.0
+  risk_db:
+    name: risk-db
+    type: RDS_MYSQL_SERVERLESS
+    version: MYSQL_8.0
+    security:
+      basic_auth:
+        password: "${vars.db_password}"
 ```
 
 **成果**:

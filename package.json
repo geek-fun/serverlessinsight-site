@@ -11,6 +11,7 @@
   "author": "geekfun <support@geekfun.club>",
   "license": "Apache-2.0",
   "devDependencies": {
+    "markdown-it-container": "^4.0.0",
     "vitepress": "^1.6.4"
   }
 }
