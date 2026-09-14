@@ -10,9 +10,6 @@ const titleEn = 'ServerlessInsight | Full-stack Serverless Development and Opera
 const descEn = 'ServerlessInsight is an open-source full-stack serverless platform for developing, deploying, monitoring, debugging, and optimizing applications across cloud providers with infrastructure as code.';
 const socialImage = '/si-archtecture.drawio.png';
 
-const consoleUrl = 'https://console.serverlessinsight.com';
-const consoleLoginUrl = `${consoleUrl}/login`;
-
 const localizedPages = new Set([
   'index.md',
   'pricing.md',
@@ -128,7 +125,6 @@ gtag('config', 'G-FSJWB3QKGJ');`],
           {text: '主页', link: '/'},
           {text: '定价', link: '/pricing'},
           {text: '文档', link: '/docs'},
-          {text: '登录控制台', link: consoleLoginUrl},
         ],
 
         sidebar: [
@@ -188,7 +184,6 @@ gtag('config', 'G-FSJWB3QKGJ');`],
           {text: 'Home', link: '/en/'},
           {text: 'Pricing', link: '/en/pricing'},
           {text: 'Docs', link: '/en/docs'},
-          {text: 'Sign in', link: consoleLoginUrl},
         ],
 
         sidebar: [

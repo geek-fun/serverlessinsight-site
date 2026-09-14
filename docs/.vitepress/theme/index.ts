@@ -4,6 +4,7 @@ import {h, watchEffect} from "vue";
 import PlatformSelector from './components/PlatformSelector.vue'
 import HeroScene from './components/HeroScene.vue'
 import PricingPage from './components/PricingPage.vue'
+import AuthNav from './components/AuthNav.vue'
 import './custom.css'
 import './styles/platform.css'
 
@@ -12,7 +13,9 @@ export default {
     Layout() {
         return h(DefaultTheme.Layout, null, {
             'home-hero-before': () => h(HeroScene),
-            'sidebar-nav-before': () => h(PlatformSelector)
+            'sidebar-nav-before': () => h(PlatformSelector),
+            'nav-bar-content-after': () => h(AuthNav),
+            'nav-screen-content-after': () => h(AuthNav)
         })
     },
     enhanceApp({app}) {
