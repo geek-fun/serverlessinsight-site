@@ -348,10 +348,13 @@ const rules = computed(() => (zh.value ? T.rules.zh : T.rules.en))
 .pp-feats li { display: flex; align-items: flex-start; gap: 8px; font-weight: 500; }
 .pp-feats li.pp-feat--dim { color: var(--vp-c-text-2); font-weight: 400; }
 .pp-feat-icon { flex: none; color: var(--vp-c-brand-1); margin-top: 2px; }
-.pp-btn { display: flex; align-items: center; justify-content: center; height: 40px; margin-top: 18px; border-radius: 10px; background: var(--vp-c-brand-1); color: #fff; font-weight: 650; font-size: 0.9rem; text-decoration: none; transition: opacity 0.2s ease; }
-.pp-btn:hover { opacity: 0.9; color: #fff; }
+.pp-btn { display: flex; align-items: center; justify-content: center; height: 40px; margin-top: 18px; border-radius: 10px; background: var(--vp-button-brand-bg); color: var(--vp-button-brand-text); font-weight: 650; font-size: 0.9rem; text-decoration: none; transition: opacity 0.2s ease; }
+.pp-btn:hover { opacity: 0.9; color: var(--vp-button-brand-text); }
 .pp-btn--lg { height: 44px; padding: 0 26px; }
 .pp-btn--ghost { background: transparent; border: 1px solid var(--vp-c-divider); color: var(--vp-c-text-1); }
+/* The featured plan's CTA is the page's single solid-violet brand moment. */
+.pp-btn--featured { background: #6640BF; color: #ffffff; }
+.dark .pp-btn--featured { background: #A384EB; color: #170F2E; }
 
 .pp-section { margin-top: 72px; }
 .pp-h2 { font-size: 1.6rem; font-weight: 750; letter-spacing: -0.02em; }

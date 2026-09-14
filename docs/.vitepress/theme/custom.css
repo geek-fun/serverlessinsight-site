@@ -1,10 +1,38 @@
 :root {
-  /* V3 Mono + Violet Accent (aligned with the console theme) */
+  /* V3 Mono + Violet Accent (aligned with the console theme):
+     violet owns links / active nav / small accents only — buttons are
+     monochrome and display type stays neutral (see overrides below). */
   --vp-c-brand-1: #6640BF;
 }
 
 .dark {
   --vp-c-brand-1: #A384EB;
+}
+
+/* V3 restraint: primary buttons are monochrome (Vercel-style) — violet is
+   reserved for links, active nav, focus and small accents. */
+:root {
+  --vp-button-brand-bg: #1a1a1a;
+  --vp-button-brand-text: #ffffff;
+  --vp-button-brand-border: #1a1a1a;
+  --vp-button-brand-hover-bg: #3d3d3d;
+  --vp-button-brand-hover-text: #ffffff;
+  --vp-button-brand-hover-border: #3d3d3d;
+}
+.dark {
+  --vp-button-brand-bg: hsl(0 0% 94%);
+  --vp-button-brand-text: #111111;
+  --vp-button-brand-border: hsl(0 0% 94%);
+  --vp-button-brand-hover-bg: #ffffff;
+  --vp-button-brand-hover-text: #111111;
+  --vp-button-brand-hover-border: #ffffff;
+}
+
+/* Hero display text carries no brand color — the wordmark is not a paint can.
+   --vp-home-hero-name-color is VitePress's official knob: its default sets
+   -webkit-text-fill-color to the brand hue, which beats a plain color rule. */
+:root {
+  --vp-home-hero-name-color: var(--vp-c-text-1);
 }
 
 .VPHomeHero .image-container {
