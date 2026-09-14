@@ -333,7 +333,7 @@ const faq = computed(() => (zh.value ? T.faq.zh : T.faq.en))
 .pp-title { font-size: 2.75rem; font-weight: 800; letter-spacing: -0.03em; text-align: center; margin-top: 32px; }
 .pp-sub { max-width: 720px; margin: 14px auto 0; text-align: center; color: var(--vp-c-text-2); font-size: 1.05rem; line-height: 1.7; }
 
-.pp-plans { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 44px; }
+.pp-plans { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 44px; }
 @media (max-width: 900px) { .pp-plans { grid-template-columns: 1fr; } }
 .pp-card { position: relative; display: flex; flex-direction: column; border: 1px solid var(--vp-c-divider); border-radius: 16px; padding: 24px; background: var(--vp-c-bg); }
 .pp-card--featured { border-color: var(--vp-c-brand-1); box-shadow: 0 8px 32px rgba(102, 64, 191, 0.14); }
@@ -371,7 +371,7 @@ const faq = computed(() => (zh.value ? T.faq.zh : T.faq.en))
 .pp-freebadge { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 600; padding: 2px 9px; border-radius: 999px; background: rgba(22, 163, 74, 0.12); color: #16a34a; }
 .pp-note { margin-top: 10px; font-size: 0.78rem; color: var(--vp-c-text-2); }
 
-.pp-covers { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 20px; }
+.pp-covers { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 20px; }
 @media (max-width: 900px) { .pp-covers { grid-template-columns: 1fr; } }
 .pp-cover-card { border: 1px solid var(--vp-c-divider); border-radius: 12px; padding: 16px; }
 .pp-cover-name { font-size: 0.9rem; font-weight: 600; display: flex; align-items: center; gap: 7px; }
@@ -393,14 +393,14 @@ const faq = computed(() => (zh.value ? T.faq.zh : T.faq.en))
 .pp-rule-card li { font-size: 0.85rem; color: var(--vp-c-text-2); padding: 5px 0; display: flex; gap: 8px; }
 .pp-rule-card li::before { content: '✓'; color: var(--vp-c-brand-1); flex: none; }
 
-.pp-faq { margin-top: 20px; display: flex; flex-direction: column; gap: 10px; max-width: 860px; }
+.pp-faq { margin-top: 20px; display: flex; flex-direction: column; gap: 16px; }
 .pp-faq-item { border: 1px solid var(--vp-c-divider); border-radius: 12px; padding: 16px 18px; }
 .pp-faq-item summary { cursor: pointer; font-weight: 600; font-size: 0.925rem; list-style: none; }
 .pp-faq-item summary::-webkit-details-marker { display: none; }
 .pp-qnum { color: var(--vp-c-brand-1); font-weight: 700; margin-right: 10px; }
 .pp-faq-item p { margin-top: 10px; font-size: 0.875rem; color: var(--vp-c-text-2); line-height: 1.7; }
 
-.pp-ctaband { margin-top: 80px; text-align: center; border: 1px solid var(--vp-c-divider); border-radius: 18px; padding: 44px 24px; background: linear-gradient(135deg, rgba(143, 106, 231, 0.08), rgba(102, 64, 191, 0.05)); }
+.pp-ctaband { margin-top: 72px; text-align: center; border: 1px solid var(--vp-c-divider); border-radius: 18px; padding: 44px 24px; background: linear-gradient(135deg, rgba(143, 106, 231, 0.08), rgba(102, 64, 191, 0.05)); }
 .pp-ctaband h2 { font-size: 1.5rem; font-weight: 750; letter-spacing: -0.02em; }
 .pp-ctaband p { color: var(--vp-c-text-2); margin-top: 8px; }
 .pp-ctaband-btns { margin-top: 20px; display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; }
