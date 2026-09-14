@@ -302,13 +302,43 @@ const apply = (s: number) => {
 
 /* ---------------------------------- mount ---------------------------------- */
 
+const sceneEl = ref<HTMLElement | null>(null)
+
 let rafId = 0
 let start = 0
+// cycle position (seconds) captured when the loop is paused off-screen, so the
+// resume picks the animation up exactly where it stopped
+let elapsedSec = 0
+// the decorative CSS loops (blobs, cursor blink) are paused via a class instead
+// of being torn down, so they resume from the same keyframe position
+let inView = true
 let mqCleanup: (() => void) | undefined
+let io: IntersectionObserver | undefined
 
 const tick = (now: number) => {
   apply(((now - start) * 0.001) % CYCLE)
   rafId = requestAnimationFrame(tick)
+}
+
+const pauseLoop = () => {
+  if (!rafId) return
+  cancelAnimationFrame(rafId)
+  rafId = 0
+  elapsedSec = (performance.now() - start) * 0.001 % CYCLE
+}
+
+const resumeLoop = () => {
+  if (reduced || rafId) return
+  start = performance.now() - elapsedSec * 1000
+  rafId = requestAnimationFrame(tick)
+}
+
+// decorative CSS loops keep running in the background even when the scene is
+// scrolled away — park them behind a class whenever the scene is out of view or
+// the tab is hidden (the rAF loop has its own pause/resume above)
+const syncOffscreen = () => {
+  if (!sceneEl.value) return
+  sceneEl.value.classList.toggle('is-offscreen', !inView || document.hidden)
 }
 
 const showStaticCuboid = () => {
@@ -344,16 +374,31 @@ onMounted(() => {
   }
   start = performance.now()
   rafId = requestAnimationFrame(tick)
+  // the scene is decorative and off-screen most of the time (scrolled past the
+  // hero) — stop the rAF loop while it is out of view
+  io = new IntersectionObserver(
+    (entries) => {
+      inView = entries[0]?.isIntersecting ?? true
+      syncOffscreen()
+      if (inView) resumeLoop()
+      else pauseLoop()
+    },
+    {rootMargin: '200px'}
+  )
+  if (sceneEl.value) io.observe(sceneEl.value)
+  document.addEventListener('visibilitychange', syncOffscreen)
 })
 
 onBeforeUnmount(() => {
   cancelAnimationFrame(rafId)
+  io?.disconnect()
+  document.removeEventListener('visibilitychange', syncOffscreen)
   mqCleanup?.()
 })
 </script>
 
 <template>
-  <div class="si-hero-scene" aria-hidden="true">
+  <div ref="sceneEl" class="si-hero-scene" aria-hidden="true">
     <div class="si-blobs">
       <span class="si-blob si-blob--a" />
       <span class="si-blob si-blob--b" />
@@ -508,7 +553,7 @@ onBeforeUnmount(() => {
   height: 480px;
   right: -4%;
   top: 26%;
-  background: radial-gradient(circle, rgba(0, 82, 217, 0.6), rgba(0, 82, 217, 0) 70%);
+  background: radial-gradient(circle, rgba(102, 64, 191, 0.55), rgba(102, 64, 191, 0) 70%);
 }
 
 .si-blob--c {
@@ -516,7 +561,7 @@ onBeforeUnmount(() => {
   height: 360px;
   left: 14%;
   bottom: 0;
-  background: radial-gradient(circle, rgba(143, 106, 231, 0.45), rgba(2, 90, 249, 0) 72%);
+  background: radial-gradient(circle, rgba(143, 106, 231, 0.45), rgba(143, 106, 231, 0) 72%);
 }
 
 @keyframes si-drift {
@@ -532,6 +577,13 @@ onBeforeUnmount(() => {
 
 @media (prefers-reduced-motion: reduce) {
   .si-blob { animation: none !important; }
+}
+
+/* park the decorative loops while the scene is scrolled away or the tab is
+   hidden (class toggled by syncOffscreen) */
+.si-hero-scene.is-offscreen .si-blob,
+.si-hero-scene.is-offscreen .si-yaml__cursor {
+  animation-play-state: paused;
 }
 
 /* ------- 3D stage ------- */
