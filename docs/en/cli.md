@@ -27,7 +27,7 @@ si --version
 | `si local` | Run the app locally for debugging (Aliyun only) |
 | `si force-unlock <lockId>` | Manually remove a stuck deployment lock |
 
-> There is no `init` command. You create the project and `serverlessinsight.yml` yourself—see [Getting Started](/en/getting-started).
+> There is no `init` command. You create the project and `serverlessinsight.yml` yourself; see [Getting Started](/en/getting-started).
 
 ## Common Options
 
@@ -151,5 +151,5 @@ Manually remove a stuck deployment lock. Refuses to run against the SAAS state b
 
 ## Related Docs
 
-- [Getting Started](/en/getting-started) — install and config model primer
-- [Configuration Reference](/en/reference) — all resources, fields, and valid values
+- [Getting Started](/en/getting-started): install and config model primer
+- [Configuration Reference](/en/reference): all resources, fields, and valid values

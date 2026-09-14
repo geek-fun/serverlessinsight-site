@@ -8,6 +8,9 @@ hero:
   tagline: "Full lifecycle cross-provider serverless application management for your fast-growing business"
   actions:
     - theme: brand
+      text: Start for Free
+      link: https://console.serverlessinsight.com/login
+    - theme: alt
       text: Get Started
       link: /en/getting-started
     - theme: alt

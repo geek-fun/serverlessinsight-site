@@ -8,6 +8,9 @@ hero:
   tagline: "构建全生命周期的跨供应商 Serverless 应用管理，助力快速发展的业务"
   actions:
     - theme: brand
+      text: 免费开始
+      link: https://console.serverlessinsight.com/login
+    - theme: alt
       text: 快速开始
       link: /getting-started
     - theme: alt

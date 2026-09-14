@@ -2,7 +2,7 @@
 
 ## 什么是 ServerlessInsight
 
-![ServerlessInsight 组件](/si.drawio.png)
+<img src="/si.drawio.png" alt="ServerlessInsight 组件" loading="lazy" width="1071" height="791" />
 
 ServerlessInsight 是一个全栈 Serverless 应用开发运维平台，致力于提供全生命周期的跨云供应商 Serverless 应用管理。通过屏蔽底层云供应商的差异，结合 Cloud Native 和 Serverless 的业内最佳实践，ServerlessInsight 帮助开发者快速构建、部署和优化 Serverless 应用，提升开发效率，降低运维成本。
 
@@ -35,7 +35,7 @@ ServerlessInsight 提供从开发到运维的全生命周期管理：
 - **一键部署**：单命令部署所有定义的资源
 - **多环境支持**：通过 stages 管理不同环境（dev/test/prod）
 - **参数覆盖**：支持命令行参数覆盖默认配置
-- **回滚能力**：支持快速回滚到历史版本
+- **回滚能力**：配置纳入 Git 版本管理，可手动回退到历史版本
 
 #### 监控阶段 (开发中)
 - **性能监控**：实时监控函数执行性能
@@ -75,7 +75,7 @@ ServerlessInsight 坚持开源开放的原则：
 
 ## 架构与原理
 
-![ServerlessInsight 架构与原理](/si-archtecture.drawio.png)
+<img src="/si-archtecture.drawio.png" alt="ServerlessInsight 架构与原理" loading="lazy" width="1074" height="490" />
 
 ServerlessInsight 依托云厂商提供的 Serverless 服务和基础设施即代码能力，通过以下层次实现：
 

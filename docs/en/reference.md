@@ -343,7 +343,7 @@ The number is VRAM in GB. GPU instances usually need a higher `memory` to match.
 
 #### log
 
-A boolean. When enabled, invocation logs flow into the provider's log service (e.g. Aliyun SLS); observability commands like `si logs` depend on it:
+A boolean. When enabled, invocation logs flow into the provider's log service (e.g. Aliyun SLS).
 
 ```yaml
 log: true
@@ -530,7 +530,9 @@ domain:
 
 The three certificate forms are **mutually exclusive**: either `certificate_id`, or `certificate_body` + `certificate_private_key` together, never a mix.
 
-**cdn configuration** (or simply `cdn: true` for defaults):
+#### cdn configuration
+
+Or simply `cdn: true` for defaults:
 
 ```yaml
 cdn:

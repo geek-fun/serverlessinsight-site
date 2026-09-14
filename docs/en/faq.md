@@ -104,8 +104,8 @@ si deploy
 
 2. **Verify IAM/RAM user permissions**
    Make sure the user has the right policies attached. For Aliyun, common ones include:
-   - `AliyunFCFullAccess` — full access to Function Compute
-   - `AliyunAPIGatewayFullAccess` — full access to API Gateway
+   - `AliyunFCFullAccess`: full access to Function Compute
+   - `AliyunAPIGatewayFullAccess`: full access to API Gateway
    - Any other policies for services you're using
 
 3. **Use temporary credentials if available**
@@ -118,7 +118,7 @@ si deploy
 **A:** ServerlessInsight preserves any resources that deployed successfully before the failure. To recover:
 
 1. **Fix the issue** in your config or code
-2. **Re-deploy** — ServerlessInsight picks up where it left off and continues deploying the remaining resources
+2. **Re-deploy**: ServerlessInsight picks up where it left off and continues deploying the remaining resources
 
 If you need to start fresh instead:
 
@@ -160,9 +160,9 @@ If you need to start fresh instead:
 
 **A:** Common causes and fixes:
 
-1. **Large code bundle** — trim unnecessary dependencies and use multi-stage builds to reduce package size
-2. **Slow network** — check your connection, or use a network closer to the target region
-3. **Slow resource creation** — some resources (databases, search services) take time to provision. Check the cloud provider's console to confirm progress
+1. **Large code bundle**: trim unnecessary dependencies and use multi-stage builds to reduce package size
+2. **Slow network**: check your connection, or use a network closer to the target region
+3. **Slow resource creation**: some resources (databases, search services) take time to provision. Check the cloud provider's console to confirm progress
 
 ### Q: Can I deploy multiple services at once?
 
@@ -181,16 +181,10 @@ si deploy --stage dev service-c
 
 ### Q: The local server says the port is already in use.
 
-**A:** Use a different port:
+**A:** The local port is fixed at `4567`. Find and stop the process using it, then run the command again:
 
 ```bash
-si local --stage dev --port 8080
-```
-
-Or find and stop the process using the default port:
-
-```bash
-lsof -i :3000
+lsof -i :4567
 kill -9 <PID>
 ```
 
@@ -232,7 +226,7 @@ export async function handler(event: any) {
    si local --stage dev --watch
    ```
 
-2. **Make sure you're editing files in the right directory** — only changes under `src/` are picked up. Re-package if needed: `./scripts/package.sh`
+2. **Make sure you're editing files in the right directory**: only changes under `src/` are picked up. Re-package if needed: `./scripts/package.sh`
 
 3. **Restart the local environment**
    ```bash
@@ -244,9 +238,9 @@ export async function handler(event: any) {
 
 **A:** A few things to check:
 
-1. **Environment variables** — make sure the same vars are set locally. Use a `.env` file to keep things consistent
-2. **Dependency versions** — verify `package.json` matches what's deployed. Use `package-lock.json` to lock versions
-3. **Stage config** — confirm you're using the same stage for local dev and deployment
+1. **Environment variables**: make sure the same vars are set locally. Use a `.env` file to keep things consistent
+2. **Dependency versions**: verify `package.json` matches what's deployed. Use `package-lock.json` to lock versions
+3. **Stage config**: confirm you're using the same stage for local dev and deployment
 
 ---
 
@@ -256,8 +250,8 @@ export async function handler(event: any) {
 
 **A:** A few ways:
 
-1. **Cloud provider console** — log in and look up resources by stack name
-2. **Resource tags** — filter by the tags defined in your config, like `owner=geek-fun`
+1. **Cloud provider console**: log in and look up resources by stack name
+2. **Resource tags**: filter by the tags defined in your config, like `owner=geek-fun`
 3. **Provider CLI**
    ```bash
    # Aliyun example
@@ -282,7 +276,7 @@ ServerlessInsight detects code changes and updates the function accordingly.
 **A:** Not directly. The recommended approach:
 
 1. **Remove the resource from your config file**
-2. **Redeploy** — ServerlessInsight deletes resources that are no longer in the config
+2. **Redeploy**: ServerlessInsight deletes resources that are no longer in the config
 3. **Or delete manually** through the cloud provider's console
 
 ⚠️ Always double-check what you're removing before redeploying.
@@ -296,9 +290,9 @@ ServerlessInsight detects code changes and updates the function accordingly.
    si destroy --stage dev old-stack
    ```
 
-2. **Request a quota increase** from your cloud provider — explain your use case and expected usage
+2. **Request a quota increase** from your cloud provider: explain your use case and expected usage
 
-3. **Optimize resource usage** — merge similar functions, right-size allocations
+3. **Optimize resource usage**: merge similar functions, right-size allocations
 
 ---
 
@@ -321,7 +315,7 @@ ServerlessInsight detects code changes and updates the function accordingly.
          DB_PASSWORD: ${vars.db_password}
    ```
 
-3. **Use a secrets manager** — cloud KMS, AWS Secrets Manager, HashiCorp Vault, etc.
+3. **Use a secrets manager**: Aliyun KMS, Tencent Cloud KMS, HashiCorp Vault, etc.
 
 4. **Never commit secrets to Git**
    ```bash
@@ -383,9 +377,9 @@ si deploy --stage dev
 
 **A:** Possible causes:
 
-1. **Network timeout** — check your connection and try again
-2. **Cloud API rate limiting** — wait a few minutes and retry, or request a higher limit from your provider
-3. **Resource still provisioning** — some resources (databases, search services) take time. Check the cloud provider's console to confirm what's happening
+1. **Network timeout**: check your connection and try again
+2. **Cloud API rate limiting**: wait a few minutes and retry, or request a higher limit from your provider
+3. **Resource still provisioning**: some resources (databases, search services) take time. Check the cloud provider's console to confirm what's happening
 
 ### Q: My function times out during execution.
 
@@ -398,9 +392,9 @@ si deploy --stage dev
        timeout: 60  # seconds
    ```
 
-2. **Optimize performance** — cut unnecessary computation, use async processing, optimize database queries
+2. **Optimize performance**: cut unnecessary computation, use async processing, optimize database queries
 
-3. **Split the function** — break a large function into smaller ones and chain them together
+3. **Split the function**: break a large function into smaller ones and chain them together
 
 ### Q: I'm getting memory errors.
 
@@ -413,7 +407,7 @@ si deploy --stage dev
        memory: 1024  # MB
    ```
 
-2. **Optimize your code** — reduce memory usage, use streaming for large data, release resources when done
+2. **Optimize your code**: reduce memory usage, use streaming for large data, release resources when done
 
 ---
 
@@ -462,10 +456,10 @@ Deploy to a specific environment with `si deploy --stage dev`.
 
 **A:**
 
-1. **Right-size your functions** — don't over-provision memory or timeout values
-2. **Consider provisioned instances** for long-running workloads — they're often cheaper than pay-per-use
-3. **Monitor spending** — use your cloud provider's cost analysis tools to find expensive functions
-4. **Optimize code** — shorter cold starts and faster execution mean less billed compute time
+1. **Right-size your functions**: don't over-provision memory or timeout values
+2. **Consider provisioned instances** for long-running workloads: they're often cheaper than pay-per-use
+3. **Monitor spending**: use your cloud provider's cost analysis tools to find expensive functions
+4. **Optimize code**: shorter cold starts and faster execution mean less billed compute time
 
 ### Q: How do I ensure high availability?
 
@@ -496,17 +490,17 @@ Deploy to a specific environment with `si deploy --stage dev`.
 
 **A:**
 
-- **Report a bug** — [GitHub Issues](https://github.com/geek-fun/serverlessinsight/issues)
-- **Submit code** — [GitHub Pull Requests](https://github.com/geek-fun/serverlessinsight/pulls)
-- **Email support** — support@geekfun.club
+- **Report a bug**: [GitHub Issues](https://github.com/geek-fun/serverlessinsight/issues)
+- **Submit code**: [GitHub Pull Requests](https://github.com/geek-fun/serverlessinsight/pulls)
+- **Email support**: support@geekfun.club
 
 ### Q: Is there a community?
 
 **A:**
 
-- **GitHub Discussions** — [discussions](https://github.com/geek-fun/serverlessinsight/discussions)
-- **Twitter** — [@Blankll31075](https://x.com/Blankll31075)
-- **YouTube** — [GeekFun Club](https://www.youtube.com/@geekfun-club)
+- **GitHub Discussions**: [discussions](https://github.com/geek-fun/serverlessinsight/discussions)
+- **Twitter**: [@Blankll31075](https://x.com/Blankll31075)
+- **YouTube**: [GeekFun Club](https://www.youtube.com/@geekfun-club)
 
 ### Q: How do I get technical support?
 

@@ -1,5 +1,57 @@
 :root {
-  --vp-c-brand-1: #F89B40;
+  /* V3 Mono + Violet Accent (aligned with the console theme):
+     violet owns links / active nav / small accents only — buttons are
+     monochrome and display type stays neutral (see overrides below). */
+  --vp-c-brand-1: #6640BF;
+}
+
+.dark {
+  --vp-c-brand-1: #A384EB;
+}
+
+/* Semantic "free" green — the only owner of the free signal (AGENTS.md).
+   Light green-800 clears AA for small (11px / 0.75rem / 0.9rem) text on every
+   surface it sits on; green-600 (#16a34a) only reaches 2.89:1 on the .12 badge
+   tint. Dark keeps the green-600 look, lifted by 5/255 in G so the .12 tint
+   over --vp-c-bg (#1b1b1f) also clears 4.5:1. Ratios: WCAG sRGB formula. */
+:root {
+  --success: #166534;
+  --success-tint: rgba(22, 101, 52, 0.12);
+  --success-tint-soft: rgba(22, 101, 52, 0.05);
+  --success-border: rgba(22, 101, 52, 0.35);
+}
+
+.dark {
+  --success: #16a84a;
+  --success-tint: rgba(22, 168, 74, 0.12);
+  --success-tint-soft: rgba(22, 168, 74, 0.05);
+  --success-border: rgba(22, 168, 74, 0.35);
+}
+
+/* V3 restraint: primary buttons are monochrome (Vercel-style) — violet is
+   reserved for links, active nav, focus and small accents. */
+:root {
+  --vp-button-brand-bg: #1a1a1a;
+  --vp-button-brand-text: #ffffff;
+  --vp-button-brand-border: #1a1a1a;
+  --vp-button-brand-hover-bg: #3d3d3d;
+  --vp-button-brand-hover-text: #ffffff;
+  --vp-button-brand-hover-border: #3d3d3d;
+}
+.dark {
+  --vp-button-brand-bg: hsl(0 0% 94%);
+  --vp-button-brand-text: #111111;
+  --vp-button-brand-border: hsl(0 0% 94%);
+  --vp-button-brand-hover-bg: #ffffff;
+  --vp-button-brand-hover-text: #111111;
+  --vp-button-brand-hover-border: #ffffff;
+}
+
+/* Hero display text carries no brand color — the wordmark is not a paint can.
+   --vp-home-hero-name-color is VitePress's official knob: its default sets
+   -webkit-text-fill-color to the brand hue, which beats a plain color rule. */
+:root {
+  --vp-home-hero-name-color: var(--vp-c-text-1);
 }
 
 .VPHomeHero .image-container {

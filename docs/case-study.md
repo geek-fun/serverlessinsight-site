@@ -79,7 +79,7 @@ functions:
 - 📈 支持 10 倍流量峰值
 - 🔄 实现多环境一键切换
 
-[查看详细案例 →](/case-study/serverlessInsight-depseek)
+查看详细案例（即将上线）
 
 ---
 
@@ -522,7 +522,7 @@ AI 模型部署和推理服务。
 
 - **GitHub**: 创建 Pull Request 到 [案例目录](https://github.com/geek-fun/serverlessinsight-site/tree/main/docs/case-study)
 - **邮件**: 发送至 case-studies@geekfun.club
-- **表单**: [在线提交表单](#) (即将上线)
+- **表单**: 在线提交表单（即将上线）
 
 ### 案例模板
 
@@ -563,7 +563,5 @@ AI 模型部署和推理服务。
 - [支持服务](/support)
 
 ---
-
-**最后更新**: 2024 年 12 月
 
 *注：部分案例数据基于用户分享，已做脱敏处理。实际效果可能因具体使用场景而异。*

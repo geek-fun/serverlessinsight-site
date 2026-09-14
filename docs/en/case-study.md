@@ -540,6 +540,13 @@ Your case study should include:
 [Quantified results and benefits]
 ```
 
+### Submission Benefits
+
+- 🌟 Featured on the ServerlessInsight website
+- 📢 Promotion on social media
+- 🎁 ServerlessInsight swag
+- 🎫 Speaking opportunity at tech conferences (for outstanding cases)
+
 ---
 
 ## Resources
@@ -551,7 +558,5 @@ Your case study should include:
 - [Support](/en/support)
 
 ---
-
-**Last updated**: 2024-12
 
 *Note: Some case data is based on user contributions and has been anonymized. Actual results may vary by use case.*
