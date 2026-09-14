@@ -36,19 +36,35 @@ const routeFromRelativePath = (relativePath: string) => {
 
 const absoluteUrl = (route: string) => `${siteOrigin}${route}`;
 
-const addPageMetadata = (pageData: {relativePath: string; frontmatter: {head?: unknown[]}}) => {
+const addPageMetadata = (pageData: {
+  relativePath: string;
+  title?: string;
+  description?: string;
+  frontmatter: {head?: unknown[]};
+}) => {
   const route = routeFromRelativePath(pageData.relativePath);
+  const isEnglish = pageData.relativePath.startsWith('en/');
+  const siteTitle = isEnglish ? titleEn : titleZh;
+  const siteDescription = isEnglish ? descEn : descZh;
+  // Per-page social metadata mirrors the rendered <title> (same composition
+  // rule VitePress uses); pages without their own title/description fall back
+  // to the locale defaults.
+  const pageTitle = pageData.title ? `${pageData.title} | ${siteTitle}` : siteTitle;
+  const pageDescription = pageData.description || siteDescription;
   const head = pageData.frontmatter.head ?? [];
   const metadata = [
     ['link', {rel: 'canonical', href: absoluteUrl(route)}],
     ['meta', {property: 'og:url', content: absoluteUrl(route)}],
     ['meta', {property: 'og:image', content: absoluteUrl(socialImage)}],
+    ['meta', {property: 'og:title', content: pageTitle}],
+    ['meta', {property: 'og:description', content: pageDescription}],
     ['meta', {name: 'twitter:card', content: 'summary_large_image'}],
     ['meta', {name: 'twitter:image', content: absoluteUrl(socialImage)}],
+    ['meta', {name: 'twitter:title', content: pageTitle}],
+    ['meta', {name: 'twitter:description', content: pageDescription}],
   ];
 
   if (localizedPages.has(pageData.relativePath.replace(/^en\//, ''))) {
-    const isEnglish = pageData.relativePath.startsWith('en/');
     const localPath = pageData.relativePath.replace(/^en\//, '');
     const alternatePaths = isEnglish
       ? {en: pageData.relativePath, 'zh-CN': localPath}
@@ -57,6 +73,7 @@ const addPageMetadata = (pageData: {relativePath: string; frontmatter: {head?: u
     metadata.push(
       ['link', {rel: 'alternate', hreflang: 'en', href: absoluteUrl(routeFromRelativePath(alternatePaths.en))}],
       ['link', {rel: 'alternate', hreflang: 'zh-CN', href: absoluteUrl(routeFromRelativePath(alternatePaths['zh-CN']))}],
+      ['link', {rel: 'alternate', hreflang: 'x-default', href: absoluteUrl(routeFromRelativePath(alternatePaths['zh-CN']))}],
     );
   }
 
@@ -67,7 +84,7 @@ export default defineConfig({
   lastUpdated: true,
   sitemap: {
     hostname: siteOrigin,
-    transformItems: (items) => items.filter(({url}) => !url.includes('404.html')),
+    transformItems: (items) => items.filter(({url}) => !url.includes('404.html') && !url.includes('serverlessInsight-depseek')),
   },
   outDir: '../dist',
   cacheDir: '../cache',
@@ -96,18 +113,13 @@ export default defineConfig({
       title: titleZh,
       description: descZh,
       head: [
-        ['link', {rel: 'icon', icon}],
+        ['link', {rel: 'icon', href: icon}],
         ['meta', {name: 'description', content: descZh}],
         ['meta', {
           name: 'keywords',
           content: 'ServerlessInsight, serverless 平台,serverless framework, 跨云 serverless 管理, serverless 应用开发, serverless 全生命周期管理, 基础设施即代码, ServerlessInsight 特性, 无服务器架构, Serverless Insight, 跨供应商 serverless 管理, 多云 serverless 部署, 极客范开源社区, serverless 开发工具, 云原生开发, 无服务器应用部署, 开源 serverless 软件, serverless CI/CD 集成, 开源 serverless 项目, 云原生 serverless 最佳实践, serverless 微服务架构, serverless 实时数据处理, API 后端 serverless 框架, serverless 事件驱动架构, 可持续软件开发,极客范,geekfun',
         }],
-        ['meta', {property: 'og:title', content: titleZh}],
-        ['meta', {property: 'og:description', content: descZh}],
         ['meta', {property: 'og:site_name', content: titleZh}],
-        ['meta', {name: 'twitter:card', content: 'summary_large_image'}],
-        ['meta', {name: 'twitter:title', content: titleZh}],
-        ['meta', {name: 'twitter:description', content: descZh}],
         ['meta', {name: 'baidu-site-verification', content: 'codeva-RxGXH1Uqch'}],
         ['meta', {name: 'google-site-verification', content: 'AZXIysKvXbgU83th3QJrI5ztjLlY3Yys9oav4uEQS6Y'}],
         // Google Analytics
@@ -155,18 +167,13 @@ gtag('config', 'G-FSJWB3QKGJ');`],
       title: titleEn,
       description: descEn,
       head: [
-        ['link', {rel: 'icon', icon}],
+        ['link', {rel: 'icon', href: icon}],
         ['meta', {name: 'description', content: descEn}],
         ['meta', {
           name: 'keywords',
           content: "ServerlessInsight, serverless platform, multi-cloud serverless management, serverless application development, serverless lifecycle management, infrastructure as code, ServerlessInsight features, serverless architecture, cross-provider serverless management, multi-vendor serverless deployment, Geekfun open-source community, serverless development tools, cloud-native development, serverless app deployment, open-source serverless software, serverless CI/CD integration, open-source serverless projects, cloud-native serverless best practices, serverless microservices architecture, serverless real-time data processing, API backend serverless framework, serverless event-driven architecture, sustainable software development"
         }],
-        ['meta', {property: 'og:title', content: titleEn}],
-        ['meta', {property: 'og:description', content: descEn}],
         ['meta', {property: 'og:site_name', content: titleEn}],
-        ['meta', {name: 'twitter:card', content: 'summary_large_image'}],
-        ['meta', {name: 'twitter:title', content: titleEn}],
-        ['meta', {name: 'twitter:description', content: descEn}],
         ['meta', {name: 'baidu-site-verification', content: 'codeva-RxGXH1Uqch'}],
         ['meta', {name: 'google-site-verification', content: 'AZXIysKvXbgU83th3QJrI5ztjLlY3Yys9oav4uEQS6Y'}],
         // Google Analytics
