@@ -2,6 +2,7 @@
 import {computed} from 'vue'
 import {useData} from 'vitepress'
 import {CONSOLE_LOGIN_URL} from '../console'
+import ThemeIcon from './ThemeIcon.vue'
 
 const {lang} = useData()
 const zh = computed(() => lang.value !== 'en')
@@ -21,14 +22,14 @@ const PLANS = [
     cta: {zh: '免费开始', en: 'Start for free'},
     href: CONSOLE_LOGIN_URL,
     features: (t: typeof TEXT) => [
-      {text: pick(t.overageDev)},
-      {text: pick(t.members1)},
-      {text: pick(t.workspaces1)},
-      {text: pick(t.workspaceOverage)},
-      {text: pick(t.autoDeployOff), dim: true},
-      {text: pick(t.cloudReadonly)},
-      {text: pick(t.budgetHard)},
-      {text: pick(t.supportCommunity)},
+      {text: pick(t.overageDev), icon: 'coins'},
+      {text: pick(t.members1), icon: 'users'},
+      {text: pick(t.workspaces1), icon: 'layout-grid'},
+      {text: pick(t.workspaceOverage), icon: 'plus'},
+      {text: pick(t.autoDeployOff), icon: 'rocket', dim: true},
+      {text: pick(t.cloudReadonly), icon: 'globe'},
+      {text: pick(t.budgetHard), icon: 'gauge'},
+      {text: pick(t.supportCommunity), icon: 'life-buoy'},
     ],
   },
   {
@@ -40,14 +41,14 @@ const PLANS = [
     cta: {zh: '升级到 Team', en: 'Upgrade to Team'},
     href: CONSOLE_LOGIN_URL,
     features: (t: typeof TEXT) => [
-      {text: pick(t.overageTeam)},
-      {text: pick(t.members10)},
-      {text: pick(t.workspaces5)},
-      {text: pick(t.workspaceOverage)},
-      {text: pick(t.autoDeployOn)},
-      {text: pick(t.cloudFull)},
-      {text: pick(t.budgetAlert)},
-      {text: pick(t.supportTicket)},
+      {text: pick(t.overageTeam), icon: 'coins'},
+      {text: pick(t.members10), icon: 'users'},
+      {text: pick(t.workspaces5), icon: 'layout-grid'},
+      {text: pick(t.workspaceOverage), icon: 'plus'},
+      {text: pick(t.autoDeployOn), icon: 'rocket'},
+      {text: pick(t.cloudFull), icon: 'globe'},
+      {text: pick(t.budgetAlert), icon: 'gauge'},
+      {text: pick(t.supportTicket), icon: 'life-buoy'},
     ],
   },
   {
@@ -58,13 +59,13 @@ const PLANS = [
     cta: {zh: '联系销售', en: 'Contact sales'},
     href: 'mailto:sales@serverlessinsight.com?subject=Enterprise',
     features: (t: typeof TEXT) => [
-      {text: pick(t.overageCustom)},
-      {text: pick(t.membersUnlimited)},
-      {text: pick(t.workspacesUnlimited)},
-      {text: pick(t.autoDeployOn)},
-      {text: pick(t.cloudFull)},
-      {text: pick(t.budgetAlert)},
-      {text: pick(t.supportTam)},
+      {text: pick(t.overageCustom), icon: 'coins'},
+      {text: pick(t.membersUnlimited), icon: 'users'},
+      {text: pick(t.workspacesUnlimited), icon: 'layout-grid'},
+      {text: pick(t.autoDeployOn), icon: 'rocket'},
+      {text: pick(t.cloudFull), icon: 'globe'},
+      {text: pick(t.budgetAlert), icon: 'gauge'},
+      {text: pick(t.supportTam), icon: 'life-buoy'},
     ],
   },
 ]
@@ -94,12 +95,12 @@ const NEVER_BILLED = [
 ]
 
 const COVERS = [
-  {icon: '⚡', name: {zh: '函数实例', en: 'Function instance'}, detail: {zh: 'FC3 · SCF · VeFaaS', en: 'FC3 · SCF · VeFaaS'}, per: {zh: '/ 实例 · 月', en: '/ instance · mo'}},
-  {icon: '🌐', name: {zh: 'API 网关分组', en: 'API gateway group'}, detail: {zh: '每个分组', en: 'per group'}, per: {zh: '/ 实例 · 月', en: '/ instance · mo'}},
-  {icon: '📦', name: {zh: '对象存储桶', en: 'Object storage bucket'}, detail: {zh: 'OSS · COS · TOS', en: 'OSS · COS · TOS'}, per: {zh: '/ 实例 · 月', en: '/ instance · mo'}},
-  {icon: '🗄️', name: {zh: 'Serverless 数据库', en: 'Serverless database'}, detail: {zh: 'RDS · TDSQL-C · ES', en: 'RDS · TDSQL-C · ES'}, per: {zh: '/ 实例 · 月', en: '/ instance · mo'}},
-  {icon: '📊', name: {zh: '数据表', en: 'Data table'}, detail: {zh: 'Tablestore', en: 'Tablestore'}, per: {zh: '/ 实例 · 月', en: '/ instance · mo'}},
-  {icon: '🗂️', name: {zh: '超额工作区', en: 'Extra workspace'}, detail: {zh: '超出含入数的部分', en: 'beyond the included count'}, per: {zh: '/ 个 · 月', en: '/ workspace · mo'}},
+  {icon: 'zap', name: {zh: '函数实例', en: 'Function instance'}, detail: {zh: 'FC3 · SCF · VeFaaS', en: 'FC3 · SCF · VeFaaS'}, per: {zh: '/ 实例 · 月', en: '/ instance · mo'}},
+  {icon: 'globe', name: {zh: 'API 网关分组', en: 'API gateway group'}, detail: {zh: '每个分组', en: 'per group'}, per: {zh: '/ 实例 · 月', en: '/ instance · mo'}},
+  {icon: 'package', name: {zh: '对象存储桶', en: 'Object storage bucket'}, detail: {zh: 'OSS · COS · TOS', en: 'OSS · COS · TOS'}, per: {zh: '/ 实例 · 月', en: '/ instance · mo'}},
+  {icon: 'database', name: {zh: 'Serverless 数据库', en: 'Serverless database'}, detail: {zh: 'RDS · TDSQL-C · ES', en: 'RDS · TDSQL-C · ES'}, per: {zh: '/ 实例 · 月', en: '/ instance · mo'}},
+  {icon: 'table', name: {zh: '数据表', en: 'Data table'}, detail: {zh: 'Tablestore', en: 'Tablestore'}, per: {zh: '/ 实例 · 月', en: '/ instance · mo'}},
+  {icon: 'layout-grid', name: {zh: '超额工作区', en: 'Extra workspace'}, detail: {zh: '超出含入数的部分', en: 'beyond the included count'}, per: {zh: '/ 个 · 月', en: '/ workspace · mo'}},
 ]
 
 const TEXT = {
@@ -193,6 +194,7 @@ const T = ({
 })
 
 const pick = (v: {zh: string; en: string}) => (zh.value ? v.zh : v.en)
+const rules = computed(() => (zh.value ? T.rules.zh : T.rules.en))
 </script>
 
 <template>
@@ -226,7 +228,7 @@ const pick = (v: {zh: string; en: string}) => (zh.value ? v.zh : v.en)
         <p v-if="plan.key === 'team'" class="pp-worth">{{ pick(TEXT.teamValue) }}</p>
         <ul class="pp-feats">
           <li v-for="f in plan.features(TEXT)" :key="f.text" :class="{'pp-feat--dim': f.dim}">
-            <span class="pp-feat-icon"></span>{{ f.text }}
+            <ThemeIcon class="pp-feat-icon" :name="f.icon" :size="14" /><span>{{ f.text }}</span>
           </li>
         </ul>
         <a class="pp-btn" :class="{'pp-btn--featured': plan.featured}" :href="plan.href">
@@ -276,12 +278,12 @@ const pick = (v: {zh: string; en: string}) => (zh.value ? v.zh : v.en)
       <p class="pp-h2sub">{{ pick(T.coversIntro) }}</p>
       <div class="pp-covers">
         <div v-for="c in COVERS" :key="c.name.en" class="pp-cover-card">
-          <div class="pp-cover-name">{{ c.icon }} {{ pick(c.name) }}</div>
+          <div class="pp-cover-name"><ThemeIcon class="pp-cover-icon" :name="c.icon" :size="15" /> {{ pick(c.name) }}</div>
           <div class="pp-cover-detail">{{ pick(c.detail) }}</div>
           <div class="pp-cover-amr">1 AMR <span>{{ pick(c.per) }}</span></div>
         </div>
         <div class="pp-cover-card pp-cover-card--free">
-          <div class="pp-cover-name">🛡️ {{ pick(T.zeroCardName) }}</div>
+          <div class="pp-cover-name"><ThemeIcon class="pp-cover-icon" name="shield-check" :size="15" /> {{ pick(T.zeroCardName) }}</div>
           <div class="pp-cover-detail">{{ pick(T.zeroCardDetail) }}</div>
           <div class="pp-cover-amr pp-cover-amr--free">{{ pick(T.zeroBadge) }}</div>
         </div>
@@ -289,14 +291,14 @@ const pick = (v: {zh: string; en: string}) => (zh.value ? v.zh : v.en)
 
       <div class="pp-rules">
         <div class="pp-rule-card">
-          <h3>🧮 {{ zh ? '算一笔账' : 'Worked example' }}</h3>
+          <h3 class="pp-h3icon"><ThemeIcon name="calculator" :size="15" /> {{ zh ? '算一笔账' : 'Worked example' }}</h3>
           <p class="pp-example">1 × {{ zh ? '函数' : 'function' }} + 1 × {{ zh ? '桶' : 'bucket' }} + 1 × {{ zh ? '数据表' : 'table' }} = 3 AMR</p>
           <p class="pp-note">{{ zh ? 'Developer 免费额度 10 AMR/月内为 ¥0；超出后按版本单价计费。' : '¥0 within the Developer free quota of 10 AMR/mo; beyond it the plan rate applies.' }}</p>
         </div>
         <div class="pp-rule-card">
-          <h3>📋 {{ pick(T.rulesTitle) }}</h3>
+          <h3 class="pp-h3icon"><ThemeIcon name="list-checks" :size="15" /> {{ pick(T.rulesTitle) }}</h3>
           <ul>
-            <li v-for="r in T.rules" :key="r">{{ r }}</li>
+            <li v-for="r in rules" :key="r">{{ r }}</li>
           </ul>
         </div>
       </div>
@@ -345,7 +347,7 @@ const pick = (v: {zh: string; en: string}) => (zh.value ? v.zh : v.en)
 .pp-feats { list-style: none; margin: 16px 0 0; padding: 14px 0 0; border-top: 1px solid var(--vp-c-divider); flex: 1; display: flex; flex-direction: column; gap: 10px; font-size: 0.875rem; }
 .pp-feats li { display: flex; align-items: flex-start; gap: 8px; font-weight: 500; }
 .pp-feats li.pp-feat--dim { color: var(--vp-c-text-2); font-weight: 400; }
-.pp-feat-icon { flex: none; width: 5px; height: 5px; margin-top: 7px; border-radius: 50%; background: var(--vp-c-brand-1); }
+.pp-feat-icon { flex: none; color: var(--vp-c-brand-1); margin-top: 2px; }
 .pp-btn { display: flex; align-items: center; justify-content: center; height: 40px; margin-top: 18px; border-radius: 10px; background: var(--vp-c-brand-1); color: #fff; font-weight: 650; font-size: 0.9rem; text-decoration: none; transition: opacity 0.2s ease; }
 .pp-btn:hover { opacity: 0.9; color: #fff; }
 .pp-btn--lg { height: 44px; padding: 0 26px; }
@@ -368,7 +370,10 @@ const pick = (v: {zh: string; en: string}) => (zh.value ? v.zh : v.en)
 .pp-covers { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 20px; }
 @media (max-width: 900px) { .pp-covers { grid-template-columns: 1fr; } }
 .pp-cover-card { border: 1px solid var(--vp-c-divider); border-radius: 12px; padding: 16px; }
-.pp-cover-name { font-size: 0.9rem; font-weight: 600; }
+.pp-cover-name { font-size: 0.9rem; font-weight: 600; display: flex; align-items: center; gap: 7px; }
+.pp-cover-icon { color: var(--vp-c-brand-1); flex: none; }
+.pp-h3icon { display: flex; align-items: center; gap: 7px; }
+.pp-h3icon svg { color: var(--vp-c-brand-1); flex: none; }
 .pp-cover-detail { font-size: 0.75rem; color: var(--vp-c-text-2); margin-top: 4px; }
 .pp-cover-amr { margin-top: 12px; font-size: 1.1rem; font-weight: 750; }
 .pp-cover-amr span { font-size: 0.72rem; font-weight: 400; color: var(--vp-c-text-2); }
