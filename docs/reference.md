@@ -343,7 +343,7 @@ GPU 规格枚举（阿里云）：
 
 #### log
 
-布尔值。开启后函数的调用日志接入供应商日志服务（如阿里云 SLS），`si logs` 等观测命令依赖它：
+布尔值。开启后函数的调用日志接入供应商日志服务（如阿里云 SLS）。
 
 ```yaml
 log: true
@@ -530,7 +530,9 @@ domain:
 
 证书三种配置方式**互斥**：要么 `certificate_id` 引用已有证书，要么同时给 `certificate_body` + `certificate_private_key`，不能混用。
 
-**cdn 配置**（也可直接写 `cdn: true` 使用默认值）：
+#### cdn 配置
+
+也可直接写 `cdn: true` 使用默认值：
 
 ```yaml
 cdn:

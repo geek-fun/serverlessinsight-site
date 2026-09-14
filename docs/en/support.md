@@ -244,6 +244,12 @@ When sharing configuration and logs:
 >
 > Error log: [attached full log]
 
+**Poor question example**:
+
+> Title: Deployment failed, urgent!
+>
+> Body: It won't deploy, there's an error, what do I do?
+
 ## Training Services
 
 We offer training courses for different roles:
@@ -388,7 +394,5 @@ If an issue isn't resolved within the committed time, it's automatically escalat
 4. **Management** - Customer success manager / director
 
 ---
-
-**Last updated**: 2024-12
 
 We are committed to providing the best support experience. Contact us anytime!

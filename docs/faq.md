@@ -11,6 +11,7 @@
 - [安全与权限](#安全与权限)
 - [故障排查](#故障排查)
 - [最佳实践](#最佳实践)
+- [其他问题](#其他问题)
 
 ---
 
@@ -162,11 +163,13 @@ si deploy --stage dev
 1. **在配置文件中定义多个 stage**
    ```yaml
    stages:
-   hangzhou:
-     region: cn-hangzhou
-   beijing:
-     region: cn-beijing
-   
+     hangzhou:
+       region: cn-hangzhou
+     beijing:
+       region: cn-beijing
+   ```
+   然后指定 stage 部署：
+   ```bash
    si deploy --stage hangzhou
    si deploy --stage beijing
    ```
@@ -215,17 +218,11 @@ si deploy --stage dev
 
 ### Q: 本地运行提示端口被占用
 
-**A:** 指定其他端口：
+**A:** 本地开发端口固定为 `4567`，请先找到并停止占用该端口的进程，然后重新运行：
 
 ```bash
-si local --stage dev --port 8080
-```
-
-或者停止占用端口的进程：
-
-```bash
-# 查找占用 3000 端口的进程
-lsof -i :3000
+# 查找占用 4567 端口的进程
+lsof -i :4567
 
 # 终止进程
 kill -9 <PID>
@@ -380,7 +377,7 @@ ServerlessInsight 会检测到代码变化并更新函数。
 
 3. **使用密钥管理服务**
    - 阿里云 KMS
-   - AWS Secrets Manager
+   - 腾讯云 KMS
    - HashiCorp Vault
 
 4. **不要将密钥提交到 Git**

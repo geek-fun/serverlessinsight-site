@@ -2,7 +2,7 @@
 
 ## What is ServerlessInsight
 
-![ServerlessInsight Components](/si.drawio.png)
+<img src="/si.drawio.png" alt="ServerlessInsight Components" loading="lazy" width="1071" height="791" />
 
 ServerlessInsight is a full-stack serverless application platform that manages the entire lifecycle of serverless apps across multiple cloud providers. By abstracting away cloud-specific differences and combining cloud-native best practices, it helps developers build, deploy, and optimize serverless applications with less effort and lower operational overhead.
 
@@ -17,47 +17,47 @@ ServerlessInsight is built around **Infrastructure as Code (IaC)**. You define y
 All your serverless resources live in a `serverlessinsight.yml` configuration file. ServerlessInsight reads it and provisions the corresponding cloud resources. No manual console work needed.
 
 **Benefits:**
-- **Version control** — track configuration changes in Git for collaboration and auditability
-- **Repeatability** — deploy the same configuration to different environments with consistent results
-- **Automation** — plug into CI/CD pipelines for fully automated deployments
+- **Version control**: track configuration changes in Git for collaboration and auditability
+- **Repeatability**: deploy the same configuration to different environments with consistent results
+- **Automation**: plug into CI/CD pipelines for fully automated deployments
 
 ### 🔄 Full Lifecycle Management
 
 ServerlessInsight covers every phase from development to production:
 
 #### Development
-- **Local dev** — spin up a local environment with one command, no cloud credentials required
-- **Hot reload** — file watch mode automatically reloads when code changes
-- **Debugging** — built-in debug mode for troubleshooting
-- **Environment parity** — local setup mirrors your production environment
+- **Local dev**: spin up a local environment with one command, no cloud credentials required
+- **Hot reload**: file watch mode automatically reloads when code changes
+- **Debugging**: built-in debug mode for troubleshooting
+- **Environment parity**: local setup mirrors your production environment
 
 #### Deployment
-- **One-command deploy** — provision all defined resources with `si deploy`
-- **Multi-environment support** — manage dev/test/prod through stages
-- **Parameter overrides** — override defaults from the command line
-- **Rollback** — quickly revert to a previous configuration
+- **One-command deploy**: provision all defined resources with `si deploy`
+- **Multi-environment support**: manage dev/test/prod through stages
+- **Parameter overrides**: override defaults from the command line
+- **Rollback**: configuration lives in Git, so you can manually revert to a previous version
 
 #### Monitoring (in progress)
-- **Performance monitoring** — real-time function execution metrics
-- **Log aggregation** — centralized application log management
-- **Alerts** — proactive notifications on anomalies
+- **Performance monitoring**: real-time function execution metrics
+- **Log aggregation**: centralized application log management
+- **Alerts**: proactive notifications on anomalies
 
 #### Optimization
-- **Cost analysis** — understand resource usage and find savings
-- **Performance tuning** — actionable recommendations for faster functions
-- **Capacity planning** — scale based on traffic forecasts
+- **Cost analysis**: understand resource usage and find savings
+- **Performance tuning**: actionable recommendations for faster functions
+- **Capacity planning**: scale based on traffic forecasts
 
 ### ☁️ Multi-Cloud Support
 
 ServerlessInsight works across major cloud providers so you can pick what fits:
 
 **Supported (deployable):**
-- ✅ **Aliyun (Alibaba Cloud)** — FC3, API Gateway, OSS, RDS, TableStore, ES Serverless, CDN, DNS
-- ✅ **Tencent Cloud** — SCF, COS, ES Serverless, TDSQL-C (no standalone API Gateway resource; uses function HTTP triggers)
-- ✅ **Volcengine** — veFaaS, API Gateway, TOS (databases and tables not yet supported)
+- ✅ **Aliyun (Alibaba Cloud)**: FC3, API Gateway, OSS, RDS, TableStore, ES Serverless, CDN, DNS
+- ✅ **Tencent Cloud**: SCF, COS, ES Serverless, TDSQL-C (no standalone API Gateway resource; uses function HTTP triggers)
+- ✅ **Volcengine**: veFaaS, API Gateway, TOS (databases and tables not yet supported)
 
 **Planned / not deployable yet:**
-- 🚧 **Huawei Cloud** — only generates HCL/Terraform templates; `deploy` not supported
+- 🚧 **Huawei Cloud**: only generates HCL/Terraform templates; `deploy` not supported
 - AWS Lambda & API Gateway (enum only)
 - GCP, Azure
 
@@ -67,22 +67,23 @@ A unified configuration syntax means you can switch between providers without re
 
 ServerlessInsight is open source and community-driven:
 
-- **Apache 2.0 license** — free to use and modify
-- **Universal CLI** — no dependency on any specific CI/CD tool
-- **Easy integration** — fit it into your existing toolchain quickly
-- **Community contributions** — issues, PRs, and ideas welcome
+- **Apache 2.0 license**: free to use and modify
+- **Universal CLI**: no dependency on any specific CI/CD tool
+- **Easy integration**: fit it into your existing toolchain quickly
+- **Community contributions**: issues, PRs, and ideas welcome
 
 ## Architecture
 
-![ServerlessInsight Architecture](/si-archtecture.drawio.png)
+<img src="/si-archtecture.drawio.png" alt="ServerlessInsight Architecture" loading="lazy" width="1074" height="490" />
 
-ServerlessInsight sits on top of cloud providers' serverless services and IaC capabilities. The architecture has five layers:
+ServerlessInsight sits on top of cloud providers' serverless services and IaC capabilities. The architecture has six layers:
 
-1. **Config Layer** — `serverlessinsight.yml` defines the resources your app needs
-2. **Parse Layer** — reads the config and builds a resource dependency graph
-3. **Adapt Layer** — translates your config into provider-specific API calls
-4. **Execute Layer** — calls cloud provider APIs to create and manage resources
-5. **Runtime Layer** — provides local development environment and debugging tools
+1. **Config Layer**: `serverlessinsight.yml` defines the resources your app needs
+2. **State Layer**: tracks deployment state and resources, supporting incremental updates and recovery from partial failures
+3. **Parse Layer**: reads the config and builds a resource dependency graph
+4. **Adapt Layer**: translates your config into provider-specific API calls
+5. **Execute Layer**: calls cloud provider APIs to create and manage resources
+6. **Runtime Layer**: provides local development environment and debugging tools
 
 This layered design means you never have to worry about provider-specific APIs or operational details. Just define what you need and focus on code.
 
@@ -120,8 +121,8 @@ Ready to get started? Head to the [Getting Started](/en/getting-started) guide a
 
 ## Resources
 
-- [Getting Started](/en/getting-started) — install the CLI and learn the config model
-- [Configuration Reference](/en/reference) — all resources, fields, and valid values
-- [CLI Reference](/en/cli) — command line tool reference
-- [Case Studies](/en/case-study) — real-world usage examples
-- [FAQ](/en/faq) — frequently asked questions
+- [Getting Started](/en/getting-started): install the CLI and learn the config model
+- [Configuration Reference](/en/reference): all resources, fields, and valid values
+- [CLI Reference](/en/cli): command line tool reference
+- [Case Studies](/en/case-study): real-world usage examples
+- [FAQ](/en/faq): frequently asked questions
