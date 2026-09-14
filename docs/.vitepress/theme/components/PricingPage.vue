@@ -195,6 +195,7 @@ const T = ({
 
 const pick = (v: {zh: string; en: string}) => (zh.value ? v.zh : v.en)
 const rules = computed(() => (zh.value ? T.rules.zh : T.rules.en))
+const faq = computed(() => (zh.value ? T.faq.zh : T.faq.en))
 </script>
 
 <template>
@@ -308,7 +309,7 @@ const rules = computed(() => (zh.value ? T.rules.zh : T.rules.en))
     <section class="pp-section">
       <h2 class="pp-h2">{{ pick(T.faqTitle) }}</h2>
       <div class="pp-faq">
-        <details v-for="([q, a], i) in T.faq" :key="i" class="pp-faq-item">
+        <details v-for="([q, a], i) in faq" :key="i" class="pp-faq-item">
           <summary><span class="pp-qnum">Q{{ i + 1 }}</span>{{ q }}</summary>
           <p>{{ a }}</p>
         </details>
