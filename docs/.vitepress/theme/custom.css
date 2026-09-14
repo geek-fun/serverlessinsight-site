@@ -9,6 +9,25 @@
   --vp-c-brand-1: #A384EB;
 }
 
+/* Semantic "free" green — the only owner of the free signal (AGENTS.md).
+   Light green-800 clears AA for small (11px / 0.75rem / 0.9rem) text on every
+   surface it sits on; green-600 (#16a34a) only reaches 2.89:1 on the .12 badge
+   tint. Dark keeps the green-600 look, lifted by 5/255 in G so the .12 tint
+   over --vp-c-bg (#1b1b1f) also clears 4.5:1. Ratios: WCAG sRGB formula. */
+:root {
+  --success: #166534;
+  --success-tint: rgba(22, 101, 52, 0.12);
+  --success-tint-soft: rgba(22, 101, 52, 0.05);
+  --success-border: rgba(22, 101, 52, 0.35);
+}
+
+.dark {
+  --success: #16a84a;
+  --success-tint: rgba(22, 168, 74, 0.12);
+  --success-tint-soft: rgba(22, 168, 74, 0.05);
+  --success-border: rgba(22, 168, 74, 0.35);
+}
+
 /* V3 restraint: primary buttons are monochrome (Vercel-style) — violet is
    reserved for links, active nav, focus and small accents. */
 :root {

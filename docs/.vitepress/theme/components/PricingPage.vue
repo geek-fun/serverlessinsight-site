@@ -208,11 +208,13 @@ const faq = computed(() => (zh.value ? T.faq.zh : T.faq.en))
 
     <!-- plan cards -->
     <section class="pp-plans">
+      <h2 class="pp-h2 pp-plans-title">{{ pick(T.planTitle) }}</h2>
       <div
-        v-for="plan in PLANS"
+        v-for="(plan, i) in PLANS"
         :key="plan.key"
         class="pp-card"
         :class="{'pp-card--featured': plan.featured}"
+        :style="{'--i': i}"
       >
         <span v-if="plan.featured" class="pp-pop"><span class="pp-dot"></span>{{ zh ? '最受欢迎' : 'Most popular' }}</span>
         <h3 class="pp-card-name">{{ plan.key }}</h3>
@@ -334,6 +336,7 @@ const faq = computed(() => (zh.value ? T.faq.zh : T.faq.en))
 .pp-sub { max-width: 720px; margin: 14px auto 0; text-align: center; color: var(--vp-c-text-2); font-size: 1.05rem; line-height: 1.7; }
 
 .pp-plans { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 44px; }
+.pp-plans-title { grid-column: 1 / -1; }
 @media (max-width: 900px) { .pp-plans { grid-template-columns: 1fr; } }
 .pp-card { position: relative; display: flex; flex-direction: column; border: 1px solid var(--vp-c-divider); border-radius: 16px; padding: 24px; background: var(--vp-c-bg); }
 .pp-card--featured { border-color: var(--vp-c-brand-1); box-shadow: 0 8px 32px rgba(102, 64, 191, 0.14); }
@@ -345,13 +348,48 @@ const faq = computed(() => (zh.value ? T.faq.zh : T.faq.en))
 .pp-price-period { font-size: 0.85rem; color: var(--vp-c-text-2); margin-left: 2px; }
 .pp-quota { margin-top: 12px; font-size: 0.9rem; display: flex; align-items: center; gap: 6px; }
 .pp-worth { margin-top: 6px; font-size: 0.78rem; color: var(--vp-c-text-2); line-height: 1.55; }
+
+/* Authored focal motion: the ladder settles, then the recommended rung lights
+   up. One-time load entrance for this section only; default state stays fully
+   visible so no-JS / failed-animation renders never hide content. */
+@keyframes pp-settle {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes pp-glow {
+  from { box-shadow: 0 8px 32px rgba(102, 64, 191, 0); }
+  to { box-shadow: 0 8px 32px rgba(102, 64, 191, 0.14); }
+}
+@keyframes pp-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .pp-plans-title { animation: pp-settle 300ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+  .pp-plans .pp-card {
+    animation: pp-settle 420ms cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation-delay: calc(60ms + var(--i, 0) * 80ms);
+  }
+  .pp-plans .pp-card--featured {
+    animation-name: pp-settle, pp-glow;
+    animation-duration: 420ms, 500ms;
+    animation-delay: calc(60ms + var(--i, 0) * 80ms), 140ms;
+  }
+  .pp-worth { animation: pp-fade 300ms ease both; animation-delay: 420ms; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pp-plans-title, .pp-plans .pp-card, .pp-plans .pp-card--featured, .pp-worth { animation: none; }
+}
 .pp-feats { list-style: none; margin: 16px 0 0; padding: 14px 0 0; border-top: 1px solid var(--vp-c-divider); flex: 1; display: flex; flex-direction: column; gap: 10px; font-size: 0.875rem; }
 .pp-feats li { display: flex; align-items: flex-start; gap: 8px; font-weight: 500; }
 .pp-feats li.pp-feat--dim { color: var(--vp-c-text-2); font-weight: 400; }
 .pp-feat-icon { flex: none; color: var(--vp-c-brand-1); margin-top: 2px; }
-.pp-btn { display: flex; align-items: center; justify-content: center; height: 40px; margin-top: 18px; border-radius: 10px; background: var(--vp-button-brand-bg); color: var(--vp-button-brand-text); font-weight: 650; font-size: 0.9rem; text-decoration: none; transition: opacity 0.2s ease; }
+.pp-btn { display: flex; align-items: center; justify-content: center; height: 44px; margin-top: 18px; border-radius: 10px; background: var(--vp-button-brand-bg); color: var(--vp-button-brand-text); font-weight: 650; font-size: 0.9rem; text-decoration: none; transition: opacity 0.2s ease, transform 0.12s ease; }
 .pp-btn:hover { opacity: 0.9; color: var(--vp-button-brand-text); }
-.pp-btn--lg { height: 44px; padding: 0 26px; }
+.pp-btn:active { transform: scale(0.98); }
+.pp-btn--lg { height: 46px; padding: 0 26px; }
 .pp-btn--ghost { background: transparent; border: 1px solid var(--vp-c-divider); color: var(--vp-c-text-1); }
 /* The featured plan's CTA is the page's single solid-violet brand moment. */
 .pp-btn--featured { background: #6640BF; color: #ffffff; }
@@ -366,9 +404,9 @@ const faq = computed(() => (zh.value ? T.faq.zh : T.faq.en))
 .pp-table th:last-child, .pp-table td:last-child { text-align: right; }
 .pp-table td { padding: 9px 16px; border-top: 1px solid var(--vp-c-divider); }
 .pp-table code { margin-left: 8px; font-size: 0.72rem; opacity: 0.55; font-family: ui-monospace, 'SF Mono', Menlo, monospace; }
-.pp-zerohead td { font-size: 0.75rem; font-weight: 600; color: var(--si-green, #16a34a); }
+.pp-zerohead td { font-size: 0.75rem; font-weight: 600; color: var(--success); }
 .pp-zerorow td:first-child { color: var(--vp-c-text-2); }
-.pp-freebadge { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 600; padding: 2px 9px; border-radius: 999px; background: rgba(22, 163, 74, 0.12); color: #16a34a; }
+.pp-freebadge { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 600; padding: 2px 9px; border-radius: 999px; background: var(--success-tint); color: var(--success); }
 .pp-note { margin-top: 10px; font-size: 0.78rem; color: var(--vp-c-text-2); }
 
 .pp-covers { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 20px; }
@@ -381,8 +419,8 @@ const faq = computed(() => (zh.value ? T.faq.zh : T.faq.en))
 .pp-cover-detail { font-size: 0.75rem; color: var(--vp-c-text-2); margin-top: 4px; }
 .pp-cover-amr { margin-top: 12px; font-size: 1.1rem; font-weight: 750; }
 .pp-cover-amr span { font-size: 0.72rem; font-weight: 400; color: var(--vp-c-text-2); }
-.pp-cover-card--free { border-color: rgba(22, 163, 74, 0.35); background: rgba(22, 163, 74, 0.05); }
-.pp-cover-card--free .pp-cover-name, .pp-cover-card--free .pp-cover-amr { color: #16a34a; }
+.pp-cover-card--free { border-color: var(--success-border); background: var(--success-tint-soft); }
+.pp-cover-card--free .pp-cover-name, .pp-cover-card--free .pp-cover-amr { color: var(--success); }
 
 .pp-rules { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 20px; }
 @media (max-width: 900px) { .pp-rules { grid-template-columns: 1fr; } }
@@ -394,8 +432,12 @@ const faq = computed(() => (zh.value ? T.faq.zh : T.faq.en))
 .pp-rule-card li::before { content: '✓'; color: var(--vp-c-brand-1); flex: none; }
 
 .pp-faq { margin-top: 20px; display: flex; flex-direction: column; gap: 16px; }
-.pp-faq-item { border: 1px solid var(--vp-c-divider); border-radius: 12px; padding: 16px 18px; }
-.pp-faq-item summary { cursor: pointer; font-weight: 600; font-size: 0.925rem; list-style: none; }
+.pp-faq-item { border: 1px solid var(--vp-c-divider); border-radius: 12px; padding: 10px 18px; interpolate-size: allow-keywords; }
+/* native <details> keeps working with zero script — browsers without
+   ::details-content support simply open instantly */
+.pp-faq-item::details-content { block-size: 0; overflow: clip; opacity: 0; content-visibility: hidden; transition: block-size 300ms cubic-bezier(0.16, 1, 0.3, 1), opacity 200ms ease, content-visibility 300ms allow-discrete; }
+.pp-faq-item[open]::details-content { block-size: auto; opacity: 1; content-visibility: visible; }
+.pp-faq-item summary { min-height: 44px; padding: 10px 0; cursor: pointer; font-weight: 600; font-size: 0.925rem; list-style: none; }
 .pp-faq-item summary::-webkit-details-marker { display: none; }
 .pp-qnum { color: var(--vp-c-brand-1); font-weight: 700; margin-right: 10px; }
 .pp-faq-item p { margin-top: 10px; font-size: 0.875rem; color: var(--vp-c-text-2); line-height: 1.7; }
@@ -404,4 +446,9 @@ const faq = computed(() => (zh.value ? T.faq.zh : T.faq.en))
 .pp-ctaband h2 { font-size: 1.5rem; font-weight: 750; letter-spacing: -0.02em; }
 .pp-ctaband p { color: var(--vp-c-text-2); margin-top: 8px; }
 .pp-ctaband-btns { margin-top: 20px; display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; }
+
+@media (prefers-reduced-motion: reduce) {
+  .pp-faq-item::details-content { transition: opacity 120ms ease; }
+  .pp-btn:active { transform: none; }
+}
 </style>

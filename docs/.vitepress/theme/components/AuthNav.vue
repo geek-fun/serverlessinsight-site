@@ -62,7 +62,6 @@ onUnmounted(() => {
 /* Locale + auth state via CSS: exactly one span is visible.
    html[lang] is baked per page at build time — SSR-safe by construction. */
 .auth-nav .t { display: none; }
-:root:not(.dark) .auth-nav .t, html .auth-nav .t { }
 html[lang='zh-CN'] .auth-nav .t.zh { display: inline; }
 html[lang^='en'] .auth-nav .t.en { display: inline; }
 .auth-nav--authed .t-login, .auth-nav:not(.auth-nav--authed) .t-console { display: none !important; }
