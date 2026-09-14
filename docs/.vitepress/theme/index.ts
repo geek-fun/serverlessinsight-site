@@ -3,6 +3,7 @@ import {inBrowser, useData} from "vitepress";
 import {h, watchEffect} from "vue";
 import PlatformSelector from './components/PlatformSelector.vue'
 import HeroScene from './components/HeroScene.vue'
+import PricingPage from './components/PricingPage.vue'
 import './custom.css'
 import './styles/platform.css'
 
@@ -13,6 +14,9 @@ export default {
             'home-hero-before': () => h(HeroScene),
             'sidebar-nav-before': () => h(PlatformSelector)
         })
+    },
+    enhanceApp({app}) {
+        app.component('PricingPage', PricingPage)
     },
     setup() {
         const { lang } = useData()
