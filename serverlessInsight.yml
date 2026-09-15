@@ -19,7 +19,7 @@ tags:
 
 buckets:
   si_spa_site_bucket:
-    name: serverlessinsight-site-bucket-${ctx.stage}
+    name: serverlessinsight-site-bucket-prod
     security:
       acl: PUBLIC_READ
     website:

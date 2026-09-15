@@ -2,8 +2,10 @@
 import {computed, onBeforeUnmount, onMounted, reactive, ref} from 'vue'
 import {useData} from 'vitepress'
 
-const {lang} = useData()
-const isZh = computed(() => lang.value.startsWith('zh'))
+const {page} = useData()
+// AGENTS.md: lang/location are unreliable in slot context during serial SSR —
+// the build-time relativePath is the safe locale signal.
+const isZh = computed(() => !page.value.relativePath.startsWith('en/'))
 
 const reduced = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
@@ -36,8 +38,19 @@ const YLINES: YLine[] = [
 
 const YTOTAL = YLINES.reduce((n, l) => n + l.len, 0)
 
+// The only reactive state left in the hot path: the typed text (DOM text
+// content, updated only during the 3.6s typing act), the tile/chip reveal
+// flags (toggled at act boundaries), and the active act index (3x per cycle).
+// All motion runs through CSS custom properties.
 const typed = ref(0)
 const cursorOn = ref(false)
+const act = ref(0)
+const tileOn = reactive([false, false, false, false, false])
+const chipOn = reactive([false, false, false])
+
+const ACT_LABELS = computed(() =>
+  isZh.value ? ['声明', '生成', '交付'] : ['Declare', 'Provision', 'Ship']
+)
 
 const typedLines = computed(() => {
   let remaining = typed.value
@@ -58,7 +71,7 @@ const typedLines = computed(() => {
   return {lines, cursorLine: cursorOn.value && last >= 0 ? last : -1}
 })
 
-/* --------------------------------- plates --------------------------------- */
+/* --------------------------------- geometry -------------------------------- */
 // Model: plates are always HORIZONTAL (content face rotateX(90deg) = normal up in
 // group space). ONE animated pitch: -90deg shows a plate's face dead-frontal
 // (typing); -40deg reads as "camera above" (stack view). Plates move ONLY along
@@ -67,23 +80,7 @@ const typedLines = computed(() => {
 // three glass layers with air between, corners tied by dashed vertical guide
 // lines (边角虚线连接).
 
-const y0 = ref(0)
-const y1 = ref(0)
-const y2 = ref(0)
-const s1 = ref(1)
-const s2 = ref(1)
-// leaf-face opacity: [yaml, resources, providers]
-const faceOp = reactive([1, 0, 0])
-const wireOp = ref(0)
-const wireH = ref(0)
-const wallOp = ref(0)
-const tileOn = reactive([false, false, false, false, false])
-const chipOn = reactive([false, false, false])
 const isNarrow = ref(false)
-const stackPitch = ref(0)
-const stackScale = ref(1)
-const stackShift = ref(0)
-const asStep = ref(226)
 
 const cardH = () => (isNarrow.value ? 336 : 420)
 // pitch: typing = frontal (-90 shows the face-up plate dead-on); the stack view
@@ -116,12 +113,15 @@ const cubShift = () => (isNarrow.value ? -136 : -10)
 const deriveOffset = () => (isNarrow.value ? 96 : 110)
 const deriveScale = () => 0.72
 
+// AGENTS.md colour discipline: resource tiles are a violet accent, not a
+// five-hue decoration strip. Provider colours are the one allowed exception
+// (vendor identity only), applied to the vendor chips.
 const RESOURCES = [
-  {key: 'fn', en: 'Functions', zh: '函数', color: '#8F6AE7'},
-  {key: 'event', en: 'Events', zh: '事件', color: '#F89B40'},
-  {key: 'db', en: 'Database', zh: '数据库', color: '#10b981'},
-  {key: 'bucket', en: 'Storage', zh: '存储', color: '#3b82f6'},
-  {key: 'table', en: 'Table', zh: '表格', color: '#06b6d4'}
+  {key: 'fn', en: 'Functions', zh: '函数'},
+  {key: 'event', en: 'Events', zh: '事件'},
+  {key: 'db', en: 'Database', zh: '数据库'},
+  {key: 'bucket', en: 'Storage', zh: '存储'},
+  {key: 'table', en: 'Table', zh: '表格'}
 ]
 const resourceList = computed(() => RESOURCES.map((r) => ({...r, label: isZh.value ? r.zh : r.en})))
 
@@ -158,6 +158,26 @@ const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3)
 const seg = (s: number, a: number, b: number) => clamp01((s - a) / (b - a))
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t
 
+/* ------------------------------ CSS-var driver ------------------------------ */
+// All per-frame motion is written as custom properties on the stack root —
+// no Vue reactivity in the 60fps path. A value cache skips redundant writes
+// during the hold phases.
+
+const sceneEl = ref<HTMLElement | null>(null)
+const stackEl = ref<HTMLElement | null>(null)
+
+const cache: Record<string, string> = {}
+const setVar = (el: HTMLElement | null, name: string, value: string) => {
+  if (!el || cache[name] === value) return
+  cache[name] = value
+  el.style.setProperty(name, value)
+}
+
+const setAct = (idx: number) => {
+  if (act.value === idx) return
+  act.value = idx
+}
+
 const apply = (s: number) => {
   const se = sep()
   const tp = typingPitch()
@@ -168,7 +188,6 @@ const apply = (s: number) => {
   const cs = cubShift()
   const df = deriveOffset()
   const ds = deriveScale()
-  asStep.value = stp
 
   let pitch = tp
   let scale = 1
@@ -180,9 +199,12 @@ const apply = (s: number) => {
   const op = [1, 0, 0]
 
   if (s < T1) {
-    // TYPE: stack frontal (pitch -90), only the yaml plate, typing
+    // TYPE: stack frontal (pitch -90), only the yaml plate, typing.
+    // The card itself settles in over the first 0.4s so a new cycle begins
+    // with a fade-in instead of a pop.
     typed.value = Math.floor(clamp01((s - 0.2) / (T1 - 0.6)) * YTOTAL)
     cursorOn.value = Math.floor(s * 2) % 2 === 0
+    op[0] = seg(s, 0, 0.4)
     tileOn.fill(false)
     chipOn.fill(false)
   } else if (s < T2) {
@@ -206,6 +228,7 @@ const apply = (s: number) => {
     sc[1] = lerp(ds, 1, e)
     op[1] = clamp01(e * 1.6)
     tileOn.fill(true)
+    setAct(1)
   } else if (s < T4) {
     // L3 DERIVES from L2 the same way; the camera reframes to hold the fan
     typed.value = YTOTAL
@@ -228,7 +251,7 @@ const apply = (s: number) => {
     cursorOn.value = false
     pitch = mp
     scale = expScale()
-    shift = fs
+    shift = fs + float * 0.4
     y[1] = se + float
     y[2] = 2 * se + float
     op[1] = 1
@@ -250,11 +273,12 @@ const apply = (s: number) => {
     wall = e
     wire = e
   } else if (s < T7) {
-    // CUBOID hold: three glass blocks + corner guides = one box with air inside
+    // CUBOID hold: three glass blocks + corner guides = one box with air inside.
+    // A slow bob keeps the finished assembly alive instead of freezing.
     typed.value = YTOTAL
     cursorOn.value = false
     pitch = ap
-    shift = cs
+    shift = cs + Math.sin((s - T5) * 1.4) * 4
     y[0] = -stp
     y[1] = 0
     y[2] = stp
@@ -264,9 +288,9 @@ const apply = (s: number) => {
     wire = 1
   } else {
     // RESET: guides retract, walls thin back to planes, layers sink and fade,
-    // pitch returns to frontal
+    // pitch returns to frontal. The typed file fades with the card — no
+    // rewind-style un-typing.
     const e = easeInOutCubic(seg(s, T7, CYCLE))
-    typed.value = Math.floor((1 - e) * YTOTAL)
     cursorOn.value = false
     pitch = lerp(ap, tp, e)
     scale = lerp(cubScale(), 1, e)
@@ -276,6 +300,7 @@ const apply = (s: number) => {
     y[2] = lerp(stp, se + df, e)
     sc[1] = lerp(1, ds, e)
     sc[2] = lerp(1, ds, e)
+    op[0] = 1 - e
     op[1] = 1 - e
     op[2] = 1 - e
     wall = 1 - e
@@ -284,25 +309,26 @@ const apply = (s: number) => {
     chipOn.fill(false)
   }
 
-  y0.value = y[0]
-  y1.value = y[1]
-  y2.value = y[2]
-  s1.value = sc[0]
-  s2.value = sc[1]
-  faceOp[0] = op[0]
-  faceOp[1] = op[1]
-  faceOp[2] = op[2]
-  wireOp.value = wire
-  wireH.value = (2 * stp + blockH()) * wire
-  wallOp.value = wall
-  stackPitch.value = pitch
-  stackScale.value = scale
-  stackShift.value = shift
+  // act captions: 1=declare (typing), 2=provision (derive/fan), 3=ship (assembly+hold+reset)
+  setAct(s < T1 ? 0 : s < T5 ? 1 : 2)
+
+  const el = stackEl.value
+  setVar(el, '--pitch', `${pitch.toFixed(2)}deg`)
+  setVar(el, '--ss', scale.toFixed(3))
+  setVar(el, '--shift', `${shift.toFixed(1)}px`)
+  setVar(el, '--y0', `${y[0].toFixed(1)}px`)
+  setVar(el, '--y1', `${y[1].toFixed(1)}px`)
+  setVar(el, '--y2', `${y[2].toFixed(1)}px`)
+  setVar(el, '--f0', op[0].toFixed(3))
+  setVar(el, '--f1', op[1].toFixed(3))
+  setVar(el, '--f2', op[2].toFixed(3))
+  setVar(el, '--wg', wall.toFixed(3))
+  setVar(el, '--wire', wire.toFixed(3))
+  setVar(el, '--wire-h', `${((2 * stp + blockH()) * wire).toFixed(0)}px`)
+  setVar(el, '--as', `${stp}px`)
 }
 
 /* ---------------------------------- mount ---------------------------------- */
-
-const sceneEl = ref<HTMLElement | null>(null)
 
 let rafId = 0
 let start = 0
@@ -344,20 +370,22 @@ const syncOffscreen = () => {
 const showStaticCuboid = () => {
   typed.value = YTOTAL
   cursorOn.value = false
-  y0.value = -asSpacing()
-  y1.value = 0
-  y2.value = asSpacing()
-  faceOp[0] = 1
-  faceOp[1] = 1
-  faceOp[2] = 1
-  wireOp.value = 1
-  wireH.value = 2 * asSpacing() + blockH()
-  wallOp.value = 1
-  stackPitch.value = asPitch()
-  stackScale.value = cubScale()
-  stackShift.value = cubShift()
-  tileOn.fill(true)
-  chipOn.fill(true)
+  setAct(2)
+  const stp = asSpacing()
+  const el = stackEl.value
+  setVar(el, '--pitch', `${asPitch()}deg`)
+  setVar(el, '--ss', String(cubScale()))
+  setVar(el, '--shift', `${cubShift()}px`)
+  setVar(el, '--y0', `${-stp}px`)
+  setVar(el, '--y1', '0px')
+  setVar(el, '--y2', `${stp}px`)
+  setVar(el, '--f0', '1')
+  setVar(el, '--f1', '1')
+  setVar(el, '--f2', '1')
+  setVar(el, '--wg', '1')
+  setVar(el, '--wire', '1')
+  setVar(el, '--wire-h', `${2 * stp + blockH()}px`)
+  setVar(el, '--as', `${stp}px`)
 }
 
 onMounted(() => {
@@ -365,6 +393,9 @@ onMounted(() => {
   isNarrow.value = mq.matches
   const onMq = (e: MediaQueryListEvent) => {
     isNarrow.value = e.matches
+    // geometry constants derive from isNarrow — repaint the current frame
+    if (reduced) showStaticCuboid()
+    else apply(elapsedSec)
   }
   mq.addEventListener('change', onMq)
   mqCleanup = () => mq.removeEventListener('change', onMq)
@@ -406,21 +437,17 @@ onBeforeUnmount(() => {
     </div>
 
     <div class="si-3d">
-      <div
-        class="si-stack"
-        :style="{'--pitch': `${stackPitch}deg`, '--ss': String(stackScale), '--shift': `${stackShift}px`, '--as': `${asStep}px`, '--wg': String(wallOp)}"
-      >
+      <div ref="stackEl" class="si-stack">
         <!-- dashed corner guides: tie the three layers into one cuboid -->
         <span
           v-for="w in 4"
           :key="`w${w}`"
           class="si-wire"
           :class="[w < 3 ? 'si-wire--l' : 'si-wire--r', w % 2 === 1 ? 'si-wire--f' : 'si-wire--b']"
-          :style="{opacity: wireOp, height: `${wireH}px`, visibility: wireOp > 0 && wireH > 0 ? 'visible' : 'hidden'}"
         />
 
-        <div class="si-plate" :style="{transform: `translate3d(0, ${y0}px, 0)`}">
-          <div class="si-face si-face--yml" :style="{opacity: faceOp[0], visibility: faceOp[0] > 0 ? 'visible' : 'hidden'}">
+        <div class="si-plate si-plate--1">
+          <div class="si-face si-face--yml">
             <div class="si-card__head">
               <span class="si-card__file-dot" />
               <span class="si-card__title si-card__title--mono">serverlessinsight.yml</span>
@@ -437,12 +464,11 @@ onBeforeUnmount(() => {
             :key="`w1-${d}`"
             class="si-wall"
             :class="`si-wall--${d}`"
-            :style="{opacity: wallOp, visibility: wallOp > 0 ? 'visible' : 'hidden'}"
           />
         </div>
 
-        <div class="si-plate" :style="{transform: `translate3d(0, ${y1}px, 0)`}">
-          <div class="si-face si-face--res" :style="{opacity: faceOp[1], visibility: faceOp[1] > 0 ? 'visible' : 'hidden'}">
+        <div class="si-plate si-plate--2">
+          <div class="si-face si-face--res">
             <div class="si-card__head">
               <span class="si-card__title">{{ resTitle }}</span>
             </div>
@@ -451,7 +477,7 @@ onBeforeUnmount(() => {
                 v-for="(r, i) in resourceList"
                 :key="r.key"
                 class="si-res__tile"
-                :style="{'--c': r.color, '--i': i, opacity: tileOn[i] ? 1 : 0}"
+                :style="{'--i': i, opacity: tileOn[i] ? 1 : 0}"
               >
                 <svg v-if="r.key === 'fn'" viewBox="0 0 24 24" aria-hidden="true">
                   <text x="12" y="17.5" text-anchor="middle" font-size="19" font-family="Georgia, 'Times New Roman', serif" font-style="italic" font-weight="700" fill="currentColor">ƒ</text>
@@ -484,12 +510,11 @@ onBeforeUnmount(() => {
             :key="`w2-${d}`"
             class="si-wall"
             :class="`si-wall--${d}`"
-            :style="{opacity: wallOp, visibility: wallOp > 0 ? 'visible' : 'hidden'}"
           />
         </div>
 
-        <div class="si-plate" :style="{transform: `translate3d(0, ${y2}px, 0)`}">
-          <div class="si-face si-face--prov" :style="{opacity: faceOp[2], visibility: faceOp[2] > 0 ? 'visible' : 'hidden'}">
+        <div class="si-plate si-plate--3">
+          <div class="si-face si-face--prov">
             <div class="si-card__head">
               <span class="si-card__title">{{ provTitle }}</span>
             </div>
@@ -509,10 +534,16 @@ onBeforeUnmount(() => {
             :key="`w3-${d}`"
             class="si-wall"
             :class="`si-wall--${d}`"
-            :style="{opacity: wallOp, visibility: wallOp > 0 ? 'visible' : 'hidden'}"
           />
         </div>
       </div>
+    </div>
+
+    <!-- act captions, synced to the state machine -->
+    <div class="si-acts">
+      <span v-for="(label, i) in ACT_LABELS" :key="label" class="si-acts__item" :class="{'is-on': act === i}">
+        <i class="si-acts__n">{{ i + 1 }}</i>{{ label }}
+      </span>
     </div>
   </div>
 </template>
@@ -564,6 +595,18 @@ onBeforeUnmount(() => {
   background: radial-gradient(circle, rgba(143, 106, 231, 0.45), rgba(143, 106, 231, 0) 72%);
 }
 
+.dark .si-blob--a {
+  background: radial-gradient(circle, rgba(143, 106, 231, 0.52), rgba(143, 106, 231, 0) 70%);
+}
+
+.dark .si-blob--b {
+  background: radial-gradient(circle, rgba(102, 64, 191, 0.4), rgba(102, 64, 191, 0) 70%);
+}
+
+.dark .si-blob--c {
+  background: radial-gradient(circle, rgba(143, 106, 231, 0.32), rgba(143, 106, 231, 0) 72%);
+}
+
 @keyframes si-drift {
   0%, 100% { transform: translate(0, 0) scale(1); }
   50% { transform: translate(34px, -26px) scale(1.1); }
@@ -596,7 +639,8 @@ onBeforeUnmount(() => {
 
 /* the stack: ONE pitch variable (-90 typing -> -40 stack view), zero yaw.
    On desktop it shifts left inside the right-half canvas so the 3D scene and
-   the hero text split the main area visually 50/50. */
+   the hero text split the main area visually 50/50. All per-frame motion
+   arrives as custom properties written by the rAF driver. */
 
 .si-stack {
   position: absolute;
@@ -614,8 +658,9 @@ onBeforeUnmount(() => {
   }
 }
 
-/* horizontal plates: content = top face; plates only translate along group Y.
-   NO opacity/filter/will-change here — they would flatten the 3D children. */
+/* horizontal plates: content = top face; plates only translate along group Y
+   via --y0/1/2. NO opacity/filter/will-change here — they would flatten the
+   3D children. */
 
 .si-plate {
   position: absolute;
@@ -626,10 +671,15 @@ onBeforeUnmount(() => {
   transform-style: preserve-3d;
 }
 
+.si-plate--1 { transform: translate3d(0, var(--y0, 0px), 0); }
+.si-plate--2 { transform: translate3d(0, var(--y1, 0px), 0); }
+.si-plate--3 { transform: translate3d(0, var(--y2, 0px), 0); }
+
 /* content face lying flat, normal up in group space (frontal at pitch -90) */
 .si-face {
   --si-text: #1f2937;
   --si-muted: #6b7280;
+  --si-accent: #6640BF;
   position: absolute;
   inset: 0;
   transform: rotateX(90deg);
@@ -645,15 +695,17 @@ onBeforeUnmount(() => {
 .dark .si-face {
   --si-text: #eef2f6;
   --si-muted: #a8b2bd;
+  --si-accent: #A384EB;
   background: linear-gradient(160deg, rgba(58, 65, 78, 0.98), rgba(46, 52, 62, 0.98));
   box-shadow: 0 8px 22px rgba(0, 0, 0, 0.35);
 }
 
-.si-face--yml { padding: 18px 22px 20px; }
+.si-face--yml { padding: 18px 22px 20px; opacity: var(--f0, 1); }
 /* res/prov: title + content cluster at the face center — visible when expanded
    and in the layered cuboid, fully clear of neighbouring plates */
 .si-face--res,
-.si-face--prov { padding: 18px 22px 16px; justify-content: flex-end; gap: 6px; }
+.si-face--prov { padding: 18px 22px 16px; justify-content: flex-end; gap: 6px; opacity: var(--f1, 0); }
+.si-face--prov { opacity: var(--f2, 0); }
 
 .si-card__head {
   display: flex;
@@ -689,11 +741,14 @@ onBeforeUnmount(() => {
 
 /* ------- dashed corner guides (cuboid wireframe) ------- */
 
-/* corner guides: thin, quiet, extending downward from the lid corners */
+/* corner guides: thin, quiet, extending downward from the lid corners;
+   height and opacity arrive via --wire-h / --wire */
 .si-wire {
   position: absolute;
   width: 1.5px;
   top: calc(-1 * var(--as, 280px) - 2px);
+  height: var(--wire-h, 0px);
+  opacity: var(--wire, 0);
   background: repeating-linear-gradient(to bottom, rgba(154, 165, 180, 0.42) 0 5px, transparent 5px 13px);
 }
 
@@ -716,6 +771,7 @@ onBeforeUnmount(() => {
   height: 56px;
   transform-origin: 50% 0;
   backface-visibility: visible;
+  opacity: var(--wg, 0);
 }
 
 .si-wall--f,
@@ -750,7 +806,7 @@ onBeforeUnmount(() => {
 .dark .si-wall--l,
 .dark .si-wall--r {
   background: linear-gradient(to bottom, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.02));
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14), inset 0 -1px 0 rgba(0, 0, 0, 0.3);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), inset 0 -1px 0 rgba(0, 0, 0, 0.3);
 }
 
 /* ------- yaml ------- */
@@ -763,8 +819,7 @@ onBeforeUnmount(() => {
   color: var(--si-text);
 }
 
-.si-tok--key { color: #6640BF; }
-.dark .si-tok--key { color: #A384EB; }
+.si-tok--key { color: var(--si-accent); }
 .si-tok--punct { color: var(--si-muted); }
 .si-tok--val { color: var(--si-text); }
 
@@ -820,7 +875,7 @@ onBeforeUnmount(() => {
 .si-res__tile svg {
   width: 30px;
   height: 30px;
-  color: var(--c);
+  color: var(--si-accent);
 }
 
 .si-res__label {
@@ -860,6 +915,58 @@ onBeforeUnmount(() => {
   width: 38px;
   height: 38px;
   object-fit: contain;
+}
+
+/* ------- act captions ------- */
+
+.si-acts {
+  position: absolute;
+  left: 50%;
+  bottom: 20px;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 22px;
+}
+
+.si-acts__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  color: var(--si-muted, #6b7280);
+  opacity: 0.55;
+  transition: opacity 0.5s ease, color 0.5s ease;
+}
+
+.dark .si-acts__item { color: #a8b2bd; }
+
+.si-acts__item.is-on {
+  opacity: 1;
+  color: #1f2937;
+}
+
+.dark .si-acts__item.is-on { color: #eef2f6; }
+
+.si-acts__n {
+  font-style: normal;
+  font-family: 'SF Mono', ui-monospace, 'Menlo', 'Consolas', monospace;
+  font-size: 10.5px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.45);
+  color: inherit;
+}
+
+.si-acts__item.is-on .si-acts__n {
+  box-shadow: inset 0 0 0 1.5px var(--si-accent, #6640BF);
+  color: var(--si-accent, #6640BF);
 }
 
 /* ------- mobile ------- */
@@ -930,5 +1037,7 @@ onBeforeUnmount(() => {
   .si-blob--a { width: 260px; height: 260px; }
   .si-blob--b { width: 300px; height: 300px; }
   .si-blob--c { width: 240px; height: 240px; }
+
+  .si-acts { bottom: 12px; gap: 16px; }
 }
 </style>

@@ -47,123 +47,83 @@
   --vp-button-brand-hover-border: #ffffff;
 }
 
-/* Hero display text carries no brand color — the wordmark is not a paint can.
-   --vp-home-hero-name-color is VitePress's official knob: its default sets
-   -webkit-text-fill-color to the brand hue, which beats a plain color rule. */
-:root {
-  --vp-home-hero-name-color: var(--vp-c-text-1);
+/* browser chrome themed from the palette: selection and focus inherit the
+   brand hue instead of platform defaults */
+::selection {
+  background: rgba(102, 64, 191, 0.16);
 }
 
-.VPHomeHero .image-container {
-  width: 100%;
-  max-width: 600px;
+.dark ::selection {
+  background: rgba(163, 132, 235, 0.3);
 }
 
-.VPHome {
-  position: relative;
+/* ---- landing page shared primitives (HomeLanding / HomeMatrix) ---- */
+
+.si-wrap {
+  max-width: 1152px;
+  margin: 0 auto;
+  padding: 0 24px;
 }
 
-.VPHomeHero {
-  position: relative;
-  overflow: hidden;
-  min-height: min(900px, 100dvh);
-}
-
-.VPHomeHero .main,
-.VPHomeHero .container {
-  position: relative;
-  z-index: 1;
-}
-
-.VPHomeHero .main {
-  width: min(100%, 780px);
-  max-width: 780px;
-}
-
-.VPHomeHero .text,
-.VPHomeHero .name {
+.si-landing .sec-title {
+  margin: 0;
+  font-size: clamp(1.55rem, 2.8vw, 2.1rem);
+  font-weight: 750;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
   text-wrap: balance;
+  color: var(--vp-c-text-1);
 }
 
-.VPHomeHero .image-container:empty {
-  display: none;
+.si-landing .sec-lead {
+  margin: 16px 0 0;
+  font-size: 15.5px;
+  line-height: 1.8;
+  color: var(--vp-c-text-2);
+  max-width: 62ch;
 }
 
-.VPHomeHero .image-container img {
-  width: 100%;
-  height: auto;
-  max-height: none;
+.si-landing .sec-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 24px;
+  font-size: 14.5px;
+  font-weight: 550;
+  color: var(--vp-c-brand-1);
+  text-decoration: none;
 }
 
-/* ---- hero scene: a mechanical stack, right of the hero text on desktop,
-   a full-width block below the text on mobile ---- */
+.si-landing .sec-link:hover {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
 
-.VPHome .si-hero-scene {
+.si-landing .sec-link__arrow {
+  font-family: var(--vp-font-family-mono);
+  transition: transform 0.25s ease;
+}
+
+.si-landing .sec-link:hover .sec-link__arrow {
+  transform: translateX(3px);
+}
+
+/* ---- hero stage: text left, scene right (>=960px); scene flows below on
+   mobile. The scene canvas is full-bleed to the viewport edge. ---- */
+
+.si-hero__stage {
   position: relative;
-  z-index: 0;
-  width: 100%;
-  height: 400px;
+  height: 620px;
   overflow: hidden;
-  pointer-events: none;
-  opacity: 0.92;
 }
 
 @media (min-width: 960px) {
-  .VPHome .si-hero-scene {
+  .si-hero__stage {
     position: absolute;
     top: 0;
     right: 0;
-    bottom: auto;
+    bottom: 0;
     width: 50%;
-    height: min(900px, 100dvh);
-  }
-}
-
-@media (max-width: 959px) {
-  /* flow the canvas BELOW the hero text — text can never overlap it */
-  .VPHome {
-    display: flex;
-    flex-direction: column;
-  }
-
-  .VPHomeHero {
-    order: 1;
-    min-height: 500px;
-  }
-
-  .VPHome .si-hero-scene {
-    order: 2;
-    height: 620px;
-  }
-
-  .VPHomeFeatures,
-  .VPHomeContent {
-    order: 3;
-  }
-}
-
-/* ---- zh hero title: clean break 全栈 Serverless / 应用平台 ---- */
-
-@media (min-width: 640px) and (max-width: 959px) {
-  html[lang='zh-CN'] .VPHomeHero .text {
-    max-width: 420px;
-  }
-}
-
-@media (min-width: 960px) {
-  html[lang='zh-CN'] .VPHomeHero .text {
-    max-width: 470px;
-  }
-}
-
-@media (min-width: 768px) {
-  .VPHomeHero .image-container {
-    max-width: 700px;
-  }
-}
-
-@media (min-width: 1024px) {
-  .VPHomeHero .image-container {
-    max-width: 800px;
+    height: auto;
   }
 }
