@@ -39,7 +39,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-      deployments: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -64,17 +63,6 @@ jobs:
           ALIYUN_ACCESS_KEY_ID: ${{ secrets.ALIYUN_ACCESS_KEY_ID_PROD }}
           ALIYUN_ACCESS_KEY_SECRET: ${{ secrets.ALIYUN_ACCESS_KEY_SECRET_PROD }}
           ALIYUN_REGION: singapore
-
-      - name: Publish to Cloudflare Pages
-        uses: cloudflare/pages-action@v1
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          projectName: serverlessinsight-site
-          directory: dist
-          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
-          branch: master
-          environment: production
 
   # Job 3: Create Release (only after successful deployment)
   release:
