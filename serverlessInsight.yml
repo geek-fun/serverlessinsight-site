@@ -28,11 +28,11 @@ buckets:
     name: ${stages.site_bucket_name}
     security:
       acl: PUBLIC_READ
+    domain:
+      domain_name: serverlessinsight.com
+      certificate_id: '27507616'
+      protocol: HTTPS
+      www_bind_apex: true
     website:
       code: dist
       index: index.html
-      domain:
-        domain_name: serverlessinsight.com
-        certificate_id: '25778342'
-        protocol: HTTPS
-        www_bind_apex: true
