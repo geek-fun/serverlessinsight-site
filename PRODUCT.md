@@ -37,7 +37,7 @@ ServerlessInsight 是面向国内云厂商的开源 Serverless IaC 工具：用�
 
 ## Brand Commitments
 
-- **品牌口号（2026-09-15 用户重申）**：首页主标题必须使用既有口号「全栈 Serverless 应用平台」/"Full-stack Serverless Application Platform"，tagline「构建全生命周期的跨供应商 Serverless 应用管理，助力快速发展的业务」——不得自创替换
+- **品牌口号（2026-09-19 用户更新）**：首页主标题必须使用「全栈 Serverless 应用开发平台」/"Full-Stack Serverless Development Platform"，tagline「一站式管理跨云 Serverless 应用的开发、部署与运维。」/"One-stop management for the development, deployment and operations of cross-cloud serverless applications."——不得自创替换
 - 仓库 AGENTS.md 的 V3 Mono + Violet 设计系统为硬约束：violet(hue 258) 只拥有链接/活跃导航/小图标/focus/featured CTA；按钮单色（近黑/白）；hero 展示文字中性色；厂商色（Aliyun #FF6A00、腾讯 #0052D9、火山 #025AF9）只属于厂商标识本身；每屏品牌色 ≤10%
 - 双语：root 中文 + `en/` 英文，文案与导航双侧同步
 - 控制台地址常量 `docs/.vitepress/theme/console.ts`；主 CTA「免费开始」指向控制台（用户决策）

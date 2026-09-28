@@ -4,7 +4,7 @@
 [![npm version](https://img.shields.io/npm/v/@geek-fun/serverlessinsight.svg)](https://www.npmjs.com/package/@geek-fun/serverlessinsight)
 [![license](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 
-**全栈 Serverless 应用平台 | Full-stack Serverless Application Platform**
+**全栈 Serverless 应用开发平台 | Full-Stack Serverless Development Platform**
 
 ServerlessInsight 是一个开源的全栈 Serverless 应用开发运维平台，提供全生命周期的跨云供应商 Serverless 应用管理。通过基础设施即代码 (IaC) 的开发实践，屏蔽底层云供应商差异，帮助开发者快速构建、部署、监控和优化 Serverless 应用。
 
