@@ -14,8 +14,8 @@ const t = computed(() => (isZh.value ? ZH : EN))
 const link = (path: string) => (isZh.value ? path : `/en${path}`)
 
 const ZH = {
-  h1: '全栈 Serverless 应用平台',
-  sub: '构建全生命周期的跨供应商 Serverless 应用管理，助力快速发展的业务',
+  h1: '全栈 Serverless 应用开发平台',
+  sub: '一站式管理跨云 Serverless 应用的开发、部署与运维。',
   ctaPrimary: '免费开始',
   ctaSecondary: '快速开始',
   install: 'npm install -g @geek-fun/serverlessinsight',
@@ -76,8 +76,8 @@ const ZH = {
 }
 
 const EN = {
-  h1: 'Full-stack Serverless Application Platform',
-  sub: 'Full lifecycle cross-provider serverless application management for your fast-growing business.',
+  h1: 'Full-Stack Serverless Development Platform',
+  sub: 'One-stop management for the development, deployment and operations of cross-cloud serverless applications.',
   ctaPrimary: 'Start for Free',
   ctaSecondary: 'Get Started',
   install: 'npm install -g @geek-fun/serverlessinsight',

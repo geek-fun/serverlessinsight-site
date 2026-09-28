@@ -2,11 +2,11 @@ import {defineConfig} from 'vitepress'
 import container from 'markdown-it-container'
 
 const siteOrigin = 'https://www.serverlessinsight.com';
-const titleZh = 'ServerlessInsight | 全栈 Serverless 应用开发运维平台';
+const titleZh = 'ServerlessInsight | 全栈 Serverless 应用开发平台';
 const descZh = 'ServerlessInsight 是一个开源的全栈 Serverless 应用开发运维平台，支持跨云开发、部署、监控、调试和优化，并采用基础设施即代码实践。';
 const icon = '/favicon.ico';
 
-const titleEn = 'ServerlessInsight | Full-stack Serverless Development and Operation Platform';
+const titleEn = 'ServerlessInsight | Full-Stack Serverless Development Platform';
 const descEn = 'ServerlessInsight is an open-source full-stack serverless platform for developing, deploying, monitoring, debugging, and optimizing applications across cloud providers with infrastructure as code.';
 const socialImage = '/si-archtecture.drawio.png';
 
