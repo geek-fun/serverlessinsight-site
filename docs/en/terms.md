@@ -88,7 +88,7 @@ The Service is not directed to minors under 18. If you are a minor, please do no
 
 11.5 **Annual plan.** The annual price (billed as ten months) covers twelve months of the plan base fee, effective from the next billing period. The base-fee portion of the annual payment is non-refundable; overage usage is still deducted from your balance.
 
-11.6 **Automatic renewal (optional).** You may enable auto-renewal: during the last 30 days of your coverage, if the balance is sufficient, the annual price is deducted from the prepaid balance and coverage extends by one year. No card is charged and nothing beyond the balance is ever billed. You can disable the option at any time; if the balance is insufficient, auto-renewal simply does not execute and the Service continues on monthly deductions from the balance.
+11.6 **Automatic renewal (on by default).** During the last 30 days of your coverage, if the balance is sufficient, the annual price is deducted from the prepaid balance and coverage extends by one year. No card is charged and nothing beyond the balance is ever billed. You can disable the option at any time from the billing page; if the balance is insufficient, auto-renewal simply does not execute and the Service continues on monthly deductions from the balance.
 
 11.7 **Cancelling an auto-renewed period.** After a successful auto-renewal and before the current coverage ends, you may cancel the renewed period: the annual fee is **returned in full to your prepaid balance**, and coverage rolls back to the previous end date. From the balance, the unconsumed part can then be paid out through the ordinary refund flow. Once the renewed year has begun, whole-period cancellation no longer applies.
 
