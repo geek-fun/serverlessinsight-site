@@ -4,8 +4,12 @@ import {useData} from 'vitepress'
 import {CONSOLE_LOGIN_URL} from '../console'
 import ThemeIcon from './ThemeIcon.vue'
 
+import {ref} from 'vue'
 const {lang} = useData()
 const zh = computed(() => lang.value !== 'en')
+
+// Billing-period toggle — annual is the default landing state (issue #57).
+const billingPeriod = ref<'year' | 'month'>('year')
 
 /**
  * Static pricing snapshot — keep in sync with `conf/*.json` → `billing` in
@@ -35,8 +39,9 @@ const PLANS = [
   {
     key: 'team',
     price: {zh: '$79', en: '$79'},
-    period: {zh: '/月', en: '/mo'},
-    quota: {zh: '含 100 AMR · 年付 $790/年（按 10 个月计费，省 17%）', en: '100 AMR included · Annual $790/yr (billed as 10 months, save 17%)'},
+    priceYear: {zh: '$65.8', en: '$65.8'},
+    periodYear: {zh: '/月 · 按年计费 $790', en: '/mo · $790 billed yearly'},
+    quota: {zh: '含 100 AMR', en: '100 AMR included'},
     featured: true,
     cta: {zh: '升级到 Team', en: 'Upgrade to Team'},
     href: CONSOLE_LOGIN_URL,
@@ -209,8 +214,27 @@ const faq = computed(() => (zh.value ? T.faq.zh : T.faq.en))
     </section>
 
     <!-- plan cards -->
+
+.pp-toggle{display:inline-flex;gap:4px;padding:4px;border:1px solid var(--vp-c-divider);border-radius:999px;margin:0 auto 28px;background:var(--vp-c-bg-soft)}
+.pp-plans{text-align:center}
+.pp-toggle-btn{border:none;background:transparent;color:var(--vp-c-text-2);font-size:14px;font-weight:500;padding:6px 18px;border-radius:999px;cursor:pointer;transition:color .2s, background-color .2s}
+.pp-toggle-btn--on{background:var(--vp-c-bg);color:var(--vp-c-text-1);box-shadow:0 1px 4px rgba(0,0,0,.12)}
+.pp-toggle-save{display:inline-block;margin-left:6px;padding:1px 8px;border-radius:999px;font-size:11px;font-weight:600;color:#fff;background:var(--vp-c-brand-1)}
+.pp-save{margin-top:2px;font-size:13px;color:var(--vp-c-text-2)}
     <section class="pp-plans">
       <h2 class="pp-h2 pp-plans-title">{{ pick(T.planTitle) }}</h2>
+      <div class="pp-toggle" role="group" :aria-label="zh ? '计费周期' : 'Billing period'">
+        <button
+          type="button"
+          :class="['pp-toggle-btn', {'pp-toggle-btn--on': billingPeriod === 'month'}]"
+          @click="billingPeriod = 'month'"
+        >{{ zh ? '月付' : 'Monthly' }}</button>
+        <button
+          type="button"
+          :class="['pp-toggle-btn', {'pp-toggle-btn--on': billingPeriod === 'year'}]"
+          @click="billingPeriod = 'year'"
+        >{{ zh ? '年付' : 'Annual' }}<span class="pp-toggle-save">{{ zh ? '省 17%' : '−17%' }}</span></button>
+      </div>
       <div
         v-for="(plan, i) in PLANS"
         :key="plan.key"
@@ -222,14 +246,23 @@ const faq = computed(() => (zh.value ? T.faq.zh : T.faq.en))
         <h3 class="pp-card-name">{{ plan.key }}</h3>
         <div class="pp-price">
           <template v-if="plan.price">
-            <span class="pp-price-num">{{ pick(plan.price) }}</span>
-            <span class="pp-price-period">{{ pick(plan.period) }}</span>
+            <template v-if="plan.key === 'team' && billingPeriod === 'year'">
+              <span class="pp-price-num">{{ pick(plan.priceYear) }}</span>
+              <span class="pp-price-period">{{ pick(plan.periodYear) }}</span>
+            </template>
+            <template v-else>
+              <span class="pp-price-num">{{ pick(plan.price) }}</span>
+              <span class="pp-price-period">{{ pick(plan.period) }}</span>
+            </template>
           </template>
           <template v-else>
             <span class="pp-price-num">{{ zh ? '联系销售' : 'Contact sales' }}</span>
           </template>
         </div>
         <p class="pp-quota">⚡ {{ pick(plan.quota) }}</p>
+        <p v-if="plan.key === 'team' && billingPeriod === 'year'" class="pp-save">
+          {{ zh ? '一次支付 $790/年，相当于按 10 个月计费 — 省 17%' : 'Pay $790/year — billed as 10 months, save 17%' }}
+        </p>
         <p v-if="plan.key === 'team'" class="pp-worth">{{ pick(TEXT.teamValue) }}</p>
         <ul class="pp-feats">
           <li v-for="f in plan.features(TEXT)" :key="f.text" :class="{'pp-feat--dim': f.dim}">
