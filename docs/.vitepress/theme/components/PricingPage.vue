@@ -57,7 +57,7 @@ const PLANS = [
     quota: {zh: 'AMR 额度按合同约定', en: 'AMR allowance by contract'},
     featured: false,
     cta: {zh: '联系销售', en: 'Contact sales'},
-    href: 'mailto:sales@serverlessinsight.com?subject=Enterprise',
+    href: 'mailto:support@wentsen.com?subject=Enterprise',
     features: (t: typeof TEXT) => [
       {text: pick(t.overageCustom), icon: 'coins'},
       {text: pick(t.membersUnlimited), icon: 'users'},
@@ -324,7 +324,7 @@ const faq = computed(() => (zh.value ? T.faq.zh : T.faq.en))
       <p>{{ pick(T.ctaBandSub) }}</p>
       <div class="pp-ctaband-btns">
         <a class="pp-btn pp-btn--lg" :href="CONSOLE_LOGIN_URL">{{ pick(T.ctaFree) }}</a>
-        <a class="pp-btn pp-btn--ghost pp-btn--lg" href="mailto:sales@serverlessinsight.com">{{ pick(T.ctaContact) }}</a>
+        <a class="pp-btn pp-btn--ghost pp-btn--lg" href="mailto:support@wentsen.com">{{ pick(T.ctaContact) }}</a>
       </div>
     </section>
   </div>

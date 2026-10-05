@@ -290,7 +290,7 @@ si deploy --stage dev --debug
 - 线下现场
 - 录播视频
 
-**联系方式**: training@wentsen.com
+**联系方式**: support@wentsen.com
 
 ## 咨询服务
 
@@ -327,7 +327,7 @@ si deploy --stage dev --debug
 5. **效果验证** - 验证改进效果
 6. **持续优化** - 根据反馈持续改进
 
-**联系方式**: consulting@wentsen.com
+**联系方式**: support@wentsen.com
 
 ## 反馈与建议
 
@@ -337,7 +337,7 @@ si deploy --stage dev --debug
 
 - **产品建议**: [GitHub Discussions](https://github.com/geek-fun/serverlessinsight/discussions)
 - **Bug 报告**: [GitHub Issues](https://github.com/geek-fun/serverlessinsight/issues)
-- **邮件反馈**: feedback@wentsen.com
+- **邮件反馈**: support@wentsen.com
 
 ### 反馈处理流程
 
@@ -367,10 +367,10 @@ si deploy --stage dev --debug
 | 部门 | 邮箱 | 用途 |
 |------|------|------|
 | 技术支持 | support@wentsen.com | 一般技术咨询 |
-| 销售咨询 | sales@wentsen.com | 商业支持和培训咨询 |
-| 培训服务 | training@wentsen.com | 培训课程报名 |
-| 咨询服务 | consulting@wentsen.com | 架构咨询服务 |
-| 产品反馈 | feedback@wentsen.com | 产品建议和反馈 |
+| 销售咨询 | support@wentsen.com | 商业支持和培训咨询 |
+| 培训服务 | support@wentsen.com | 培训课程报名 |
+| 咨询服务 | support@wentsen.com | 架构咨询服务 |
+| 产品反馈 | support@wentsen.com | 产品建议和反馈 |
 | 商务合作 | partnership@wentsen.com | 商务合作洽谈 |
 
 ## 服务等级协议 (SLA)

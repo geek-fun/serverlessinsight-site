@@ -287,7 +287,7 @@ We offer training courses for different roles:
 
 **Formats**: Live online, on-site, recorded videos
 
-**Contact**: training@wentsen.com
+**Contact**: support@wentsen.com
 
 ## Consulting Services
 
@@ -324,7 +324,7 @@ We offer professional serverless architecture consulting:
 5. **Validation** - Verify improvements
 6. **Optimization** - Continuous iteration
 
-**Contact**: consulting@wentsen.com
+**Contact**: support@wentsen.com
 
 ## Feedback
 
@@ -334,7 +334,7 @@ We value your feedback to improve the product:
 
 - **Feature requests**: [GitHub Discussions](https://github.com/geek-fun/serverlessinsight/discussions)
 - **Bug reports**: [GitHub Issues](https://github.com/geek-fun/serverlessinsight/issues)
-- **Email feedback**: feedback@wentsen.com
+- **Email feedback**: support@wentsen.com
 
 ### Process
 
@@ -364,10 +364,6 @@ We value your feedback to improve the product:
 | Department | Email | Purpose |
 |------------|-------|---------|
 | Technical Support | support@wentsen.com | General technical inquiries |
-| Sales | sales@wentsen.com | Commercial support and training |
-| Training | training@wentsen.com | Course registration |
-| Consulting | consulting@wentsen.com | Architecture consulting |
-| Product Feedback | feedback@wentsen.com | Suggestions and feedback |
 | Partnerships | partnership@wentsen.com | Business partnerships |
 
 ## Service Level Agreement (SLA)
