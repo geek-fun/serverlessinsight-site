@@ -104,7 +104,7 @@ const COVERS = [
 ]
 
 const TEXT = {
-  overageDev: {zh: '超出后 $2 / AMR（需绑卡）', en: '$2 / AMR beyond quota (card required)'},
+  overageDev: {zh: '超出后 $2 / AMR（需预存余额）', en: '$2 / AMR beyond quota (prepaid balance required)'},
   overageTeam: {zh: '超出后 $1 / AMR', en: '$1 / AMR beyond quota'},
   overageCustom: {zh: '超额单价按合同约定', en: 'Custom overage rate'},
   members1: {zh: '1 名成员（硬配额）', en: '1 member (hard quota)'},
@@ -169,11 +169,11 @@ const T = ({
   faqTitle: {zh: '常见问题', en: 'FAQ'},
   faq: {
     zh: [
-      ['Developer 版真的免费吗？', '是的 — 免费额度内（10 AMR、1 成员、1 工作区）永久免费，无需绑卡。超出后可绑卡按量付费，或设置预算硬上限控制成本。'],
+      ['Developer 版真的免费吗？', '是的 — 免费额度内（10 AMR、1 成员、1 工作区）永久免费，无需预付。超出后可充值余额按量扣费，或设置预算硬上限控制成本。'],
       ['什么时候升级 Team 更划算？', 'Team $79/月含 100 AMR — 按 Developer 按量价（$2/AMR）折算价值 $200。当月账单接近 $63（Team 的 80%）时控制台会自动提示升级；超出后每 AMR 仅 $1，是 Developer 的一半。'],
       ['不绑卡如何付款？', '支持在线支付：在控制台发起充值/升级，通过 Checkout 页用国际信用卡或常见钱包完成支付，余额实时到账。'],
-      ['免费额度用完又不绑卡会怎样？', '不会有任何破坏。现有资源继续运行，但当 AMR 用量（含超额工作区）超过免费额度后，新部署将被阻断，直到绑卡恢复按量付费。成员是硬配额：Developer 第 2 名成员需要升级。'],
-      ['可以降级回 Developer 吗？', '可以 — 在控制台 Billing 页自助操作，次月 1 日生效。届时若用量超出免费额度且未绑卡，新部署将被阻断。'],
+      ['免费额度用完又不充值会怎样？', '不会有任何破坏。现有资源继续运行，但当 AMR 用量（含超额工作区）超过免费额度后，新部署将被暂停；充值余额后自动恢复。成员是硬配额：Developer 第 2 名成员需要升级。'],
+      ['可以降级回 Developer 吗？', '可以 — 在控制台 Billing 页自助操作，次月 1 日生效。届时若用量超出免费额度且余额不足，新部署将被暂停；充值后自动恢复。'],
     ],
     en: [
       ['Is the Developer plan really free?', 'Yes — within the free quota (10 AMR, 1 member, 1 workspace) it is free forever, no credit card needed. Beyond the quota: bind a payment method for pay-as-you-go, or set a hard budget cap.'],
