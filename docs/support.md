@@ -35,6 +35,13 @@ ServerlessInsight 提供多种支持渠道，帮助您解决使用过程中遇�
 - **用途**: 一般咨询、合作洽谈
 - **响应时间**: 2-5 个工作日
 
+### 支付与账单支持 (Billing & Payments)
+
+- **邮箱**: [support@wentsen.com](mailto:support@wentsen.com)
+- **用途**: 充值、扣款、发票收据、退款等账单类问题
+- **响应时间**: 3 个工作日内（计费争议期间相应余额不受影响）
+- **退款政策**: [refund-policy](./refund-policy)
+
 ### 商业支持 (付费)
 
 我们为企业用户提供专业的商业支持服务：

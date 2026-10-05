@@ -35,6 +35,13 @@ We encourage users to get help and share experiences through community channels:
 - **Purpose**: General inquiries, partnership discussions
 - **Response time**: 2-5 business days
 
+### Billing & Payments Support
+
+- **Email**: [support@wentsen.com](mailto:support@wentsen.com)
+- **Scope**: topups, charges, receipts/invoices, refunds
+- **Response time**: within 3 business days (affected balances stay intact during billing disputes)
+- **Refund policy**: [refund-policy](/en/refund-policy)
+
 ### Commercial Support (Paid)
 
 We offer professional support services for enterprise users:

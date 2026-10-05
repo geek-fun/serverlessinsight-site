@@ -15,7 +15,7 @@ const zh = computed(() => lang.value !== 'en')
 const PLANS = [
   {
     key: 'developer',
-    price: {zh: '¥0', en: '¥0'},
+    price: {zh: '$0', en: '$0'},
     period: {zh: '/月', en: '/mo'},
     quota: {zh: '含 10 AMR', en: '10 AMR included'},
     featured: false,
@@ -34,7 +34,7 @@ const PLANS = [
   },
   {
     key: 'team',
-    price: {zh: '¥399', en: '¥399'},
+    price: {zh: '$79', en: '$79'},
     period: {zh: '/月', en: '/mo'},
     quota: {zh: '含 100 AMR', en: '100 AMR included'},
     featured: true,
@@ -104,8 +104,8 @@ const COVERS = [
 ]
 
 const TEXT = {
-  overageDev: {zh: '超出后 ¥10 / AMR（需绑卡）', en: '¥10 / AMR beyond quota (card required)'},
-  overageTeam: {zh: '超出后 ¥5 / AMR', en: '¥5 / AMR beyond quota'},
+  overageDev: {zh: '超出后 $2 / AMR（需绑卡）', en: '$2 / AMR beyond quota (card required)'},
+  overageTeam: {zh: '超出后 $1 / AMR', en: '$1 / AMR beyond quota'},
   overageCustom: {zh: '超额单价按合同约定', en: 'Custom overage rate'},
   members1: {zh: '1 名成员（硬配额）', en: '1 member (hard quota)'},
   members10: {zh: '10 名成员（硬配额）', en: '10 members (hard quota)'},
@@ -124,8 +124,8 @@ const TEXT = {
   supportTicket: {zh: '工单支持 · 1 个工作日', en: 'Tickets · 1 business day'},
   supportTam: {zh: '专属 TAM · 7×24', en: 'Dedicated TAM · 7×24'},
   teamValue: {
-    zh: '含 100 AMR — 按 Developer 按量价折算价值 ¥1,000，仅需 ¥399',
-    en: '100 AMR included — worth ¥1,000 at Developer pay-as-you-go rates, only ¥399',
+    zh: '含 100 AMR — 按 Developer 按量价折算价值 $200，仅需 $79',
+    en: '100 AMR included — worth $200 at Developer pay-as-you-go rates, only $79',
   },
 }
 
@@ -142,7 +142,7 @@ const T = ({
   amrCol: {zh: 'AMR / 实例 · 月', en: 'AMR / instance · mo'},
   free: {zh: '免费', en: 'Free'},
   zeroGroup: {zh: '0 AMR — 以下永远免费', en: '0 AMR — the ones below are always free'},
-  amrNote: {zh: '超出额度后 1 AMR 单价：Developer ¥10 · Team ¥5；免费额度内 ¥0。', en: '1 AMR beyond quota: Developer ¥10 · Team ¥5 — ¥0 within the free quota.'},
+  amrNote: {zh: '超出额度后 1 AMR 单价：Developer $2 · Team $1；免费额度内 $0。价格以美元（USD）计。', en: '1 AMR beyond quota: Developer $2 · Team $1 — $0 within the free quota. Prices in USD.'},
   enterpriseNote: {zh: 'Enterprise 单价按合同约定（≤ 目录价）。', en: 'Enterprise rates are contract-defined (at or below list price).'},
   coversTitle: {zh: '1 个 AMR 可以是什么', en: 'What one AMR covers'},
   coversIntro: {zh: '1 个 AMR 可兑换以下任意一项（按月计）。', en: 'Each AMR covers any one of the below for a month.'},
@@ -170,15 +170,15 @@ const T = ({
   faq: {
     zh: [
       ['Developer 版真的免费吗？', '是的 — 免费额度内（10 AMR、1 成员、1 工作区）永久免费，无需绑卡。超出后可绑卡按量付费，或设置预算硬上限控制成本。'],
-      ['什么时候升级 Team 更划算？', 'Team ¥399/月含 100 AMR — 按 Developer 按量价（¥10/AMR）折算价值 ¥1,000。当月账单接近 ¥319（Team 的 80%）时控制台会自动提示升级；超出后每 AMR 仅 ¥5，是 Developer 的一半。'],
-      ['不绑卡如何付款？', '当前采用人工收款：提交订单后按收款说明转账，由平台确认。自动化支付通道在后续版本接入。'],
+      ['什么时候升级 Team 更划算？', 'Team $79/月含 100 AMR — 按 Developer 按量价（$2/AMR）折算价值 $200。当月账单接近 $63（Team 的 80%）时控制台会自动提示升级；超出后每 AMR 仅 $1，是 Developer 的一半。'],
+      ['不绑卡如何付款？', '支持在线支付：在控制台发起充值/升级，通过 Checkout 页用国际信用卡或常见钱包完成支付，余额实时到账。'],
       ['免费额度用完又不绑卡会怎样？', '不会有任何破坏。现有资源继续运行，但当 AMR 用量（含超额工作区）超过免费额度后，新部署将被阻断，直到绑卡恢复按量付费。成员是硬配额：Developer 第 2 名成员需要升级。'],
       ['可以降级回 Developer 吗？', '可以 — 在控制台 Billing 页自助操作，次月 1 日生效。届时若用量超出免费额度且未绑卡，新部署将被阻断。'],
     ],
     en: [
       ['Is the Developer plan really free?', 'Yes — within the free quota (10 AMR, 1 member, 1 workspace) it is free forever, no credit card needed. Beyond the quota: bind a payment method for pay-as-you-go, or set a hard budget cap.'],
-      ['When does upgrading to Team pay off?', 'Team costs ¥399/month with 100 AMR included — worth ¥1,000 at the Developer pay-as-you-go rate (¥10/AMR). When your monthly bill approaches ¥319 (80% of Team), the console suggests upgrading; beyond the included 100 AMR each additional AMR is only ¥5.'],
-      ['How does payment work without a card?', 'Payments are confirmed manually for now: submit the order, transfer following the provided instructions, and the platform confirms receipt. Automated payment channels land in a later release.'],
+      ['When does upgrading to Team pay off?', 'Team costs $79/month with 100 AMR included — worth $200 at the Developer pay-as-you-go rate ($2/AMR). When your monthly bill approaches $63 (80% of Team), the console suggests upgrading; beyond the included 100 AMR each additional AMR is only $1.'],
+      ['How does payment work without a card?', 'Online payment is built in: start a topup or upgrade in the console and pay on the hosted Checkout page with an international card or a common wallet — the balance is credited instantly.'],
       ['What happens when I hit the free quota without paying?', 'Nothing breaks. Existing resources keep running, but new deployments are blocked once AMR usage (including extra workspaces) passes the free quota until a payment method is bound. Members are a hard quota: the 2nd Developer member needs an upgrade.'],
       ['Can I downgrade back to Developer?', 'Yes — self-service from the console Billing tab, effective the first day of the next month. If usage then exceeds the free quota without a bound card, new deployments are blocked.'],
     ],
@@ -296,7 +296,7 @@ const faq = computed(() => (zh.value ? T.faq.zh : T.faq.en))
         <div class="pp-rule-card">
           <h3 class="pp-h3icon"><ThemeIcon name="calculator" :size="15" /> {{ zh ? '算一笔账' : 'Worked example' }}</h3>
           <p class="pp-example">1 × {{ zh ? '函数' : 'function' }} + 1 × {{ zh ? '桶' : 'bucket' }} + 1 × {{ zh ? '数据表' : 'table' }} = 3 AMR</p>
-          <p class="pp-note">{{ zh ? 'Developer 免费额度 10 AMR/月内为 ¥0；超出后按版本单价计费。' : '¥0 within the Developer free quota of 10 AMR/mo; beyond it the plan rate applies.' }}</p>
+          <p class="pp-note">{{ zh ? 'Developer 免费额度 10 AMR/月内为 $0；超出后按版本单价计费。价格以美元（USD）计。' : '$0 within the Developer free quota of 10 AMR/mo; beyond it the plan rate applies. Prices in USD.' }}</p>
         </div>
         <div class="pp-rule-card">
           <h3 class="pp-h3icon"><ThemeIcon name="list-checks" :size="15" /> {{ pick(T.rulesTitle) }}</h3>
