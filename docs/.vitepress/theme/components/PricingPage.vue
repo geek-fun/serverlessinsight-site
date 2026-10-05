@@ -217,6 +217,7 @@ const faq = computed(() => (zh.value ? T.faq.zh : T.faq.en))
 
     <section class="pp-plans">
       <h2 class="pp-h2 pp-plans-title">{{ pick(T.planTitle) }}</h2>
+      <div class="pp-toggle-wrap" role="group" :aria-label="zh ? '计费周期' : 'Billing period'">
       <div class="pp-toggle" role="group" :aria-label="zh ? '计费周期' : 'Billing period'">
         <button
           type="button"
@@ -228,6 +229,7 @@ const faq = computed(() => (zh.value ? T.faq.zh : T.faq.en))
           :class="['pp-toggle-btn', {'pp-toggle-btn--on': billingPeriod === 'year'}]"
           @click="billingPeriod = 'year'"
         >{{ zh ? '年付' : 'Annual' }}<span class="pp-toggle-save">{{ zh ? '省 17%' : '−17%' }}</span></button>
+      </div>
       </div>
       <div
         v-for="(plan, i) in PLANS"
@@ -360,7 +362,8 @@ const faq = computed(() => (zh.value ? T.faq.zh : T.faq.en))
 </template>
 
 <style scoped>
-.pp-toggle{display:inline-flex;gap:4px;padding:4px;border:1px solid var(--vp-c-divider);border-radius:999px;margin:0 auto 28px;background:var(--vp-c-bg-soft)}
+.pp-toggle-wrap{grid-column: 1 / -1; display: flex; justify-content: center; margin-bottom: 8px}
+.pp-toggle{display:inline-flex;gap:4px;padding:4px;border:1px solid var(--vp-c-divider);border-radius:999px;background:var(--vp-c-bg-soft)}
 .pp-toggle-btn{border:none;background:transparent;color:var(--vp-c-text-2);font-size:14px;font-weight:500;padding:6px 18px;border-radius:999px;cursor:pointer;transition:color .2s, background-color .2s}
 .pp-toggle-btn--on{background:var(--vp-c-bg);color:var(--vp-c-text-1);box-shadow:0 1px 4px rgba(0,0,0,.12)}
 .pp-toggle-save{display:inline-block;margin-left:6px;padding:1px 8px;border-radius:999px;font-size:11px;font-weight:600;color:#fff;background:var(--vp-c-brand-1)}
