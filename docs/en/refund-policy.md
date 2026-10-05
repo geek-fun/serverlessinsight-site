@@ -25,6 +25,10 @@ Your **refundable amount** equals the part of your balance that is:
 
 minus any refund requests currently in progress. The exact refundable amount is shown in the console before you submit a refund request. **Already-consumed usage and invoiced top-ups are non-refundable.**
 
+## 2a. Annual Plan
+
+The annual fee covers 12 months of the plan base fee and **the base-fee portion is non-refundable** (this is the consideration for the "billed as 10 months" discount); overage usage still bills from your balance, and the unconsumed, un-invoiced part of that balance remains refundable under this policy. Billing errors are corrected unconditionally.
+
 ## 3. Arrears Come First
 
 If your account is in arrears (a monthly bill exceeded the available balance), the arrears are settled — or deducted from the refund — before any refund is paid out.
