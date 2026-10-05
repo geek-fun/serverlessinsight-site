@@ -521,7 +521,7 @@ AI 模型部署和推理服务。
 ### 提交方式
 
 - **GitHub**: 创建 Pull Request 到 [案例目录](https://github.com/geek-fun/serverlessinsight-site/tree/main/docs/case-study)
-- **邮件**: 发送至 case-studies@geekfun.club
+- **邮件**: 发送至 case-studies@wentsen.com
 - **表单**: 在线提交表单（即将上线）
 
 ### 案例模板

@@ -580,7 +580,7 @@ stages:
 
 - **报告问题**: [GitHub Issues](https://github.com/geek-fun/serverlessinsight/issues)
 - **贡献代码**: [GitHub Pull Requests](https://github.com/geek-fun/serverlessinsight/pulls)
-- **联系支持**: support@geekfun.club
+- **联系支持**: support@wentsen.com
 
 ### Q: 有社区或论坛吗？
 
@@ -600,7 +600,7 @@ stages:
    - 社区论坛
 
 2. **商业支持** (付费)
-   - 邮件支持：support@geekfun.club
+   - 邮件支持：support@wentsen.com
    - 定制开发和咨询服务
 
 ---
@@ -611,6 +611,6 @@ stages:
 
 1. 查看 [GitHub Issues](https://github.com/geek-fun/serverlessinsight/issues) 是否有类似问题
 2. 在 [GitHub Discussions](https://github.com/geek-fun/serverlessinsight/discussions) 提问
-3. 发送邮件至 support@geekfun.club
+3. 发送邮件至 support@wentsen.com
 
 我们会持续更新本文档，欢迎贡献你的问题和解答！

@@ -75,7 +75,7 @@ Documentation improvements are always welcome! This includes:
 
 If you have questions about contributing, feel free to:
 - Open an issue on GitHub
-- Contact us at support@geekfun.club
+- Contact us at support@wentsen.com
 - Reach out on Twitter [@Blankll31075](https://x.com/Blankll31075)
 
 Thank you for contributing to ServerlessInsight! 🎉
