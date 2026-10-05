@@ -29,6 +29,12 @@ const T = computed(() =>
           x: 'X (Twitter)',
           youtube: 'YouTube'
         },
+        legal: 'Legal',
+        legalLinks: { terms: 'Terms of Service', privacy: 'Privacy Policy', refund: 'Refund Policy' },
+        supportEmail: 'support@wentsen.com',
+        legal: '法务',
+        legalLinks: { terms: '服务条款', privacy: '隐私政策', refund: '退款政策' },
+        supportEmail: 'support@wentsen.com',
         deployed: '本站由 ServerlessInsight 部署',
         license: 'Apache-2.0 License'
       }
@@ -51,6 +57,9 @@ const T = computed(() =>
           x: 'X (Twitter)',
           youtube: 'YouTube'
         },
+        legal: '法务',
+        legalLinks: { terms: '服务条款', privacy: '隐私政策', refund: '退款政策' },
+        supportEmail: 'support@wentsen.com',
         deployed: 'This site is deployed with ServerlessInsight',
         license: 'Apache-2.0 License'
       }
@@ -98,6 +107,13 @@ const GITHUB_URL = 'https://github.com/geek-fun/serverlessinsight'
           <a :href="link('/support')">{{ T.links.support }}</a>
         </nav>
 
+        <nav class="sf-col" :aria-label="T.legal">
+          <h3 class="sf-col__title">{{ T.legal }}</h3>
+          <a :href="link('/terms')">{{ T.legalLinks.terms }}</a>
+          <a :href="link('/privacy')">{{ T.legalLinks.privacy }}</a>
+          <a :href="link('/refund-policy')">{{ T.legalLinks.refund }}</a>
+        </nav>
+
         <nav class="sf-col" :aria-label="T.community">
           <h3 class="sf-col__title">{{ T.community }}</h3>
           <a :href="GITHUB_URL" target="_blank" rel="noopener">{{ T.links.github }}</a>
@@ -109,6 +125,7 @@ const GITHUB_URL = 'https://github.com/geek-fun/serverlessinsight'
 
       <div class="sf-bottom">
         <span>© 2026 geek-fun · {{ T.license }}</span>
+        <a class="sf-support" :href="`mailto:${T.supportEmail}`">{{ T.supportEmail }}</a>
         <span class="sf-deployed">{{ T.deployed }}</span>
       </div>
     </div>
