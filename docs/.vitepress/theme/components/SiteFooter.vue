@@ -35,8 +35,7 @@ const T = computed(() =>
         legal: '法务',
         legalLinks: { terms: '服务条款', privacy: '隐私政策', refund: '退款政策' },
         supportEmail: 'support@wentsen.com',
-        deployed: '本站由 ServerlessInsight 部署',
-        license: 'Apache-2.0 License'
+        deployed: '本站由 ServerlessInsight 部署'
       }
     : {
         tagline: 'Open-source declarative serverless IaC — from functions to storage, your whole app in one file.',
@@ -60,12 +59,13 @@ const T = computed(() =>
         legal: '法务',
         legalLinks: { terms: '服务条款', privacy: '隐私政策', refund: '退款政策' },
         supportEmail: 'support@wentsen.com',
-        deployed: 'This site is deployed with ServerlessInsight',
-        license: 'Apache-2.0 License'
+        deployed: 'This site is deployed with ServerlessInsight'
       }
 )
 
 const GITHUB_URL = 'https://github.com/geek-fun/serverlessinsight'
+// Build-time year is fine for a static site.
+const year = new Date().getFullYear()
 </script>
 
 <template>
@@ -124,7 +124,7 @@ const GITHUB_URL = 'https://github.com/geek-fun/serverlessinsight'
       </div>
 
       <div class="sf-bottom">
-        <span>© 2026 geek-fun · {{ T.license }}</span>
+        <span>© {{ year }} ServerlessInsight</span>
         <a class="sf-support" :href="`mailto:${T.supportEmail}`">{{ T.supportEmail }}</a>
         <span class="sf-deployed">{{ T.deployed }}</span>
       </div>
