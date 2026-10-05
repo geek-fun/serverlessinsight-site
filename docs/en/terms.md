@@ -84,7 +84,9 @@ The Service is not directed to minors under 18. If you are a minor, please do no
 
 11.3 **Billing cycle.** On the billing closing day of each month, the previous month's bill is charged to your balance. If the balance is insufficient, the shortfall is recorded as arrears: existing resources keep running, new resource creation is paused, and your next top-up is applied to the arrears first. Your balance can never go negative.
 
-11.4 **Plan changes.** Upgrades take effect immediately after a balance check covering the prorated current month. Downgrades are scheduled and take effect at the start of the next billing period. There is **no automatic subscription renewal**: the next period is charged to your prepaid balance only.
+11.4 **Plan changes.** Upgrades take effect immediately after a balance check covering the prorated current month. Downgrades are scheduled and take effect at the start of the next billing period — the fee already deducted for the current period is non-refundable, and your benefits for that period remain intact. There is **no automatic subscription renewal**: the next period is charged to your prepaid balance only.
+
+11.5 **Annual plan.** The annual price (billed as ten months) covers twelve months of the plan base fee, effective from the next billing period. The base-fee portion of the annual payment is non-refundable; overage usage is still deducted from your balance.
 
 11.5 **Balance validity.** Your prepaid balance does not expire.
 

@@ -25,7 +25,11 @@ Your **refundable amount** equals the part of your balance that is:
 
 minus any refund requests currently in progress. The exact refundable amount is shown in the console before you submit a refund request. **Already-consumed usage and invoiced top-ups are non-refundable.**
 
-## 2a. Annual Plan
+## 2a. Plan Fees Are Non-Refundable; Cancellation
+
+The Team plan fee is deducted from your balance per billing period and covers that period. **Once deducted, a period's plan fee is non-refundable.** Downgrading to Developer takes effect from the first day of the next billing period — your Team benefits remain intact until the end of the current period, and the unconsumed part of your balance remains refundable under this policy. Annual coverage needs no cancellation: there is no automatic renewal, benefits simply run until the coverage end date, and unused covered months are not refundable (see the clause below).
+
+## 2c. Annual Plan
 
 The annual fee covers 12 months of the plan base fee and **the base-fee portion is non-refundable** (this is the consideration for the "billed as 10 months" discount); overage usage still bills from your balance, and the unconsumed, un-invoiced part of that balance remains refundable under this policy. Billing errors are corrected unconditionally.
 
