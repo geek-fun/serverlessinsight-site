@@ -517,7 +517,7 @@ Your case study should include:
 ### How to Submit
 
 - **GitHub**: Create a Pull Request to the [case-studies directory](https://github.com/geek-fun/serverlessinsight-site/tree/main/docs/case-study)
-- **Email**: Send to case-studies@geekfun.club
+- **Email**: Send to support@wentsen.com
 
 ### Case Template
 

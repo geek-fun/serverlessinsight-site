@@ -492,7 +492,7 @@ Deploy to a specific environment with `si deploy --stage dev`.
 
 - **Report a bug**: [GitHub Issues](https://github.com/geek-fun/serverlessinsight/issues)
 - **Submit code**: [GitHub Pull Requests](https://github.com/geek-fun/serverlessinsight/pulls)
-- **Email support**: support@geekfun.club
+- **Email support**: support@wentsen.com
 
 ### Q: Is there a community?
 
@@ -511,7 +511,7 @@ Deploy to a specific environment with `si deploy --stage dev`.
    - GitHub Discussions
 
 2. **Commercial support**
-   - Email: support@geekfun.club
+   - Email: support@wentsen.com
    - Custom development and consulting available
 
 ---
@@ -522,6 +522,6 @@ If this page doesn't cover your question:
 
 1. Search [GitHub Issues](https://github.com/geek-fun/serverlessinsight/issues) for similar problems
 2. Ask on [GitHub Discussions](https://github.com/geek-fun/serverlessinsight/discussions)
-3. Email support@geekfun.club
+3. Email support@wentsen.com
 
 This document is continuously updated. Contributions of questions and answers are welcome.

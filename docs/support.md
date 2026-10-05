@@ -31,7 +31,7 @@ ServerlessInsight 提供多种支持渠道，帮助您解决使用过程中遇�
   - 最佳实践分享
 
 #### 邮件支持
-- **邮箱**: support@geekfun.club
+- **邮箱**: support@wentsen.com
 - **用途**: 一般咨询、合作洽谈
 - **响应时间**: 2-5 个工作日
 
@@ -290,7 +290,7 @@ si deploy --stage dev --debug
 - 线下现场
 - 录播视频
 
-**联系方式**: training@geekfun.club
+**联系方式**: support@wentsen.com
 
 ## 咨询服务
 
@@ -327,7 +327,7 @@ si deploy --stage dev --debug
 5. **效果验证** - 验证改进效果
 6. **持续优化** - 根据反馈持续改进
 
-**联系方式**: consulting@geekfun.club
+**联系方式**: support@wentsen.com
 
 ## 反馈与建议
 
@@ -337,7 +337,7 @@ si deploy --stage dev --debug
 
 - **产品建议**: [GitHub Discussions](https://github.com/geek-fun/serverlessinsight/discussions)
 - **Bug 报告**: [GitHub Issues](https://github.com/geek-fun/serverlessinsight/issues)
-- **邮件反馈**: feedback@geekfun.club
+- **邮件反馈**: support@wentsen.com
 
 ### 反馈处理流程
 
@@ -366,12 +366,12 @@ si deploy --stage dev --debug
 
 | 部门 | 邮箱 | 用途 |
 |------|------|------|
-| 技术支持 | support@geekfun.club | 一般技术咨询 |
-| 销售咨询 | sales@geekfun.club | 商业支持和培训咨询 |
-| 培训服务 | training@geekfun.club | 培训课程报名 |
-| 咨询服务 | consulting@geekfun.club | 架构咨询服务 |
-| 产品反馈 | feedback@geekfun.club | 产品建议和反馈 |
-| 商务合作 | partnership@geekfun.club | 商务合作洽谈 |
+| 技术支持 | support@wentsen.com | 一般技术咨询 |
+| 销售咨询 | support@wentsen.com | 商业支持和培训咨询 |
+| 培训服务 | support@wentsen.com | 培训课程报名 |
+| 咨询服务 | support@wentsen.com | 架构咨询服务 |
+| 产品反馈 | support@wentsen.com | 产品建议和反馈 |
+| 商务合作 | partnership@wentsen.com | 商务合作洽谈 |
 
 ## 服务等级协议 (SLA)
 

@@ -31,7 +31,7 @@ We encourage users to get help and share experiences through community channels:
   - Best practice sharing
 
 #### Email Support
-- **Email**: support@geekfun.club
+- **Email**: support@wentsen.com
 - **Purpose**: General inquiries, partnership discussions
 - **Response time**: 2-5 business days
 
@@ -287,7 +287,7 @@ We offer training courses for different roles:
 
 **Formats**: Live online, on-site, recorded videos
 
-**Contact**: training@geekfun.club
+**Contact**: support@wentsen.com
 
 ## Consulting Services
 
@@ -324,7 +324,7 @@ We offer professional serverless architecture consulting:
 5. **Validation** - Verify improvements
 6. **Optimization** - Continuous iteration
 
-**Contact**: consulting@geekfun.club
+**Contact**: support@wentsen.com
 
 ## Feedback
 
@@ -334,7 +334,7 @@ We value your feedback to improve the product:
 
 - **Feature requests**: [GitHub Discussions](https://github.com/geek-fun/serverlessinsight/discussions)
 - **Bug reports**: [GitHub Issues](https://github.com/geek-fun/serverlessinsight/issues)
-- **Email feedback**: feedback@geekfun.club
+- **Email feedback**: support@wentsen.com
 
 ### Process
 
@@ -363,12 +363,8 @@ We value your feedback to improve the product:
 
 | Department | Email | Purpose |
 |------------|-------|---------|
-| Technical Support | support@geekfun.club | General technical inquiries |
-| Sales | sales@geekfun.club | Commercial support and training |
-| Training | training@geekfun.club | Course registration |
-| Consulting | consulting@geekfun.club | Architecture consulting |
-| Product Feedback | feedback@geekfun.club | Suggestions and feedback |
-| Partnerships | partnership@geekfun.club | Business partnerships |
+| Technical Support | support@wentsen.com | General technical inquiries |
+| Partnerships | partnership@wentsen.com | Business partnerships |
 
 ## Service Level Agreement (SLA)
 
