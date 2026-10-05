@@ -34,7 +34,7 @@ const PLANS = [
   },
   {
     key: 'team',
-    price: {zh: '$49', en: '$49'},
+    price: {zh: '$79', en: '$79'},
     period: {zh: '/月', en: '/mo'},
     quota: {zh: '含 100 AMR', en: '100 AMR included'},
     featured: true,
@@ -124,8 +124,8 @@ const TEXT = {
   supportTicket: {zh: '工单支持 · 1 个工作日', en: 'Tickets · 1 business day'},
   supportTam: {zh: '专属 TAM · 7×24', en: 'Dedicated TAM · 7×24'},
   teamValue: {
-    zh: '含 100 AMR — 按 Developer 按量价折算价值 $200，仅需 $49',
-    en: '100 AMR included — worth $200 at Developer pay-as-you-go rates, only $49',
+    zh: '含 100 AMR — 按 Developer 按量价折算价值 $200，仅需 $79',
+    en: '100 AMR included — worth $200 at Developer pay-as-you-go rates, only $79',
   },
 }
 
@@ -170,14 +170,14 @@ const T = ({
   faq: {
     zh: [
       ['Developer 版真的免费吗？', '是的 — 免费额度内（10 AMR、1 成员、1 工作区）永久免费，无需绑卡。超出后可绑卡按量付费，或设置预算硬上限控制成本。'],
-      ['什么时候升级 Team 更划算？', 'Team $49/月含 100 AMR — 按 Developer 按量价（$2/AMR）折算价值 $200。当月账单接近 $39（Team 的 80%）时控制台会自动提示升级；超出后每 AMR 仅 $1，是 Developer 的一半。'],
+      ['什么时候升级 Team 更划算？', 'Team $79/月含 100 AMR — 按 Developer 按量价（$2/AMR）折算价值 $200。当月账单接近 $63（Team 的 80%）时控制台会自动提示升级；超出后每 AMR 仅 $1，是 Developer 的一半。'],
       ['不绑卡如何付款？', '支持在线支付：在控制台发起充值/升级，通过 Checkout 页用国际信用卡或常见钱包完成支付，余额实时到账。'],
       ['免费额度用完又不绑卡会怎样？', '不会有任何破坏。现有资源继续运行，但当 AMR 用量（含超额工作区）超过免费额度后，新部署将被阻断，直到绑卡恢复按量付费。成员是硬配额：Developer 第 2 名成员需要升级。'],
       ['可以降级回 Developer 吗？', '可以 — 在控制台 Billing 页自助操作，次月 1 日生效。届时若用量超出免费额度且未绑卡，新部署将被阻断。'],
     ],
     en: [
       ['Is the Developer plan really free?', 'Yes — within the free quota (10 AMR, 1 member, 1 workspace) it is free forever, no credit card needed. Beyond the quota: bind a payment method for pay-as-you-go, or set a hard budget cap.'],
-      ['When does upgrading to Team pay off?', 'Team costs $49/month with 100 AMR included — worth $200 at the Developer pay-as-you-go rate ($2/AMR). When your monthly bill approaches $39 (80% of Team), the console suggests upgrading; beyond the included 100 AMR each additional AMR is only $1.'],
+      ['When does upgrading to Team pay off?', 'Team costs $79/month with 100 AMR included — worth $200 at the Developer pay-as-you-go rate ($2/AMR). When your monthly bill approaches $63 (80% of Team), the console suggests upgrading; beyond the included 100 AMR each additional AMR is only $1.'],
       ['How does payment work without a card?', 'Online payment is built in: start a topup or upgrade in the console and pay on the hosted Checkout page with an international card or a common wallet — the balance is credited instantly.'],
       ['What happens when I hit the free quota without paying?', 'Nothing breaks. Existing resources keep running, but new deployments are blocked once AMR usage (including extra workspaces) passes the free quota until a payment method is bound. Members are a hard quota: the 2nd Developer member needs an upgrade.'],
       ['Can I downgrade back to Developer?', 'Yes — self-service from the console Billing tab, effective the first day of the next month. If usage then exceeds the free quota without a bound card, new deployments are blocked.'],
