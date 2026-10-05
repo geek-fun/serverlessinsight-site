@@ -36,7 +36,7 @@ const PLANS = [
     key: 'team',
     price: {zh: '$79', en: '$79'},
     period: {zh: '/月', en: '/mo'},
-    quota: {zh: '含 100 AMR', en: '100 AMR included'},
+    quota: {zh: '含 100 AMR · 年付 $790/年（按 10 个月计费，省 17%）', en: '100 AMR included · Annual $790/yr (billed as 10 months, save 17%)'},
     featured: true,
     cta: {zh: '升级到 Team', en: 'Upgrade to Team'},
     href: CONSOLE_LOGIN_URL,
@@ -174,6 +174,7 @@ const T = ({
       ['不绑卡如何付款？', '支持在线支付：在控制台发起充值/升级，通过 Checkout 页用国际信用卡或常见钱包完成支付，余额实时到账。'],
       ['免费额度用完又不充值会怎样？', '不会有任何破坏。现有资源继续运行，但当 AMR 用量（含超额工作区）超过免费额度后，新部署将被暂停；充值余额后自动恢复。成员是硬配额：Developer 第 2 名成员需要升级。'],
       ['可以降级回 Developer 吗？', '可以 — 在控制台 Billing 页自助操作，次月 1 日生效。届时若用量超出免费额度且余额不足，新部署将被暂停；充值后自动恢复。'],
+      ['有年付选项吗？', '有 — Team 年付 $790/年（按 10 个月计费，省 17%），在控制台账单页购买，自下个账期起覆盖 12 个月基础月费；覆盖期最后 30 天内可开启自动续费（从余额扣款），续费周期开始前也可取消并全额退回余额。'],
     ],
     en: [
       ['Is the Developer plan really free?', 'Yes — within the free quota (10 AMR, 1 member, 1 workspace) it is free forever, no credit card needed. Beyond the quota: bind a payment method for pay-as-you-go, or set a hard budget cap.'],
@@ -181,6 +182,7 @@ const T = ({
       ['How does payment work without a card?', 'Online payment is built in: start a topup or upgrade in the console and pay on the hosted Checkout page with an international card or a common wallet — the balance is credited instantly.'],
       ['What happens when I hit the free quota without paying?', 'Nothing breaks. Existing resources keep running, but new deployments are blocked once AMR usage (including extra workspaces) passes the free quota until a payment method is bound. Members are a hard quota: the 2nd Developer member needs an upgrade.'],
       ['Can I downgrade back to Developer?', 'Yes — self-service from the console Billing tab, effective the first day of the next month. If usage then exceeds the free quota without a bound card, new deployments are blocked.'],
+      ['Is there an annual option?', 'Yes — Team annual is $790/yr (billed as 10 months, save 17%). Purchase it from the console Billing tab: coverage starts the next billing period and lasts 12 months of the base fee. Auto-renewal from your balance can be enabled during the last 30 days, and a renewed period can be cancelled for a full balance refund before it begins.'],
     ],
   },
   ctaBand: {
