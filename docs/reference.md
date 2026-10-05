@@ -422,6 +422,37 @@ triggers:
 
 > 函数级 HTTP 触发器适合简单场景；需要路径路由、自定义域名、限流等能力时，改用 `events`（API 网关）。
 
+#### triggers.timer - 函数级定时触发器
+
+为函数挂定时调度。`cron` 字段是 **si-cron 归一化语法**（不是任何一家的方言），一律按 **UTC** 解释，由合成层翻译成各供应商的 cron 格式（阿里云 FC3 六段、腾讯云 SCF 含年的七段、火山引擎 veFaaS 五段 crontab，含 UTC+8 字段平移）：
+
+```yaml
+triggers:
+  timer:
+    - name: billing-run          # 必填，同函数内唯一——漂移检测按 name 定位
+      cron: '0 23 3 * * *'       # 必填，si-cron（UTC）
+      payload: '{"job":"billing-run"}'   # 可选，字符串原样透传给函数
+      enable: true               # 可选，默认 true；false = 创建但停用
+      description: 每日出账     # 可选
+    - name: report-hourly
+      cron: '@every 1h'
+```
+
+| 字段 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `name` | string | ✅ | 触发器名，同函数内唯一；字母开头，`[A-Za-z0-9_-]`，≤60 字符 |
+| `cron` | string | ✅ | si-cron 表达式：5 段（分 时 日 月 周）、带秒前缀的 6 段，或 `@every <时长>`（`30s` / `5m` / `1h` / `1d`…） |
+| `payload` | string | ❌ | 触发时透传给函数的字符串 |
+| `enable` | boolean | ❌ | 默认 `true`；`false` 创建为停用状态 |
+| `description` | string | ❌ | 备注描述 |
+
+si-cron 语义要点：
+
+- **全部按 UTC 解释**。同一份 YAML 在不同供应商上的实际触发时刻一致，时区差异由合成层平移消化。
+- 语法与"目标供应商能否表达"在 `si validate` 阶段校验：非法表达式、无法无损翻译的组合（如日/星期与 UTC 16 点及以后跨月边界）、平台能力上限（腾讯云同函数最多 10 个）都在部署前报错。
+- 触发器按 `name` 登记进状态文件：再次 `deploy` 幂等；在云控制台手工删除/修改触发器会被漂移检测发现并在下次部署收敛。
+- `@every` 按日历场整除表达（如 `45s`、`90m` 无法表达会报错）；天级以上间隔锚定日历边界，属近似等价。
+
 #### domain - 函数级自定义域名
 
 ```yaml
@@ -815,6 +846,7 @@ si local --stage dev
 ```
 
 - 本地服务监听 `4567` 端口，按 `events` 的路由规则转发请求
+- `functions.*.triggers.timer` 会在本地按调度触发（si-cron 按 UTC 墙钟，`@every` 自服务启动起算），事件形状与云上一致
 - `--watch` 默认开启，保存代码即热重载
 - `--debug` 开启调试模式，可配合 IDE 断点
 
@@ -834,7 +866,7 @@ si local --stage dev
 
 ### Q: 事件触发器为什么只有 API_GATEWAY？
 
-当前 schema 只实现了 API 网关事件。定时任务、消息队列等触发器尚未进入 schema，硬写 `type: Timer` 会在 `validate` 阶段报错，这不是 bug 而是未支持。简单 HTTP 场景可先用 `functions.triggers.http`。
+顶层 `events` 面向拥有独立配置面的基础设施（网关路由表、自定义域名），目前只实现 `API_GATEWAY` 一种。**定时任务不走 `events`**：它是函数级归属，配置在 `functions.*.triggers.timer` 下（见上文定时触发器章节）。消息队列、对象存储等触发器尚未支持，硬写会在 `validate` 阶段报错。简单 HTTP 场景用 `functions.triggers.http`。
 
 ### Q: 为什么 `app` / `service` 不允许用变量？
 

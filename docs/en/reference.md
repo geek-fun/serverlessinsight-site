@@ -422,6 +422,37 @@ triggers:
 
 > Function-level HTTP triggers fit simple cases; for path routing, custom domains, and rate limiting, use `events` (API gateway) instead.
 
+#### triggers.timer - Function-level Timer Trigger
+
+Attaches a schedule to the function. The `cron` field is **normalized si-cron syntax** (not any provider's dialect), always interpreted in **UTC**, and translated by the synthesis layer into each provider's format (Aliyun FC3 6-field, Tencent SCF 7-field with year, Volcengine veFaaS 5-field crontab — including the UTC+8 field shift):
+
+```yaml
+triggers:
+  timer:
+    - name: billing-run          # required, unique per function — drift detection is name-keyed
+      cron: '0 23 3 * * *'       # required, si-cron (UTC)
+      payload: '{"job":"billing-run"}'   # optional, passed through verbatim
+      enable: true               # optional, default true; false = created disabled
+      description: daily billing # optional
+    - name: report-hourly
+      cron: '@every 1h'
+```
+
+| Field | Type | Required | Description |
+|------|------|------|------|
+| `name` | string | ✅ | Trigger name, unique within the function; starts with a letter, `[A-Za-z0-9_-]`, ≤60 chars |
+| `cron` | string | ✅ | si-cron expression: 5-field (`minute hour day month weekday`), 6-field with a seconds prefix, or `@every <duration>` (`30s` / `5m` / `1h` / `1d`…) |
+| `payload` | string | ❌ | String passed through to the function on each fire |
+| `enable` | boolean | ❌ | Default `true`; `false` creates the trigger disabled |
+| `description` | string | ❌ | Free-form description |
+
+si-cron semantics:
+
+- **Everything is interpreted in UTC**. The same YAML fires at the same instant on every provider; timezone differences are absorbed by the synthesis layer's field shift.
+- Grammar and per-provider expressibility are checked at `si validate`: invalid expressions, schedules that cannot be shifted losslessly (e.g. day/weekday combined with UTC hours ≥ 16 crossing a month boundary), and platform capability limits (Tencent allows at most 10 timers per function) all fail before deploy.
+- Triggers are registered by `name` in the state file: re-deploys are idempotent, and triggers deleted or edited in the cloud console are caught by drift detection and converge on the next deploy.
+- `@every` maps to calendar-dividing step expressions (`45s`, `90m` etc. fail as inexpressible); day-and-above intervals are anchored to calendar boundaries — an approximation by design.
+
 #### domain - Function-level Custom Domain
 
 ```yaml
@@ -507,7 +538,7 @@ triggers:
 | `path` | string | ✅ | must start with `/`; `*` wildcard supported |
 | `backend` | string | ✅ | target function's **reference name** (the key under `functions`, not its `name`) |
 
-> Legacy event types (`type: HTTP`, `type: Timer`, `type: sqs`) have been removed from the schema and fail `validate`. Timer and messaging triggers are not yet supported.
+> Legacy event types (`type: HTTP`, `type: Timer`, `type: sqs`) have been removed from the schema and fail `validate`. Timer scheduling lives under `functions.triggers.timer` (see above); messaging triggers are not yet supported.
 
 #### domain - Gateway Custom Domain
 
@@ -815,6 +846,7 @@ si local --stage dev
 ```
 
 - Local server listens on port `4567`, routing requests per your `events` rules
+- `functions.*.triggers.timer` schedules fire locally too (si-cron against UTC wall-clock, `@every` counted from server start), with the same event shapes as the cloud
 - `--watch` is on by default; saving code hot-reloads
 - `--debug` enables debug mode and IDE breakpoints
 
@@ -834,7 +866,7 @@ si local --stage dev
 
 ### Q: Why is API_GATEWAY the only event type?
 
-The schema currently implements only API gateway events. Timer and messaging triggers are not in the schema yet, so writing `type: Timer` fails `validate` by design, not by bug. For simple HTTP, use `functions.triggers.http` meanwhile.
+Top-level `events` targets infrastructure with its own configuration surface (gateway route tables, custom domains) and currently implements only `API_GATEWAY`. **Timer schedules do not live in `events`**: they belong to the function, and are configured under `functions.*.triggers.timer` (see the timer trigger section above). Messaging and object-storage triggers are not supported yet — writing them fails `validate`. For simple HTTP, use `functions.triggers.http`.
 
 ### Q: Why can't `app` / `service` use variables?
 
