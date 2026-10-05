@@ -215,12 +215,6 @@ const faq = computed(() => (zh.value ? T.faq.zh : T.faq.en))
 
     <!-- plan cards -->
 
-.pp-toggle{display:inline-flex;gap:4px;padding:4px;border:1px solid var(--vp-c-divider);border-radius:999px;margin:0 auto 28px;background:var(--vp-c-bg-soft)}
-.pp-plans{text-align:center}
-.pp-toggle-btn{border:none;background:transparent;color:var(--vp-c-text-2);font-size:14px;font-weight:500;padding:6px 18px;border-radius:999px;cursor:pointer;transition:color .2s, background-color .2s}
-.pp-toggle-btn--on{background:var(--vp-c-bg);color:var(--vp-c-text-1);box-shadow:0 1px 4px rgba(0,0,0,.12)}
-.pp-toggle-save{display:inline-block;margin-left:6px;padding:1px 8px;border-radius:999px;font-size:11px;font-weight:600;color:#fff;background:var(--vp-c-brand-1)}
-.pp-save{margin-top:2px;font-size:13px;color:var(--vp-c-text-2)}
     <section class="pp-plans">
       <h2 class="pp-h2 pp-plans-title">{{ pick(T.planTitle) }}</h2>
       <div class="pp-toggle" role="group" :aria-label="zh ? '计费周期' : 'Billing period'">
@@ -366,6 +360,12 @@ const faq = computed(() => (zh.value ? T.faq.zh : T.faq.en))
 </template>
 
 <style scoped>
+.pp-toggle{display:inline-flex;gap:4px;padding:4px;border:1px solid var(--vp-c-divider);border-radius:999px;margin:0 auto 28px;background:var(--vp-c-bg-soft)}
+.pp-toggle-btn{border:none;background:transparent;color:var(--vp-c-text-2);font-size:14px;font-weight:500;padding:6px 18px;border-radius:999px;cursor:pointer;transition:color .2s, background-color .2s}
+.pp-toggle-btn--on{background:var(--vp-c-bg);color:var(--vp-c-text-1);box-shadow:0 1px 4px rgba(0,0,0,.12)}
+.pp-toggle-save{display:inline-block;margin-left:6px;padding:1px 8px;border-radius:999px;font-size:11px;font-weight:600;color:#fff;background:var(--vp-c-brand-1)}
+.pp-save{margin-top:2px;font-size:13px;color:var(--vp-c-text-2)}
+
 .pp { max-width: 1152px; margin: 0 auto; padding: 24px 24px 80px; }
 .pp-title { font-size: 2.75rem; font-weight: 800; letter-spacing: -0.03em; text-align: center; margin-top: 32px; }
 .pp-sub { max-width: 720px; margin: 14px auto 0; text-align: center; color: var(--vp-c-text-2); font-size: 1.05rem; line-height: 1.7; }
