@@ -33,6 +33,8 @@ The Team plan fee is deducted from your balance per billing period and covers th
 
 The annual fee covers 12 months of the plan base fee and **the base-fee portion is non-refundable** (this is the consideration for the "billed as 10 months" discount); overage usage still bills from your balance, and the unconsumed, un-invoiced part of that balance remains refundable under this policy. Billing errors are corrected unconditionally.
 
+**Cancelling an auto-renewed period**: after a successful auto-renewal and before the current coverage ends, you may cancel the renewed period — the annual fee is returned in full to your prepaid balance and coverage rolls back to the previous end date. The unconsumed part of the balance can then be refunded through the ordinary flow. Once the renewed year has begun, whole-period cancellation no longer applies.
+
 ## 3. Arrears Come First
 
 If your account is in arrears (a monthly bill exceeded the available balance), the arrears are settled — or deducted from the refund — before any refund is paid out.
