@@ -124,7 +124,7 @@ const year = new Date().getFullYear()
       </div>
 
       <div class="sf-bottom">
-        <span>© {{ year }} ServerlessInsight</span>
+        <span>© 2024–{{ year }} ServerlessInsight</span>
         <a class="sf-support" :href="`mailto:${T.supportEmail}`">{{ T.supportEmail }}</a>
         <span class="sf-deployed">{{ T.deployed }}</span>
       </div>
