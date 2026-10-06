@@ -17,7 +17,7 @@ const ZH = {
   h1: '全栈 Serverless 应用开发平台',
   sub: '一站式管理跨云 Serverless 应用的开发、部署与运维。',
   ctaPrimary: '免费开始',
-  ctaSecondary: '快速开始',
+  ctaSecondary: '文档',
   install: 'npm install -g @geek-fun/serverlessinsight',
   copyTip: '复制安装命令',
   copied: '已复制',
@@ -69,7 +69,7 @@ const ZH = {
   close: {
     title: '把整套 Serverless 应用，写进一个文件。',
     primary: '免费开始',
-    secondary: '快速开始',
+    secondary: '文档',
     note: '开源免费 · 无供应商锁定 · si destroy 随时清理'
   }
 }
@@ -78,7 +78,7 @@ const EN = {
   h1: 'Full-Stack Serverless Development Platform',
   sub: 'One-stop management for the development, deployment and operations of cross-cloud serverless applications.',
   ctaPrimary: 'Start for Free',
-  ctaSecondary: 'Get Started',
+  ctaSecondary: 'Docs',
   install: 'npm install -g @geek-fun/serverlessinsight',
   copyTip: 'Copy install command',
   copied: 'Copied',
@@ -130,7 +130,7 @@ const EN = {
   close: {
     title: 'Your entire serverless app, in one file.',
     primary: 'Start for Free',
-    secondary: 'Get Started',
+    secondary: 'Docs',
     note: 'Open source · No vendor lock-in · si destroy cleans up anytime'
   }
 }
@@ -243,7 +243,7 @@ const copyInstall = async () => {
           <p class="si-hero__sub rise rise-2">{{ t.sub }}</p>
           <div class="si-hero__actions rise rise-3">
             <a class="btn btn--brand" :href="CONSOLE_LOGIN_URL">{{ t.ctaPrimary }}</a>
-            <a class="btn btn--alt" :href="link('/getting-started')">{{ t.ctaSecondary }}</a>
+            <a class="btn btn--alt" :href="link('/docs')">{{ t.ctaSecondary }}</a>
           </div>
           <div class="install rise rise-4">
             <code class="install__cmd">{{ t.install }}</code>
@@ -367,7 +367,7 @@ const copyInstall = async () => {
         <h2 class="close__title">{{ t.close.title }}</h2>
         <div class="close__actions">
           <a class="btn btn--brand" :href="CONSOLE_LOGIN_URL">{{ t.close.primary }}</a>
-          <a class="btn btn--alt" :href="link('/getting-started')">{{ t.close.secondary }}</a>
+          <a class="btn btn--alt" :href="link('/docs')">{{ t.close.secondary }}</a>
         </div>
         <p class="close__note">{{ t.close.note }}</p>
       </div>
