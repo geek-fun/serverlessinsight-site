@@ -142,7 +142,7 @@ const year = new Date().getFullYear()
 
 .sf-main {
   display: grid;
-  grid-template-columns: minmax(0, 1.6fr) repeat(3, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1.6fr) repeat(4, minmax(0, 1fr));
   gap: 40px;
 }
 
