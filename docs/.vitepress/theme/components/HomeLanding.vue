@@ -27,7 +27,6 @@ const ZH = {
     {name: '腾讯云', icon: '/icons/platform-tencent.png'},
     {name: '火山引擎', icon: '/icons/platform-volcengine.png'}
   ],
-  proof: ['开源 · Apache-2.0', '62 个版本持续发版', 'Node.js 18+', 'npm 月安装 1,500+'],
   b1: {
     title: '一个文件，声明全栈',
     body: '函数、API 网关、Serverless 数据库、表格存储、对象存储——全部写在 serverlessinsight.yml 里。变量与多环境内建，敏感值通过部署参数注入，永不写入文件。',
@@ -89,7 +88,6 @@ const EN = {
     {name: 'Tencent Cloud', icon: '/icons/platform-tencent.png'},
     {name: 'Volcengine', icon: '/icons/platform-volcengine.png'}
   ],
-  proof: ['Open source · Apache-2.0', '62 releases and counting', 'Node.js 18+', '1,500+ installs / month'],
   b1: {
     title: 'One file declares the whole stack',
     body: 'Functions, API gateways, serverless databases, table storage and object storage — all in one serverlessinsight.yml. Variables and multi-stage environments are built in; secrets are injected at deploy time, never written to the file.',
@@ -259,9 +257,6 @@ const copyInstall = async () => {
               </svg>
             </button>
           </div>
-          <ul class="proof rise rise-4">
-            <li v-for="item in t.proof" :key="item">{{ item }}</li>
-          </ul>
         </div>
       </div>
       <div class="si-hero__stage">
@@ -586,31 +581,6 @@ const copyInstall = async () => {
   outline: 2px solid var(--vp-c-brand-1);
   outline-offset: 4px;
   border-radius: 8px;
-}
-
-/* proof strip */
-
-.proof {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px 0;
-  margin: 40px 0 0;
-  padding: 0;
-  list-style: none;
-  font-size: 13px;
-  color: var(--vp-c-text-2);
-}
-
-.proof li {
-  display: inline-flex;
-  align-items: center;
-  white-space: nowrap;
-}
-
-.proof li:not(:last-child)::after {
-  content: '·';
-  margin: 0 12px;
-  color: var(--vp-c-text-3);
 }
 
 /* hero stage: text left, scene right (>=960px); scene flows below on mobile */
