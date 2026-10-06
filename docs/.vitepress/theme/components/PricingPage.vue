@@ -1,12 +1,13 @@
 <script setup lang="ts">
-import {computed} from 'vue'
+import {computed, ref} from 'vue'
 import {useData} from 'vitepress'
 import {CONSOLE_LOGIN_URL} from '../console'
 import ThemeIcon from './ThemeIcon.vue'
 
-import {ref} from 'vue'
-const {lang} = useData()
-const zh = computed(() => lang.value !== 'en')
+// AGENTS.md: locale must come from the build-time relativePath (SSR-safe),
+// never from useData().lang / location inside slot-rendered components.
+const {page} = useData()
+const zh = computed(() => !page.value.relativePath.startsWith('en/'))
 
 // Billing-period toggle — annual is the default landing state (issue #57).
 const billingPeriod = ref<'year' | 'month'>('year')
@@ -218,7 +219,7 @@ const faq = computed(() => (zh.value ? T.faq.zh : T.faq.en))
 
     <section class="pp-plans">
       <h2 class="pp-h2 pp-plans-title">{{ pick(T.planTitle) }}</h2>
-      <div class="pp-toggle-wrap" role="group" :aria-label="zh ? '计费周期' : 'Billing period'">
+      <div class="pp-toggle-wrap">
       <div class="pp-toggle" role="group" :aria-label="zh ? '计费周期' : 'Billing period'">
         <button
           type="button"
