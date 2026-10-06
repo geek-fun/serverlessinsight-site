@@ -39,6 +39,7 @@ const PLANS = [
   {
     key: 'team',
     price: {zh: '$79', en: '$79'},
+    period: {zh: '/月', en: '/mo'},
     priceYear: {zh: '$65.8', en: '$65.8'},
     periodYear: {zh: '/月 · 按年计费 $790', en: '/mo · $790 billed yearly'},
     quota: {zh: '含 100 AMR', en: '100 AMR included'},
