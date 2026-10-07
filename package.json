@@ -4,8 +4,8 @@
   "private": true,
   "description": "ServerlessInsight marketing and documentation site (VitePress static site)",
   "scripts": {
-    "docs:dev": "vitepress dev docs",
-    "docs:build": "vitepress build docs",
+    "docs:dev": "node scripts/fetch-pricing.mjs --soft && vitepress dev docs",
+    "docs:build": "node scripts/fetch-pricing.mjs && vitepress build docs",
     "docs:preview": "vitepress preview docs"
   },
   "author": "geekfun <support@geekfun.club>",

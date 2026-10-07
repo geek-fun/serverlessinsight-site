@@ -1,0 +1,102 @@
+{
+  "_source": "https://console.serverlessinsight.com/api/v1/pricing",
+  "_fetchedAt": "2026-10-07T14:42:42.715Z",
+  "currency": "USD",
+  "channel": "manual",
+  "providers": {
+    "USD": "creem"
+  },
+  "provider": "manual",
+  "topups": {
+    "min_amount_cents": 2000,
+    "max_amount_cents": 100000,
+    "tiers": [
+      2000,
+      5000,
+      10000,
+      20000
+    ]
+  },
+  "plans": {
+    "developer": {
+      "name": "developer",
+      "monthly_base_cents": 0,
+      "free_amr": 10,
+      "free_members": 1,
+      "free_workspaces": 1,
+      "overage": {
+        "amr_cents": 200
+      },
+      "budget_cap": {
+        "default_alert_threshold_percent": 80
+      },
+      "features": {
+        "auto_deploy": false,
+        "cloud_aggregated_view": "readonly"
+      },
+      "max_orgs": 1
+    },
+    "team": {
+      "name": "team",
+      "monthly_base_cents": 7900,
+      "free_amr": 100,
+      "free_members": 10,
+      "free_workspaces": 5,
+      "overage": {
+        "amr_cents": 100
+      },
+      "budget_cap": {
+        "default_alert_threshold_percent": 80
+      },
+      "features": {
+        "auto_deploy": true,
+        "cloud_aggregated_view": "full"
+      },
+      "max_orgs": 3
+    },
+    "enterprise": {
+      "name": "enterprise",
+      "monthly_base_cents": null,
+      "free_amr": null,
+      "free_members": null,
+      "free_workspaces": null,
+      "overage": {
+        "amr_cents": null
+      },
+      "budget_cap": {
+        "default_alert_threshold_percent": 80
+      },
+      "features": {
+        "auto_deploy": true,
+        "cloud_aggregated_view": "full"
+      },
+      "max_orgs": null
+    }
+  },
+  "amr_weights": {
+    "ALIYUN_FC3_FUNCTION": 1,
+    "SCF_FUNCTION": 1,
+    "VOLCENGINE_VEFAAS_FUNCTION": 1,
+    "ALIYUN_APIGW_GROUP": 1,
+    "ALIYUN_OSS_BUCKET": 1,
+    "COS_BUCKET": 1,
+    "VOLCENGINE_TOS_BUCKET": 1,
+    "ALIYUN_RDS_SERVERLESS": 1,
+    "TDSQL_C_SERVERLESS": 1,
+    "ALIYUN_ES_SERVERLESS": 1,
+    "ALIYUN_TABLESTORE_TABLE": 1,
+    "ALIYUN_SLS_PROJECT": 0,
+    "ALIYUN_SLS_LOGSTORE": 0,
+    "ALIYUN_SLS_INDEX": 0,
+    "TENCENT_CLS_LOGSET": 0,
+    "TENCENT_CLS_TOPIC": 0,
+    "ALIYUN_APIGW_API": 0,
+    "ALIYUN_APIGW_DEPLOYMENT": 0,
+    "ALIYUN_APIGW_LOG_CONFIG": 0,
+    "ALIYUN_CDN_DISTRIBUTION": 0,
+    "ALIYUN_NAS_FILE_SYSTEM": 0,
+    "ALIYUN_NAS_MOUNT_TARGET": 0,
+    "ALIYUN_NAS_ACCESS_GROUP": 0
+  },
+  "workspace_weight_amr": 1
+}
