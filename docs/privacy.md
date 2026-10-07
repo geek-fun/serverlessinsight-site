@@ -10,7 +10,7 @@ outline: true
 
 **最后更新：2026 年 10 月**
 
-本隐私政策说明 ServerlessInsight（由独立开发者运营，以下简称「我们」）在您使用本服务时如何收集、使用、存储与保护您的个人信息。本政策构成服务条款的一部分。
+本隐私政策说明 ServerlessInsight（由沃泰森（昆明）科技有限公司 / WENTSEN (Kunming) Technology Co., Ltd. 运营，以下简称「我们」）在您使用本服务时如何收集、使用、存储与保护您的个人信息。本政策构成服务条款的一部分。
 
 ## 1. 适用范围
 
@@ -81,5 +81,7 @@ outline: true
 本政策的实质性变更将在生效前于网站公告（重大变更同时邮件通知）。生效后继续使用即视为知悉。
 
 ## 12. 如何联系我们
+
+**运营主体**：沃泰森（昆明）科技有限公司 / WENTSEN (Kunming) Technology Co., Ltd.（注册地址与统一社会信用代码见《服务条款》第 13 条，公司官网：[wentsen.com](https://wentsen.com)）
 
 隐私方面的疑问与请求：[support@wentsen.com](mailto:support@wentsen.com)，三（3）个工作日内回复。

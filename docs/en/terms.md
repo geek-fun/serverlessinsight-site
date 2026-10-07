@@ -10,7 +10,7 @@ outline: true
 
 **Last updated: October 2026**
 
-ServerlessInsight is an internet software service (hereinafter referred to as "ServerlessInsight") operated by an independent developer (hereinafter referred to as "we"). These Terms of Service (hereinafter referred to as "this Agreement") constitute an agreement between you (hereinafter referred to as "you" or "User") and us regarding your access to and use of ServerlessInsight and related services (hereinafter referred to as "the Service").
+ServerlessInsight is an internet software service (hereinafter referred to as "ServerlessInsight") operated by WENTSEN (Kunming) Technology Co., Ltd. (Chinese name: 沃泰森（昆明）科技有限公司, hereinafter referred to as "we"). These Terms of Service (hereinafter referred to as "this Agreement") constitute an agreement between you (hereinafter referred to as "you" or "User") and us regarding your access to and use of ServerlessInsight and related services (hereinafter referred to as "the Service").
 
 Before creating an account and using the Service, you must read and agree to this Agreement. By registering, logging in, or using the Service, you are deemed to have read, understood, and accepted this Agreement in its entirety.
 
@@ -105,6 +105,13 @@ The Service is not directed to minors under 18. If you are a minor, please do no
 12.3 If you use the Service for any illegal or infringing activity, you bear full responsibility for the consequences and for any losses caused to us or third parties.
 
 ## 13. Contact Us
+
+**Operating entity**: WENTSEN (Kunming) Technology Co., Ltd. (沃泰森（昆明）科技有限公司)
+
+- Unified Social Credit Code: 91530114MAG1F0GT8B
+- Registered address: Room 2005, 2nd Floor, Block A, Shanghai ASEAN Building, Wulong Street, Chenggong District, Kunming City, Yunnan Province, China
+- Company website: [wentsen.com](https://wentsen.com)
+- Support email: [support@wentsen.com](mailto:support@wentsen.com)
 
 For questions about this Agreement or the Service: [support@wentsen.com](mailto:support@wentsen.com). We respond within three (3) business days.
 

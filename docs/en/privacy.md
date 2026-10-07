@@ -10,7 +10,7 @@ outline: true
 
 **Last updated: October 2026**
 
-This Privacy Policy explains how ServerlessInsight (operated by an independent developer, "we") collects, uses, stores, and protects your personal information when you use the Service. It forms part of the Terms of Service.
+This Privacy Policy explains how ServerlessInsight (operated by WENTSEN (Kunming) Technology Co., Ltd., "we") collects, uses, stores, and protects your personal information when you use the Service. It forms part of the Terms of Service.
 
 ## 1. Scope of This Policy
 
@@ -81,5 +81,7 @@ Your information is stored on Alibaba Cloud servers located in mainland China. W
 Material changes to this policy will be announced on the site (and by email for significant changes) before they take effect. Continued use after the effective date constitutes acknowledgment.
 
 ## 12. How to Contact Us
+
+**Operating entity**: WENTSEN (Kunming) Technology Co., Ltd. (沃泰森（昆明）科技有限公司) — registered address and Unified Social Credit Code are listed in Section 13 of the Terms of Service; company website: [wentsen.com](https://wentsen.com).
 
 Privacy questions and requests: [support@wentsen.com](mailto:support@wentsen.com), within three (3) business days.

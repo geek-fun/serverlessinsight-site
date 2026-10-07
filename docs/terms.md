@@ -10,7 +10,7 @@ outline: true
 
 **最后更新：2026 年 10 月**
 
-ServerlessInsight 是一项互联网软件服务（以下简称「ServerlessInsight」），由独立开发者运营（以下简称「我们」）。本服务条款（以下简称「本协议」）是您（以下简称「您」或「用户」）与我们之间关于访问与使用 ServerlessInsight 及相关服务（以下简称「本服务」）的协议。
+ServerlessInsight 是一项互联网软件服务（以下简称「ServerlessInsight」），由沃泰森（昆明）科技有限公司（英文名 WENTSEN (Kunming) Technology Co., Ltd.，以下简称「我们」）运营。本服务条款（以下简称「本协议」）是您（以下简称「您」或「用户」）与我们之间关于访问与使用 ServerlessInsight 及相关服务（以下简称「本服务」）的协议。
 
 在创建账号并使用本服务前，您应当阅读并同意本协议。注册、登录或使用本服务，即视为您已阅读、理解并接受本协议的全部内容。
 
@@ -105,6 +105,13 @@ ServerlessInsight 提供多云 serverless 基础设施管理能力，包括：�
 12.3 若您利用本服务从事违法或侵权行为，由您自行承担全部责任；给我们或第三方造成损失的，您应负责全额赔偿。
 
 ## 13. 与我们联系
+
+**运营主体**：沃泰森（昆明）科技有限公司 / WENTSEN (Kunming) Technology Co., Ltd.
+
+- 统一社会信用代码：91530114MAG1F0GT8B
+- 注册地址：Room 2005, 2nd Floor, Block A, Shanghai ASEAN Building, Wulong Street, Chenggong District, Kunming City, Yunnan Province, China
+- 公司官网：[wentsen.com](https://wentsen.com)
+- 支持邮箱：[support@wentsen.com](mailto:support@wentsen.com)
 
 关于本协议或本服务的任何问题：[support@wentsen.com](mailto:support@wentsen.com)。我们将在三（3）个工作日内回复。
 
