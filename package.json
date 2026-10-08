@@ -1,6 +1,6 @@
 {
   "name": "serverlessinsight-site",
-  "version": "0.4.8",
+  "version": "0.4.9",
   "private": true,
   "description": "ServerlessInsight marketing and documentation site (VitePress static site)",
   "scripts": {
