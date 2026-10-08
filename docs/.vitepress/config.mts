@@ -135,21 +135,21 @@ gtag('config', 'G-FSJWB3QKGJ');`],
         logo: icon,
         nav: [
           {text: '主页', link: '/'},
-          {text: '定价', link: '/pricing'},
-          {text: '文档', link: '/docs'},
+          {text: '定价', link: '/pricing.html'},
+          {text: '文档', link: '/docs.html'},
         ],
 
         sidebar: [
           {
             text: 'ServerlessInsight',
             items: [
-              {text: 'ServerlessInsight介绍', link: '/introduction'},
-              {text: '快速开始', link: '/getting-started'},
-              {text: '配置手册', link: '/reference'},
-              {text: '命令行', link: '/cli'},
-              {text: '支持服务', link: '/support'},
-              {text: '常见问题', link: '/faq'},
-              {text: '实践案例', link: '/case-study'},
+              {text: 'ServerlessInsight介绍', link: '/introduction.html'},
+              {text: '快速开始', link: '/getting-started.html'},
+              {text: '配置手册', link: '/reference.html'},
+              {text: '命令行', link: '/cli.html'},
+              {text: '支持服务', link: '/support.html'},
+              {text: '常见问题', link: '/faq.html'},
+              {text: '实践案例', link: '/case-study.html'},
             ]
           }
         ],
@@ -189,21 +189,21 @@ gtag('config', 'G-FSJWB3QKGJ');`],
         logo: icon,
         nav: [
           {text: 'Home', link: '/en/'},
-          {text: 'Pricing', link: '/en/pricing'},
-          {text: 'Docs', link: '/en/docs'},
+          {text: 'Pricing', link: '/en/pricing.html'},
+          {text: 'Docs', link: '/en/docs.html'},
         ],
 
         sidebar: [
           {
             text: 'ServerlessInsight',
             items: [
-              {text: 'Introduction', link: '/en/introduction'},
-              {text: 'Quick Start', link: '/en/getting-started'},
-              {text: 'Configuration Reference', link: '/en/reference'},
-              {text: 'CLI Reference', link: '/en/cli'},
-              {text: 'Support', link: '/en/support'},
-              {text: 'FAQ', link: '/en/faq'},
-              {text: 'Case Studies', link: '/en/case-study'},
+              {text: 'Introduction', link: '/en/introduction.html'},
+              {text: 'Quick Start', link: '/en/getting-started.html'},
+              {text: 'Configuration Reference', link: '/en/reference.html'},
+              {text: 'CLI Reference', link: '/en/cli.html'},
+              {text: 'Support', link: '/en/support.html'},
+              {text: 'FAQ', link: '/en/faq.html'},
+              {text: 'Case Studies', link: '/en/case-study.html'},
             ]
           }
         ],

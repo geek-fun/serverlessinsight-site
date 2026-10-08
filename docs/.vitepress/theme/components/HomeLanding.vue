@@ -11,7 +11,7 @@ const {page} = useData()
 const isZh = computed(() => !page.value.relativePath.startsWith('en/'))
 
 const t = computed(() => (isZh.value ? ZH : EN))
-const link = (path: string) => (isZh.value ? path : `/en${path}`)
+const link = (path: string) => `${isZh.value ? path : `/en${path}`}.html`
 
 const ZH = {
   h1: '全栈 Serverless 应用开发平台',

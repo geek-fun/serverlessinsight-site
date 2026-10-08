@@ -6,7 +6,7 @@ import {useData} from 'vitepress'
 // Locale from the build-time relativePath (SSR-safe, see AGENTS.md).
 const {page} = useData()
 const isZh = computed(() => !page.value.relativePath.startsWith('en/'))
-const link = (path: string) => (isZh.value ? path : `/en${path}`)
+const link = (path: string) => `${isZh.value ? path : `/en${path}`}.html`
 
 const T = computed(() =>
   isZh.value
