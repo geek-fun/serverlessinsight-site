@@ -137,7 +137,7 @@ const T = computed(() =>
       </ol>
       <p class="mx-note">{{ T.note }}</p>
 
-      <a class="sec-link" :href="isZh ? T.refHref : `/en${T.refHref}`">{{ T.refLink }}<span class="sec-link__arrow">→</span></a>
+      <a class="sec-link" :href="(isZh ? T.refHref : `/en${T.refHref}`) + '.html'">{{ T.refLink }}<span class="sec-link__arrow">→</span></a>
     </div>
   </section>
 </template>
