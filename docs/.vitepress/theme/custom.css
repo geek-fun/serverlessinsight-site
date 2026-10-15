@@ -3,6 +3,7 @@
      violet owns links / active nav / small accents only — buttons are
      monochrome and display type stays neutral (see overrides below). */
   --vp-c-brand-1: #6640BF;
+  --vp-nav-logo-height: 32px;
 }
 
 .dark {
