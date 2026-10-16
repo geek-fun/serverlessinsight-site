@@ -5,10 +5,15 @@ const siteOrigin = 'https://www.serverlessinsight.com';
 const titleZh = 'ServerlessInsight | 全栈 Serverless 应用开发平台';
 const descZh = 'ServerlessInsight 是一个开源的全栈 Serverless 应用开发运维平台，支持跨云开发、部署、监控、调试和优化，并采用基础设施即代码实践。';
 const icon = '/favicon.ico';
+const logo = {
+  light: '/logo.png',
+  dark: '/logo-dark.png',
+  alt: 'ServerlessInsight',
+};
 
 const titleEn = 'ServerlessInsight | Full-Stack Serverless Development Platform';
 const descEn = 'ServerlessInsight is an open-source full-stack serverless platform for developing, deploying, monitoring, debugging, and optimizing applications across cloud providers with infrastructure as code.';
-const socialImage = '/si-archtecture.drawio.png';
+const socialImage = '/og.jpg';
 
 const localizedPages = new Set([
   'index.md',
@@ -113,7 +118,9 @@ export default defineConfig({
       title: titleZh,
       description: descZh,
       head: [
-        ['link', {rel: 'icon', href: icon}],
+        ['link', {rel: 'icon', href: icon, sizes: 'any'}],
+        ['link', {rel: 'icon', type: 'image/png', href: '/favicon-32.png', sizes: '32x32'}],
+        ['link', {rel: 'apple-touch-icon', href: '/apple-touch-icon.png'}],
         ['meta', {name: 'description', content: descZh}],
         ['meta', {
           name: 'keywords',
@@ -132,7 +139,7 @@ gtag('config', 'G-FSJWB3QKGJ');`],
       themeConfig: {
         // https://vitepress.dev/reference/default-theme-config
         siteTitle: 'ServerlessInsight',
-        logo: icon,
+        logo,
         nav: [
           {text: '主页', link: '/'},
           {text: '定价', link: '/pricing.html'},
@@ -167,7 +174,9 @@ gtag('config', 'G-FSJWB3QKGJ');`],
       title: titleEn,
       description: descEn,
       head: [
-        ['link', {rel: 'icon', href: icon}],
+        ['link', {rel: 'icon', href: icon, sizes: 'any'}],
+        ['link', {rel: 'icon', type: 'image/png', href: '/favicon-32.png', sizes: '32x32'}],
+        ['link', {rel: 'apple-touch-icon', href: '/apple-touch-icon.png'}],
         ['meta', {name: 'description', content: descEn}],
         ['meta', {
           name: 'keywords',
@@ -186,7 +195,7 @@ gtag('config', 'G-FSJWB3QKGJ');`],
       themeConfig: {
         // https://vitepress.dev/reference/default-theme-config
         siteTitle: 'ServerlessInsight',
-        logo: icon,
+        logo,
         nav: [
           {text: 'Home', link: '/en/'},
           {text: 'Pricing', link: '/en/pricing.html'},
