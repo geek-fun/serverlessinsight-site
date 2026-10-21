@@ -21,7 +21,7 @@ si --version
 | `si whoami` | 显示当前登录状态 |
 | `si show` | 从状态中展示已部署资源 |
 | `si validate` | 校验 `serverlessinsight.yml` 配置 |
-| `si plan` | 生成并展示部署计划（仅阿里云、腾讯云） |
+| `si plan` / `si diff` | Preview changes (Aliyun, Tencent, Volcengine) |
 | `si deploy` | 部署配置到云供应商 |
 | `si destroy` | 销毁已部署的资源栈 |
 | `si local` | 本地运行应用进行调试（仅阿里云） |
@@ -87,13 +87,36 @@ si validate -f serverlessinsight.yml -s dev
 
 校验配置语法与语义（含供应商相关的运行时、资源校验）。
 
-### si plan
+### si plan / si diff
 
 ```bash
-si plan -s dev
+si plan -f serverlessinsight.yml --stage dev
+si diff -f serverlessinsight.yml --stage dev --json
+si plan --stage dev --region cn-beijing -p memory=1024
+si diff --stage dev --no-refresh
 ```
 
-生成部署计划。**注意：仅阿里云与腾讯云支持 `plan`；火山引擎会报错。**
+Preview deployment changes on Aliyun, Tencent Cloud, or Volcengine. Both commands
+use the same planner. Volcengine includes functions, TOS buckets, and API Gateway
+resources in dependency order. Planning reads the configured state backend and
+cloud resources without executing resource changes or saving state.
+
+| Option | Description |
+| --- | --- |
+| `-p, --parameter <key=value>` | Override a configuration variable (repeatable) |
+| `--no-refresh` | Skip live drift checks for tracked resources; ownership probes for new resources still run |
+| `--json` | Write a versioned plan envelope to stdout; logs go to stderr |
+| `--no-color` | Disable ANSI colors in human output |
+
+Stage, region, provider, and credential overrides use the common options above.
+Configure cloud credentials and a supported state backend before planning.
+Migrated legacy state produces a warning and remains unchanged. State and cloud
+read failures remain errors.
+
+JSON output retains `planVersion: 1`, `provider`, `app`, `service`, `stage`,
+`changes`, and `summary` (create, update, destroy, recreate, unchanged counts).
+Both commands exit **0** for no changes, **2** for changes, or **1** for errors.
+With `--json`, failures emit `{ error: { code, message } }` instead of a plan.
 
 ### si deploy
 

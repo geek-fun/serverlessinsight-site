@@ -21,7 +21,7 @@ si --version
 | `si whoami` | Show current login status |
 | `si show` | Show deployed resources from state |
 | `si validate` | Validate the `serverlessinsight.yml` config |
-| `si plan` | Generate and show the deployment plan (Aliyun, Tencent only) |
+| `si plan` / `si diff` | Preview changes (Aliyun, Tencent, Volcengine) |
 | `si deploy` | Deploy the config to a cloud provider |
 | `si destroy` | Destroy the deployed stack |
 | `si local` | Run the app locally for debugging (Aliyun only) |
@@ -87,13 +87,36 @@ si validate -f serverlessinsight.yml -s dev
 
 Validate config syntax and semantics (including provider-specific runtime and resource checks).
 
-### si plan
+### si plan / si diff
 
 ```bash
-si plan -s dev
+si plan -f serverlessinsight.yml --stage dev
+si diff -f serverlessinsight.yml --stage dev --json
+si plan --stage dev --region cn-beijing -p memory=1024
+si diff --stage dev --no-refresh
 ```
 
-Generate a deployment plan. **Note: `plan` is supported only on Aliyun and Tencent; it errors on Volcengine.**
+Preview deployment changes on Aliyun, Tencent Cloud, or Volcengine. Both commands
+use the same planner. Volcengine includes functions, TOS buckets, and API Gateway
+resources in dependency order. Planning reads the configured state backend and
+cloud resources without executing resource changes or saving state.
+
+| Option | Description |
+| --- | --- |
+| `-p, --parameter <key=value>` | Override a configuration variable (repeatable) |
+| `--no-refresh` | Skip live drift checks for tracked resources; ownership probes for new resources still run |
+| `--json` | Write a versioned plan envelope to stdout; logs go to stderr |
+| `--no-color` | Disable ANSI colors in human output |
+
+Stage, region, provider, and credential overrides use the common options above.
+Configure cloud credentials and a supported state backend before planning.
+Migrated legacy state produces a warning and remains unchanged. State and cloud
+read failures remain errors.
+
+JSON output retains `planVersion: 1`, `provider`, `app`, `service`, `stage`,
+`changes`, and `summary` (create, update, destroy, recreate, unchanged counts).
+Both commands exit **0** for no changes, **2** for changes, or **1** for errors.
+With `--json`, failures emit `{ error: { code, message } }` instead of a plan.
 
 ### si deploy
 

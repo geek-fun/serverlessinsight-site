@@ -118,7 +118,7 @@ Providers you can actually deploy to today are **aliyun**, **tencent**, and **vo
 | Command | Aliyun | Tencent Cloud | Volcengine |
 | --- | --- | --- | --- |
 | `validate` | ✅ | ✅ | ✅ |
-| `plan` | ✅ | ✅ | ❌ |
+| `plan` / `diff` | ✅ | ✅ | ✅ |
 | `deploy` / `destroy` | ✅ | ✅ | ✅ |
 | `local` | ✅ (local emulation) | ❌ | ❌ |
 | `show` | ✅ | ✅ | ✅ |
