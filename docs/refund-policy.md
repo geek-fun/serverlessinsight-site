@@ -3,7 +3,7 @@ title: 退款政策
 description: ServerlessInsight 退款政策
 layout: page
 sidebar: false
-outline: true
+outline: deep
 ---
 
 # 退款政策

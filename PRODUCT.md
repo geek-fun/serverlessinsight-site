@@ -33,7 +33,7 @@ ServerlessInsight 是面向国内云厂商的开源 Serverless IaC 工具：用�
 - 腾讯云暂不支持 `events`（HTTP 入口走函数 triggers）——对比矩阵措辞需准确
 - 版本 0.9.0（2026-09-11 发布），共 62 个版本，迭代活跃
 - 首页证据素材已获用户批准：真实 YAML/CLI 示例、GitHub/npm 真实数据、多云厂商支持矩阵
-- 明暗基调：跟随系统自适应（用户决策）
+- Site appearance: the approved dark homepage hero, team section, and closing actions alternate with white and mist feature, workflow, use case, pricing, and FAQ sections. The team section uses captures of the real console UI. Pricing, documentation, and legal pages extend the same Inter typography, neutral palette, flat borders, modest corners, and monochrome actions. Inner pages retain native VitePress reading, navigation, and light/dark controls; all routes share the branded dark footer.
 
 ## Brand Commitments
 
@@ -45,10 +45,12 @@ ServerlessInsight 是面向国内云厂商的开源 Serverless IaC 工具：用�
 
 ## Evidence on Hand
 
-- 真实可展示：getting-started.md 的 YAML 配置示例（函数/网关/数据库/stages 变量）、CLI 命令流、HeroScene.vue 已有的 YAML 打字 3D 场景
+- Approved landing evidence: a local minimal deployable function YAML excerpt from getting-started.md, an explicitly illustrative Alibaba Cloud deployment plan, the local/validate/deploy workflow, provider identities, Apache-2.0, and localized captures of the real console UI rendered with example data. Expanded feature and use-case content preserves existing product limitations.
 - 真实数据（2026-09-15 取自公开接口）：npm 累计发布 62 版本、月下载 ~1,510、年下载 ~8,959；GitHub 88 stars / 10 forks、Apache-2.0、2024-01 开源
 - 禁止虚构：无客户 Logo、无推荐语、无性能基准、无下载量夸大——star/下载量数字偏小，只做低调的诚实呈现（如「62 个版本 · Apache-2.0 · 持续迭代」），不做大数字英雄牌
-- 定价页存在真实快照（PricingPage.vue，0 AMR 免费档 + Team featured 档），可 teaser 引用但以定价页为准
+- Homepage pricing explains the free allowance and managed resource usage in AMR, with a brief Developer/Team/Enterprise summary and one localized link to dedicated pricing. Its illustrative Alibaba Cloud usage figure shares resource weights through usePricing.ts; cloud infrastructure is billed separately. Full plan details, annual/monthly selection, and pricing-utils.mjs calculations remain on the dedicated pricing page.
+
+- Home, pricing, documentation, and legal pages share localized header navigation, signup actions, and footer destinations. Pricing opens the dedicated pricing page. Inner-page appearance controls preserve the reader's theme preference; the homepage retains its fixed approved palette and the shared footer remains dark. Language switching preserves the corresponding page, and authentication labels follow the route locale.
 
 ## Product Principles
 
@@ -60,4 +62,9 @@ ServerlessInsight 是面向国内云厂商的开源 Serverless IaC 工具：用�
 
 ## Accessibility & Inclusion
 
-遵循 AGENTS.md 硬指标：正文对比度 ≥ 4.5:1，按钮前景/背景 ≥ 4.5:1，状态不得只靠颜色区分（伴随图标或文字）；尊重 prefers-reduced-motion（HeroScene 已实现）。
+Follow AGENTS.md contrast requirements: body and button contrast >= 4.5:1; states include text or icons rather than color alone. The landing supports visible focus, keyboard tabs and navigation, localized copy feedback, and prefers-reduced-motion.
+
+
+## Motion behavior
+
+Marketing motion makes the product workflow visible: a bounded plan-to-topology sequence with replay, deliberate headline arrivals, and selective product-artifact entrances when visible. Content and prices update immediately. Reading pages avoid initial choreography; transitions from marketing to reading use a visible bounded arrival with a stable header, while reading-to-reading navigation stays brief. Reduced-motion preferences suppress spatial effects; route changes, unmount, and hidden documents cancel owned work and observers. CSS and the browser Web Animations API require no added dependency. The CLI workflow runs local development → validation → deployment.

@@ -3,7 +3,7 @@ title: 服务条款
 description: ServerlessInsight 服务条款
 layout: page
 sidebar: false
-outline: true
+outline: deep
 ---
 
 # 服务条款

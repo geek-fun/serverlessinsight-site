@@ -4,6 +4,7 @@
   "private": true,
   "description": "ServerlessInsight marketing and documentation site (VitePress static site)",
   "scripts": {
+    "test": "npm run docs:build && node --test tests/*.test.mjs",
     "docs:dev": "node scripts/fetch-pricing.mjs --soft && vitepress dev docs",
     "docs:build": "node scripts/fetch-pricing.mjs && vitepress build docs",
     "docs:preview": "vitepress preview docs"

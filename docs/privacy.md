@@ -3,7 +3,7 @@ title: 隐私政策
 description: ServerlessInsight 隐私政策
 layout: page
 sidebar: false
-outline: true
+outline: deep
 ---
 
 # 隐私政策

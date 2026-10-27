@@ -3,7 +3,7 @@ title: Terms of Service
 description: ServerlessInsight Terms of Service
 layout: page
 sidebar: false
-outline: true
+outline: deep
 ---
 
 # Terms of Service

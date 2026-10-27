@@ -3,7 +3,7 @@ title: Privacy Policy
 description: ServerlessInsight Privacy Policy
 layout: page
 sidebar: false
-outline: true
+outline: deep
 ---
 
 # Privacy Policy

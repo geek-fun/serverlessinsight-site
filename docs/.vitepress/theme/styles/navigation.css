@@ -1,0 +1,229 @@
+/* One navigation system for marketing, pricing, and documentation. */
+.VPNav .VPNavBar,
+.Layout .VPNav .VPNavBar.has-sidebar {
+  background: var(--vp-nav-bg-color);
+}
+.VPNav .VPNavBar .wrapper,
+.Layout .VPNav .VPNavBar.has-sidebar .wrapper {
+  padding-inline: 40px;
+}
+.VPNav .VPNavBar .container,
+.Layout .VPNav .VPNavBar.has-sidebar .container {
+  max-width: 1280px;
+}
+.VPNav .VPNavBar .title,
+.Layout .VPNav .VPNavBar.has-sidebar .title {
+  position: static;
+  width: auto;
+  padding: 0;
+  background: transparent;
+}
+.VPNav .VPNavBarTitle .title {
+  gap: 12px;
+  border-bottom: 0;
+  font-size: 20px;
+  font-weight: 650;
+  letter-spacing: -0.035em;
+}
+.VPNav .VPNavBarTitle .logo {
+  width: var(--vp-nav-logo-height);
+  margin: 0;
+  object-fit: contain;
+}
+.VPNav .VPNavBar .content,
+.Layout .VPNav .VPNavBar.has-sidebar .content {
+  padding: 0;
+  min-width: 0;
+}
+.VPNav .VPNavBar .content-body,
+.Layout .VPNav .VPNavBar.has-sidebar .content-body {
+  background: transparent;
+}
+.VPNav .VPNavBarSearch:empty {
+  display: none;
+}
+.VPNav .VPNavBarMenu {
+  margin-left: 48px;
+  margin-right: auto;
+}
+.VPNav .VPNavBar .divider,
+.Layout .VPNav .VPNavBar.has-sidebar .divider {
+  padding: 0;
+}
+.VPNav .VPNavBar .divider-line {
+  background: var(--vp-c-divider);
+}
+.VPNav .VPNavBarSocialLinks,
+.VPNav .VPNavBarExtra .group:has(.social-links),
+.VPNav .VPNavScreenSocialLinks {
+  display: none;
+}
+.VPNav .VPNavBarAppearance {
+  padding-right: 12px;
+}
+.VPNav .VPNavBarMenu + .VPNavBarTranslations::before {
+  display: none;
+}
+.si-nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-left: 12px;
+}
+.si-nav-start {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0 22px;
+  border: 1px solid var(--vp-button-brand-border);
+  border-radius: 4px;
+  background: var(--vp-button-brand-bg);
+  color: var(--vp-button-brand-text);
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  text-decoration: none;
+  transition:
+    background-color 160ms ease-out,
+    border-color 160ms ease-out;
+}
+.si-nav-start:hover {
+  background: var(--vp-button-brand-hover-bg);
+  border-color: var(--vp-button-brand-hover-border);
+  color: var(--vp-button-brand-hover-text);
+}
+.VPNav :focus-visible {
+  outline: 2px solid var(--vp-c-brand-1);
+  outline-offset: 4px;
+}
+.VPNav .VPNavScreenTranslations {
+  height: 44px;
+}
+.VPNav .VPNavScreenTranslations.open {
+  height: auto;
+}
+.VPNav .VPNavScreenTranslations > .title {
+  height: 44px;
+  line-height: 24px;
+}
+.VPNav .VPSwitchAppearance::after {
+  position: absolute;
+  inset: -11px -2px;
+  content: '';
+}
+.si-nav-actions--mobile {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 20px;
+  padding: 20px 0 0;
+}
+
+/* The homepage keeps the approved palette regardless of the reading theme. */
+.si-marketing > .VPNav {
+  position: relative;
+  top: 0;
+  --vp-nav-bg-color: var(--si-bg);
+  --vp-nav-screen-bg-color: var(--si-bg);
+  --vp-c-bg-elv: var(--si-panel);
+  --vp-c-bg-soft: var(--si-hover);
+  --vp-c-text-1: var(--si-text);
+  --vp-c-text-2: var(--si-muted);
+  --vp-c-divider: var(--si-border);
+  --vp-c-brand-1: var(--si-link);
+  --vp-button-brand-bg: var(--si-text);
+  --vp-button-brand-border: var(--si-text);
+  --vp-button-brand-text: var(--si-bg);
+  --vp-button-brand-hover-bg: var(--si-button-hover);
+  --vp-button-brand-hover-border: var(--si-button-hover);
+  --vp-button-brand-hover-text: var(--si-bg);
+}
+.si-marketing .VPNav .VPNavBarTitle .VPImage.light,
+.si-marketing .VPNavBarAppearance,
+.si-marketing .VPNavBarExtra .group:has(.appearance),
+.si-marketing .VPNavScreenAppearance {
+  display: none;
+}
+.si-marketing .VPNav .VPNavBarTitle .VPImage.dark {
+  display: block;
+}
+
+@media (max-width: 1279px) {
+  .VPNav .VPNavBarMenu {
+    margin-left: 28px;
+  }
+  .VPNav .VPNavBarMenuLink {
+    padding-inline: 10px;
+  }
+  .VPNav .VPNavBarExtra {
+    margin-right: 0;
+  }
+}
+@media (max-width: 1199px) {
+  .VPNav .VPNavBar .wrapper,
+  .Layout .VPNav .VPNavBar.has-sidebar .wrapper {
+    padding-inline: 32px;
+  }
+  .VPNav .VPNavBarTitle .title {
+    font-size: 18px;
+    gap: 10px;
+  }
+  .VPNav .VPNavBarMenu {
+    margin-left: 20px;
+  }
+  .si-nav-actions {
+    gap: 8px;
+    padding-left: 4px;
+  }
+  .si-nav-start {
+    padding-inline: 18px;
+  }
+}
+@media (max-width: 959px) {
+  .VPNav .VPNavBarMenu,
+  .VPNav .VPNavBarExtra,
+  .si-nav-actions:not(.si-nav-actions--mobile) .auth-nav {
+    display: none;
+  }
+  .VPNav .VPNavBarHamburger {
+    display: flex;
+    margin-left: 16px;
+  }
+  .VPNav .VPNavScreen {
+    display: block;
+  }
+  .VPNav .VPNavScreen .container {
+    max-width: 480px;
+  }
+}
+@media (max-width: 599px) {
+  .VPNav .VPNavBar .wrapper,
+  .Layout .VPNav .VPNavBar.has-sidebar .wrapper {
+    padding-inline: 20px;
+  }
+  .VPNav .VPNavBarTitle .title {
+    font-size: 16px;
+    gap: 9px;
+  }
+  .si-nav-actions:not(.si-nav-actions--mobile) {
+    display: none;
+  }
+  .VPNav .VPNavBarHamburger {
+    width: 44px;
+    margin-left: 8px;
+  }
+}
+@media (max-width: 359px) {
+  .VPNav .VPNavBarTitle .title {
+    font-size: 14px;
+    gap: 6px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .VPNav *,
+  .VPNav *::before,
+  .VPNav *::after {
+    transition: none !important;
+    animation: none !important;
+  }
+}

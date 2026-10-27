@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import {onMounted, onUnmounted, ref} from 'vue'
+import {computed, onMounted, onUnmounted, ref} from 'vue'
+import {useData} from 'vitepress'
 import {CONSOLE_URL} from '../console'
 
 /**
@@ -9,6 +10,8 @@ import {CONSOLE_URL} from '../console'
  * cookies ignore ports, so localhost dev environments share it too). The
  * cookie is cosmetic — the console API still owns the real session.
  */
+const {page} = useData()
+const isZh = computed(() => !page.value.relativePath.startsWith('en/'))
 const authed = ref(false)
 
 const update = () => {
@@ -30,12 +33,14 @@ onUnmounted(() => {
 
 <template>
   <!--
-    Four static spans; CSS picks the visible one from the build-time
-    html[lang] attribute + the runtime authed class. This keeps locale
-    correctness in SSG (no SSR data dependency) while the cookie toggles
-    登录 ↔ 控制口 at runtime.
+    Locale comes from the SSR-safe page path, so the auth label remains
+    available while the document language updates during navigation.
   -->
-  <a class="auth-nav" :class="{'auth-nav--authed': authed}" :href="CONSOLE_URL">
+  <a
+    class="auth-nav"
+    :class="{'auth-nav--authed': authed, 'auth-nav--zh': isZh, 'auth-nav--en': !isZh}"
+    :href="CONSOLE_URL"
+  >
     <span class="t zh t-login">登录</span>
     <span class="t zh t-console">控制台</span>
     <span class="t en t-login">Sign in</span>
@@ -56,18 +61,33 @@ onUnmounted(() => {
   transition: color 0.25s;
   white-space: nowrap;
 }
-.auth-nav:hover { color: var(--vp-c-brand-1); }
-.auth-nav--authed { color: var(--vp-c-brand-1); font-weight: 600; }
+.auth-nav:hover {
+  color: var(--vp-c-brand-1);
+}
+.auth-nav--authed {
+  color: var(--vp-c-brand-1);
+  font-weight: 600;
+}
 
-/* Locale + auth state via CSS: exactly one span is visible.
-   html[lang] is baked per page at build time — SSR-safe by construction. */
-.auth-nav .t { display: none; }
-html[lang='zh-CN'] .auth-nav .t.zh { display: inline; }
-html[lang^='en'] .auth-nav .t.en { display: inline; }
-.auth-nav--authed .t-login, .auth-nav:not(.auth-nav--authed) .t-console { display: none !important; }
+/* Route locale and cosmetic auth state select one visible label. */
+.auth-nav .t {
+  display: none;
+}
+.auth-nav--zh .t.zh {
+  display: inline;
+}
+.auth-nav--en .t.en {
+  display: inline;
+}
+.auth-nav--authed .t-login,
+.auth-nav:not(.auth-nav--authed) .t-console {
+  display: none !important;
+}
 
 @media (min-width: 960px) {
-  .auth-nav { padding: 0 14px; }
+  .auth-nav {
+    padding: 0 14px;
+  }
 }
 /* mobile full-screen menu: block row instead of inline link */
 :global(.VPNavScreen) .auth-nav {

@@ -6,9 +6,9 @@ const titleZh = 'ServerlessInsight | 全栈 Serverless 应用开发平台';
 const descZh = 'ServerlessInsight 是一个开源的全栈 Serverless 应用开发运维平台，支持跨云开发、部署、监控、调试和优化，并采用基础设施即代码实践。';
 const icon = '/favicon.ico';
 const logo = {
-  light: '/logo.png',
-  dark: '/logo-dark.png',
-  alt: 'ServerlessInsight',
+  light: {src: '/logo.png', width: 36, height: 36},
+  dark: {src: '/logo-dark.png', width: 36, height: 36},
+  alt: '',
 };
 
 const titleEn = 'ServerlessInsight | Full-Stack Serverless Development Platform';
@@ -139,11 +139,16 @@ gtag('config', 'G-FSJWB3QKGJ');`],
       themeConfig: {
         // https://vitepress.dev/reference/default-theme-config
         siteTitle: 'ServerlessInsight',
+        langMenuLabel: '选择语言',
+        darkModeSwitchLabel: '外观',
+        lightModeSwitchTitle: '切换到浅色主题',
+        darkModeSwitchTitle: '切换到深色主题',
         logo,
         nav: [
-          {text: '主页', link: '/'},
+          {text: '功能', link: '/#features'},
+          {text: '云支持', link: '/#cloud-support'},
           {text: '定价', link: '/pricing.html'},
-          {text: '文档', link: '/docs.html'},
+          {text: '文档', link: '/docs.html', activeMatch: '/(docs|introduction|getting-started|reference|cli|support|faq|case-study)(\\.html)?$'},
         ],
 
         sidebar: [
@@ -197,9 +202,10 @@ gtag('config', 'G-FSJWB3QKGJ');`],
         siteTitle: 'ServerlessInsight',
         logo,
         nav: [
-          {text: 'Home', link: '/en/'},
+          {text: 'Features', link: '/en/#features'},
+          {text: 'Cloud support', link: '/en/#cloud-support'},
           {text: 'Pricing', link: '/en/pricing.html'},
-          {text: 'Docs', link: '/en/docs.html'},
+          {text: 'Docs', link: '/en/docs.html', activeMatch: '/en/(docs|introduction|getting-started|reference|cli|support|faq|case-study)(\\.html)?$'},
         ],
 
         sidebar: [

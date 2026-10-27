@@ -3,7 +3,7 @@ title: Refund Policy
 description: ServerlessInsight Refund Policy
 layout: page
 sidebar: false
-outline: true
+outline: deep
 ---
 
 # Refund Policy
