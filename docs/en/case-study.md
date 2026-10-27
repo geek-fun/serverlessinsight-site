@@ -1,3 +1,7 @@
+---
+title: "Serverless Application Examples"
+description: "Explore serverless application scenarios and configuration examples, including API backends and data processing, with links to setup and reference guides."
+---
 # Case Studies
 
 This page collects stories of teams building real applications on ServerlessInsight.
@@ -5,7 +9,7 @@ This page collects stories of teams building real applications on ServerlessInsi
 ## Table of Contents
 
 - [What is ServerlessInsight](#what-is-serverlessinsight)
-- [Case Studies](#case-studies)
+- [Case Studies](#case-studies-1)
 - [By Industry](#by-industry)
 - [By Scenario](#by-scenario)
 - [Submit Your Case](#submit-your-case)
@@ -388,7 +392,7 @@ Build RESTful or GraphQL APIs for web and mobile apps.
 - Microservice architecture
 - BFF (Backend for Frontend)
 
-[View case →](#2-e-commerce-api-backend)
+[View case →](#_2-e-commerce-api-backend)
 
 ### Data Processing
 Batch and real-time data stream processing.
@@ -399,7 +403,7 @@ Batch and real-time data stream processing.
 - Log processing
 - Data transformation
 
-[View case →](#3-iot-data-processing-platform)
+[View case →](#_3-iot-data-processing-platform)
 
 ### AI & Machine Learning
 AI model deployment and inference services.
@@ -410,7 +414,7 @@ AI model deployment and inference services.
 - Recommendation systems
 - Predictive analytics
 
-[View case →](#1-deepseek-model-deployment)
+[View case →](#_1-deepseek-model-deployment)
 
 ### Media Processing
 Audio/video transcoding and processing.
@@ -421,7 +425,7 @@ Audio/video transcoding and processing.
 - Live streaming
 - Content moderation
 
-[View case →](#4-media-content-processing)
+[View case →](#_4-media-content-processing)
 
 ### Mobile Backend
 Backend services for mobile applications.

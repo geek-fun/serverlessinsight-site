@@ -1,6 +1,6 @@
 ---
-title: CLI Reference
-description: All ServerlessInsight CLI commands and options
+title: "CLI Reference"
+description: "ServerlessInsight si CLI commands and options for authentication, validation, deployment plans, deployment, teardown and local development."
 ---
 
 # CLI Reference

@@ -1,9 +1,34 @@
 :root {
+  /* Fixed art direction for the marketing landing page, in both system themes. */
+  --si-bg: #111111;
+  --si-panel: #141414;
+  --si-text: #f8f8f8;
+  --si-muted: #bcbcbc;
+  --si-step: #a3a3a3;
+  --si-border: #3d3d3d;
+  --si-border-strong: #626262;
+  --si-link: #a384eb;
+  --si-secondary-border: #8473a7;
+  --si-motion-row: rgba(255, 255, 255, 0.09);
+  --si-hover: #292929;
+  --si-button-hover: #dddddd;
+  --si-paper: #ffffff;
+  --si-ink: #111111;
+  --si-ink-muted: #626262;
+  --si-light-border: #d6d6d6;
+  --si-code-bg: #fafafa;
+  --si-code-header: #f3f3f3;
+  --si-mist: #f5f5f5;
+  --si-light-hover: #ededed;
+  --si-link-light: #6640bf;
+  --si-selection: rgba(163, 132, 235, 0.3);
+  --si-selection-light: rgba(102, 64, 191, 0.16);
   /* V3 Mono + Violet Accent (aligned with the console theme):
      violet owns links / active nav / small accents only — buttons are
      monochrome and display type stays neutral (see overrides below). */
   --vp-c-brand-1: #6640BF;
-  --vp-nav-logo-height: 32px;
+  --vp-nav-logo-height: 36px;
+  --vp-nav-height: 76px;
 }
 
 .dark {
@@ -127,4 +152,58 @@
     width: 50%;
     height: auto;
   }
+}
+
+@media (max-width: 959px) {
+  :root { --vp-nav-height: 72px; }
+}
+@media (max-width: 599px) {
+  :root {
+    --vp-nav-height: 68px;
+    --vp-nav-logo-height: 32px;
+  }
+}
+
+/* Shared site palette and typography extend the approved homepage system. */
+:root {
+  --vp-font-family-base: 'Inter', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  --vp-c-bg: var(--si-paper);
+  --vp-c-bg-alt: var(--si-mist);
+  --vp-c-bg-elv: var(--si-paper);
+  --vp-c-bg-soft: var(--si-mist);
+  --vp-c-text-1: var(--si-ink);
+  --vp-c-text-2: var(--si-ink-muted);
+  --vp-c-text-3: var(--si-ink-muted);
+  --vp-c-divider: var(--si-light-border);
+  --vp-c-gutter: var(--si-light-border);
+  --vp-c-neutral: var(--si-ink);
+  --vp-c-neutral-inverse: var(--si-paper);
+  --vp-code-block-bg: var(--si-code-bg);
+  --vp-nav-bg-color: var(--vp-c-bg);
+  --vp-sidebar-bg-color: var(--vp-c-bg-alt);
+}
+.dark {
+  --vp-c-bg: var(--si-bg);
+  --vp-c-bg-alt: var(--si-panel);
+  --vp-c-bg-elv: var(--si-panel);
+  --vp-c-bg-soft: var(--si-hover);
+  --vp-c-text-1: var(--si-text);
+  --vp-c-text-2: var(--si-muted);
+  --vp-c-text-3: var(--si-step);
+  --vp-c-divider: var(--si-border);
+  --vp-c-gutter: var(--si-border);
+  --vp-c-neutral: var(--si-text);
+  --vp-c-neutral-inverse: var(--si-bg);
+  --vp-code-block-bg: var(--si-panel);
+}
+
+/* Motion communicates entry, state and the deployment diagram's relationships. */
+:root {
+  --si-motion-ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --si-motion-feedback: 160ms;
+  --si-motion-page: 720ms;
+  --si-motion-route: 420ms;
+  --si-motion-trace: 750ms;
+  --si-motion-enter: 200ms;
+  --si-motion-exit: 120ms;
 }

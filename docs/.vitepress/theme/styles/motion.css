@@ -1,0 +1,245 @@
+/* A shared, bounded motion vocabulary. Content is visible without JavaScript. */
+.si-topology__connection {
+  position: relative;
+  display: inline-flex;
+  width: 24px;
+  height: 24px;
+}
+.si-topology__trace {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  color: var(--si-link);
+  pointer-events: none;
+}
+
+.pp-toggle {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  width: 280px;
+  max-width: 100%;
+}
+.pp-toggle-indicator {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  left: 4px;
+  width: calc((100% - 12px) / 2);
+  border-radius: 2px;
+  background: var(--vp-c-text-1);
+  pointer-events: none;
+  transition: transform var(--si-motion-enter) var(--si-motion-ease);
+}
+.pp-toggle--annual .pp-toggle-indicator {
+  transform: translateX(calc(100% + 4px));
+}
+.pp-toggle .pp-toggle-btn {
+  position: relative;
+  z-index: 1;
+  padding-inline: 12px;
+  transition:
+    color var(--si-motion-feedback) var(--si-motion-ease),
+    background-color var(--si-motion-feedback) var(--si-motion-ease);
+}
+.pp-toggle .pp-toggle-btn--on,
+.pp-toggle .pp-toggle-btn--on:hover {
+  background: transparent;
+}
+.pp-toggle-wrap {
+  max-width: 100%;
+}
+
+.si-tabs > button::after {
+  content: '';
+  position: absolute;
+  inset-inline: 0;
+  bottom: -1px;
+  height: 2px;
+  background: var(--si-link);
+  transform: scaleX(0);
+  transition: transform var(--si-motion-enter) var(--si-motion-ease);
+}
+.si-tabs > button[aria-selected='true']::after {
+  transform: scaleX(1);
+}
+
+:is(.si-marketing, .si-site) :is(.si-button, .si-nav-start, .pp-btn, .si-icon-button) {
+  transition:
+    background-color var(--si-motion-feedback) var(--si-motion-ease),
+    border-color var(--si-motion-feedback) var(--si-motion-ease),
+    color var(--si-motion-feedback) var(--si-motion-ease),
+    transform var(--si-motion-exit) var(--si-motion-ease);
+}
+:is(.si-marketing, .si-site) :is(.si-text-link, .auth-nav, .VPNavBarMenuLink, .si-footer__group a) {
+  transition: color var(--si-motion-feedback) var(--si-motion-ease);
+}
+:is(.si-marketing, .si-site) :is(.si-button, .pp-btn, .si-text-link) > svg {
+  transition: transform var(--si-motion-enter) var(--si-motion-ease);
+}
+:is(.si-marketing, .si-site) :is(.si-button, .si-nav-start, .pp-btn, .si-icon-button):active {
+  transform: translateY(1px);
+}
+@media (hover: hover) and (pointer: fine) {
+  :is(.si-marketing, .si-site) :is(.si-button--primary, .pp-btn):hover > svg {
+    transform: translateX(3px);
+  }
+  :is(.si-marketing, .si-site) :is(.si-text-link, .si-button--secondary):hover > svg {
+    transform: translate(2px, -2px);
+  }
+}
+
+.VPNav .VPNavScreen.fade-enter-active {
+  transition-duration: var(--si-motion-enter);
+  transition-timing-function: var(--si-motion-ease);
+}
+.VPNav .VPNavScreen.fade-leave-active {
+  transition-duration: var(--si-motion-exit);
+  transition-timing-function: var(--si-motion-ease);
+}
+.VPNav .VPNavScreen.fade-enter-active .container,
+.VPNav .VPNavScreen.fade-leave-active .container {
+  transition-duration: inherit;
+  transition-timing-function: var(--si-motion-ease);
+}
+.VPNav .VPNavScreen.fade-enter-from .container,
+.VPNav .VPNavScreen.fade-leave-to .container {
+  transform: translateY(-4px);
+}
+.VPNav .VPFlyout > .menu {
+  transition-duration: var(--si-motion-feedback);
+  transition-timing-function: var(--si-motion-ease);
+}
+.VPNav .VPSwitchAppearance .check {
+  transition: transform var(--si-motion-enter) var(--si-motion-ease) !important;
+}
+.vp-menu-enter-active {
+  transition:
+    opacity var(--si-motion-enter) var(--si-motion-ease),
+    transform var(--si-motion-enter) var(--si-motion-ease);
+}
+.vp-menu-leave-active {
+  transition:
+    opacity var(--si-motion-exit) var(--si-motion-ease),
+    transform var(--si-motion-exit) var(--si-motion-ease);
+}
+.vp-menu-enter-from,
+.vp-menu-leave-to {
+  opacity: 0;
+  transform: translateY(-4px);
+}
+.vp-platform-selector__chevron {
+  transition: transform var(--si-motion-enter) var(--si-motion-ease);
+}
+
+.si-faq__items summary svg,
+.pp-faq-item summary svg {
+  transition: transform var(--si-motion-enter) var(--si-motion-ease);
+}
+@keyframes si-feedback-in {
+  from {
+    opacity: 0.94;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .si-copy-feedback,
+  .si-faq__items details[open] > p,
+  .pp-faq-item[open] > p,
+  html[data-platform-switched] .vp-platform-block {
+    animation: si-feedback-in var(--si-motion-feedback) var(--si-motion-ease);
+  }
+}
+
+/* State remains immediate; reduced motion keeps only brief color feedback. */
+@media (prefers-reduced-motion: reduce) {
+  :is(.si-marketing, .si-site) *,
+  :is(.si-marketing, .si-site) *::before,
+  :is(.si-marketing, .si-site) *::after {
+    animation: none !important;
+    transition-property: color, background-color, border-color, opacity !important;
+    transition-duration: 80ms !important;
+    scroll-behavior: auto !important;
+  }
+  :is(.si-marketing, .si-site) :is(.si-button, .si-nav-start, .pp-btn, .si-icon-button):active,
+  :is(.si-marketing, .si-site) :is(.si-button, .pp-btn, .si-text-link):hover > svg {
+    transform: none;
+  }
+  #app .VPSwitchAppearance .check {
+    transition: none !important;
+  }
+  .VPNav .VPNavScreen.fade-enter-from .container,
+  .VPNav .VPNavScreen.fade-leave-to .container,
+  .vp-menu-enter-from,
+  .vp-menu-leave-to {
+    transform: none;
+  }
+}
+
+#app .VPSidebar {
+  transition:
+    transform var(--si-motion-enter) var(--si-motion-ease),
+    background-color var(--si-motion-feedback) var(--si-motion-ease);
+}
+#app .VPSidebar:not(.open) {
+  transition-duration: var(--si-motion-exit);
+}
+.vp-platform-selector__trigger,
+.vp-platform-selector__option {
+  transition:
+    border-color var(--si-motion-feedback) var(--si-motion-ease),
+    background-color var(--si-motion-feedback) var(--si-motion-ease),
+    color var(--si-motion-feedback) var(--si-motion-ease);
+}
+
+.si-deployment__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding-top: 8px;
+}
+.si-deployment__footer .si-deployment__note {
+  margin: 0;
+  text-align: right;
+}
+.si-workflow-replay {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 4px 6px;
+  color: var(--si-link);
+  font-size: 12px;
+  line-height: 1.3;
+  border-radius: 2px;
+  transition: background-color var(--si-motion-feedback) var(--si-motion-ease);
+}
+.si-workflow-replay:hover {
+  background: var(--si-hover);
+}
+.si-topology > div > svg {
+  transform-origin: center;
+}
+@media (max-width: 479px) {
+  .si-deployment__footer {
+    align-items: flex-start;
+  }
+  .si-deployment__footer .si-deployment__note {
+    max-width: 53%;
+    padding-top: 8px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .si-workflow-replay {
+    display: none;
+  }
+  .si-deployment__footer .si-deployment__note {
+    max-width: 100%;
+    margin-left: auto;
+  }
+}

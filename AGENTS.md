@@ -2,7 +2,8 @@
 
 面向在本仓库工作的 AI agent 与贡献者。本站是 ServerlessInsight 的**标准营销网站**
 （VitePress SSG，中文为主 + `en/` 英文副本）；登录与控制台应用由
-`console-serverlessinsight` 提供，本站只做入口链接。提交前跑通 `npm run docs:build`。
+`console-serverlessinsight` 提供，本站只做入口链接。提交前跑通
+`npm run docs:build` 与 `npm test`。
 
 ---
 
@@ -72,8 +73,10 @@
   - 文案/颜色随 locale 切换 → 用构建期固化的 `html[lang]` 属性 + CSS 显隐
     （参考 `AuthNav.vue` 的四 span 模式）；
   - 或组件内 `useData().page.value.relativePath` 判断（SSR 安全）。
-- 新页面在 `localizedPages`（config.mts）登记以生成 hreflang 头；导航双侧
-  （zh/en）同步增删。
+- 新页面在 `LOCALIZED_PAGES`（`docs/.vitepress/seo.mjs`）登记以生成 hreflang、
+  canonical 与结构化数据；导航双侧（zh/en）同步增删。SEO 相关约定
+  （元数据、结构化数据、noindex、坏链防护）集中在 `seo.mjs` 与
+  `tests/seo.test.mjs`，改 SEO 行为从这两处入手。
 
 ### 新颜色 / 新内容落地流程
 
@@ -85,19 +88,11 @@
 4. 控制台地址常量在 `docs/.vitepress/theme/console.ts`（`CONSOLE_URL`），
    生产域名变更只改这一处。
 
-### 已知待办（接手可做）
-
-- [ ] OG 分享图（`si-archtecture.drawio.png`）与其他位图品牌资产如含旧琥珀色，
-      需设计重出为 violet 版本。
-- [ ] 语义色 token 化：`pp-freebadge` 等处的绿色硬编码迁移到 `--success` token。
-- [ ] 登录/控制台入口的 Terms / Privacy 链接目前为占位（`#`），法务页面上线后
-      替换真实地址。
-
 ---
 
 ## 仓库约定（速览）
 
 - VitePress SSG：`npm run docs:dev`（本地）、`npm run docs:build`（构建到 `dist/`）。
 - 多 locale：`docs/` root = 中文，`docs/en/` = 英文；新页面两侧都要建，并在
-  `config.mts` 的 `localizedPages` 登记。
+  `seo.mjs` 的 `LOCALIZED_PAGES` 登记。
 - 部署产物为纯静态；控制台登录入口指向 `console.ts` 中的 `CONSOLE_URL`。

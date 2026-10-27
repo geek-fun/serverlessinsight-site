@@ -1,14 +1,18 @@
+---
+title: "Frequently Asked Questions"
+description: "Answers to ServerlessInsight questions about installation, YAML configuration, cloud deployments, local development, resources, credentials and troubleshooting."
+---
 # Frequently Asked Questions (FAQ)
 
 Common questions and answers about working with ServerlessInsight.
 
 ## Table of Contents
 
-- [Installation & Configuration](#installation--configuration)
+- [Installation & Configuration](#installation-configuration)
 - [Deployment](#deployment)
 - [Local Development](#local-development)
 - [Resource Management](#resource-management)
-- [Security & Permissions](#security--permissions)
+- [Security & Permissions](#security-permissions)
 - [Troubleshooting](#troubleshooting)
 - [Best Practices](#best-practices)
 - [Other Questions](#other-questions)

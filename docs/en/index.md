@@ -1,7 +1,7 @@
 ---
 layout: home
-title: ServerlessInsight — Full-Stack Serverless Development Platform
-description: "Open-source declarative serverless IaC: define functions, API gateways, databases and object storage in a single file, and deploy to Alibaba Cloud, Tencent Cloud or Volcengine with one command. State-based incremental changes, fully visible before they run."
+title: "ServerlessInsight — Full-Stack Serverless Development Platform"
+description: "Open-source serverless IaC for Alibaba Cloud, Tencent Cloud and Volcengine. Define resources in YAML and review incremental deployments to your own cloud."
 ---
 
 <HomeLanding />
