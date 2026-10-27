@@ -1,4 +1,9 @@
 /* One navigation system for marketing, pricing, and documentation. */
+/* Untranslated helper pages: the locale picker would link to a nonexistent
+   other-locale page, so the layout marks them data-si-translations="off". */
+.si-site[data-si-translations='off'] :is(.VPNavBarTranslations, .VPNavScreenTranslations) {
+  display: none !important;
+}
 .VPNav .VPNavBar,
 .Layout .VPNav .VPNavBar.has-sidebar {
   background: var(--vp-nav-bg-color);

@@ -1,6 +1,6 @@
 ---
-title: 隐私政策
-description: ServerlessInsight 隐私政策
+title: "隐私政策"
+description: "了解 ServerlessInsight 隐私政策，包括账号、账单和服务数据的收集、使用、保护与用户权利。"
 layout: page
 sidebar: false
 outline: deep

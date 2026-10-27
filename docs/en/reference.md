@@ -1,5 +1,7 @@
 ---
 outline: [2, 4]
+title: "YAML Configuration Reference"
+description: "Reference for serverlessinsight.yml: providers, variables, stages, functions, API events, databases, tables, storage buckets and provider-specific support."
 ---
 
 # Configuration Reference

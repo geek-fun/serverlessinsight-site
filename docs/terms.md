@@ -1,6 +1,6 @@
 ---
-title: 服务条款
-description: ServerlessInsight 服务条款
+title: "服务条款"
+description: "阅读 ServerlessInsight 服务条款，了解服务使用、账号、计费与双方权利义务。"
 layout: page
 sidebar: false
 outline: deep

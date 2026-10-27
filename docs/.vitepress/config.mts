@@ -1,9 +1,10 @@
 import {defineConfig} from 'vitepress'
 import container from 'markdown-it-container'
+import {createSeoHooks, DEFAULT_DESCRIPTIONS, SITE_NAME, SITE_ORIGIN} from './seo.mjs'
 
-const siteOrigin = 'https://www.serverlessinsight.com';
-const titleZh = 'ServerlessInsight | 全栈 Serverless 应用开发平台';
-const descZh = 'ServerlessInsight 是一个开源的全栈 Serverless 应用开发运维平台，支持跨云开发、部署、监控、调试和优化，并采用基础设施即代码实践。';
+const siteOrigin = SITE_ORIGIN;
+const titleZh = SITE_NAME;
+const descZh = DEFAULT_DESCRIPTIONS['zh-CN'];
 const icon = '/favicon.ico';
 const logo = {
   light: {src: '/logo.png', width: 36, height: 36},
@@ -11,85 +12,16 @@ const logo = {
   alt: '',
 };
 
-const titleEn = 'ServerlessInsight | Full-Stack Serverless Development Platform';
-const descEn = 'ServerlessInsight is an open-source full-stack serverless platform for developing, deploying, monitoring, debugging, and optimizing applications across cloud providers with infrastructure as code.';
-const socialImage = '/og.jpg';
+const titleEn = SITE_NAME;
+const descEn = DEFAULT_DESCRIPTIONS.en;
+const seo = createSeoHooks();
 
-const localizedPages = new Set([
-  'index.md',
-  'pricing.md',
-  'docs.md',
-  'getting-started.md',
-  'introduction.md',
-  'reference.md',
-  'cli.md',
-  'support.md',
-  'faq.md',
-  'case-study.md',
-]);
-
-const routeFromRelativePath = (relativePath: string) => {
-  const path = relativePath.replace(/\.md$/, '');
-
-  if (path === 'index' || path.endsWith('/index')) {
-    const localePath = path === 'index' ? '' : path.slice(0, -'/index'.length);
-    return localePath ? `/${localePath}/` : '/';
-  }
-
-  return `/${path}.html`;
-};
-
-const absoluteUrl = (route: string) => `${siteOrigin}${route}`;
-
-const addPageMetadata = (pageData: {
-  relativePath: string;
-  title?: string;
-  description?: string;
-  frontmatter: {head?: unknown[]};
-}) => {
-  const route = routeFromRelativePath(pageData.relativePath);
-  const isEnglish = pageData.relativePath.startsWith('en/');
-  const siteTitle = isEnglish ? titleEn : titleZh;
-  const siteDescription = isEnglish ? descEn : descZh;
-  // Per-page social metadata mirrors the rendered <title> (same composition
-  // rule VitePress uses); pages without their own title/description fall back
-  // to the locale defaults.
-  const pageTitle = pageData.title ? `${pageData.title} | ${siteTitle}` : siteTitle;
-  const pageDescription = pageData.description || siteDescription;
-  const head = pageData.frontmatter.head ?? [];
-  const metadata = [
-    ['link', {rel: 'canonical', href: absoluteUrl(route)}],
-    ['meta', {property: 'og:url', content: absoluteUrl(route)}],
-    ['meta', {property: 'og:image', content: absoluteUrl(socialImage)}],
-    ['meta', {property: 'og:title', content: pageTitle}],
-    ['meta', {property: 'og:description', content: pageDescription}],
-    ['meta', {name: 'twitter:card', content: 'summary_large_image'}],
-    ['meta', {name: 'twitter:image', content: absoluteUrl(socialImage)}],
-    ['meta', {name: 'twitter:title', content: pageTitle}],
-    ['meta', {name: 'twitter:description', content: pageDescription}],
-  ];
-
-  if (localizedPages.has(pageData.relativePath.replace(/^en\//, ''))) {
-    const localPath = pageData.relativePath.replace(/^en\//, '');
-    const alternatePaths = isEnglish
-      ? {en: pageData.relativePath, 'zh-CN': localPath}
-      : {en: `en/${localPath}`, 'zh-CN': pageData.relativePath};
-
-    metadata.push(
-      ['link', {rel: 'alternate', hreflang: 'en', href: absoluteUrl(routeFromRelativePath(alternatePaths.en))}],
-      ['link', {rel: 'alternate', hreflang: 'zh-CN', href: absoluteUrl(routeFromRelativePath(alternatePaths['zh-CN']))}],
-      ['link', {rel: 'alternate', hreflang: 'x-default', href: absoluteUrl(routeFromRelativePath(alternatePaths['zh-CN']))}],
-    );
-  }
-
-  pageData.frontmatter.head = [...head, ...metadata];
-};
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
   lastUpdated: true,
   sitemap: {
     hostname: siteOrigin,
-    transformItems: (items) => items.filter(({url}) => !url.includes('404.html') && !url.includes('serverlessInsight-depseek')),
+    transformItems: seo.transformSitemap,
   },
   outDir: '../dist',
   cacheDir: '../cache',
@@ -110,7 +42,9 @@ export default defineConfig({
       })
     }
   },
-  transformPageData: addPageMetadata,
+  transformPageData: seo.transformPageData,
+  transformHead: seo.transformHead,
+  transformHtml: seo.transformHtml,
   locales: {
     root: {
       label: '中文',
@@ -121,11 +55,6 @@ export default defineConfig({
         ['link', {rel: 'icon', href: icon, sizes: 'any'}],
         ['link', {rel: 'icon', type: 'image/png', href: '/favicon-32.png', sizes: '32x32'}],
         ['link', {rel: 'apple-touch-icon', href: '/apple-touch-icon.png'}],
-        ['meta', {name: 'description', content: descZh}],
-        ['meta', {
-          name: 'keywords',
-          content: 'ServerlessInsight, serverless 平台,serverless framework, 跨云 serverless 管理, serverless 应用开发, serverless 全生命周期管理, 基础设施即代码, ServerlessInsight 特性, 无服务器架构, Serverless Insight, 跨供应商 serverless 管理, 多云 serverless 部署, 极客范开源社区, serverless 开发工具, 云原生开发, 无服务器应用部署, 开源 serverless 软件, serverless CI/CD 集成, 开源 serverless 项目, 云原生 serverless 最佳实践, serverless 微服务架构, serverless 实时数据处理, API 后端 serverless 框架, serverless 事件驱动架构, 可持续软件开发,极客范,geekfun',
-        }],
         ['meta', {property: 'og:site_name', content: titleZh}],
         ['meta', {name: 'baidu-site-verification', content: 'codeva-RxGXH1Uqch'}],
         ['meta', {name: 'google-site-verification', content: 'AZXIysKvXbgU83th3QJrI5ztjLlY3Yys9oav4uEQS6Y'}],
@@ -182,11 +111,6 @@ gtag('config', 'G-FSJWB3QKGJ');`],
         ['link', {rel: 'icon', href: icon, sizes: 'any'}],
         ['link', {rel: 'icon', type: 'image/png', href: '/favicon-32.png', sizes: '32x32'}],
         ['link', {rel: 'apple-touch-icon', href: '/apple-touch-icon.png'}],
-        ['meta', {name: 'description', content: descEn}],
-        ['meta', {
-          name: 'keywords',
-          content: "ServerlessInsight, serverless platform, multi-cloud serverless management, serverless application development, serverless lifecycle management, infrastructure as code, ServerlessInsight features, serverless architecture, cross-provider serverless management, multi-vendor serverless deployment, Geekfun open-source community, serverless development tools, cloud-native development, serverless app deployment, open-source serverless software, serverless CI/CD integration, open-source serverless projects, cloud-native serverless best practices, serverless microservices architecture, serverless real-time data processing, API backend serverless framework, serverless event-driven architecture, sustainable software development"
-        }],
         ['meta', {property: 'og:site_name', content: titleEn}],
         ['meta', {name: 'baidu-site-verification', content: 'codeva-RxGXH1Uqch'}],
         ['meta', {name: 'google-site-verification', content: 'AZXIysKvXbgU83th3QJrI5ztjLlY3Yys9oav4uEQS6Y'}],

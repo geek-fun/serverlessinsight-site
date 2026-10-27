@@ -1,6 +1,6 @@
 ---
-title: CLI 参考
-description: ServerlessInsight CLI 全部命令与参数说明
+title: "CLI 命令参考"
+description: "查阅 ServerlessInsight si CLI 的登录、校验、部署计划、部署、销毁与本地开发命令、参数和云厂商支持限制。"
 ---
 
 # CLI 参考

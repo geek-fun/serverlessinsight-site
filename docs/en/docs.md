@@ -1,11 +1,11 @@
 ---
-title: Documentation
-description: ServerlessInsight documentation hub
+title: "Documentation"
+description: "ServerlessInsight documentation: install the si CLI, define cloud resources in YAML, and explore provider support, deployment plans and local development."
 ---
 
 # Documentation
 
-Welcome to the ServerlessInsight documentation center. The entries below are organized by topic to take you from first steps to mastery.
+ServerlessInsight is an open-source serverless infrastructure-as-code (IaC) tool and application platform. Define functions, API entry points, databases and object storage in `serverlessinsight.yml`, then use the `si` CLI to validate configuration and deploy resources to your own cloud account. Start with the [getting-started guide](/en/getting-started.html), or look up fields in the [configuration reference](/en/reference.html).
 
 ## Getting Started
 

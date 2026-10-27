@@ -1,6 +1,6 @@
 ---
-title: 退款政策
-description: ServerlessInsight 退款政策
+title: "退款政策"
+description: "了解 ServerlessInsight 预付余额、套餐费用、资源用量与退款处理规则，以及如何联系账单支持。"
 layout: page
 sidebar: false
 outline: deep

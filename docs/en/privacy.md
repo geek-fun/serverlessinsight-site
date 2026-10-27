@@ -1,6 +1,6 @@
 ---
-title: Privacy Policy
-description: ServerlessInsight Privacy Policy
+title: "Privacy Policy"
+description: "Read how ServerlessInsight collects, uses and protects account, billing and service data, and learn about your privacy rights."
 layout: page
 sidebar: false
 outline: deep

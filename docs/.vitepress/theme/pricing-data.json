@@ -1,12 +1,12 @@
 {
   "_source": "https://console.serverlessinsight.com/api/v1/pricing",
-  "_fetchedAt": "2026-10-08T02:27:42.697Z",
+  "_fetchedAt": "2026-10-27T15:29:39.061Z",
   "currency": "USD",
   "channel": "manual",
   "providers": {
     "USD": "creem"
   },
-  "provider": "manual",
+  "provider": "creem",
   "topups": {
     "min_amount_cents": 2000,
     "max_amount_cents": 100000,
@@ -16,6 +16,9 @@
       10000,
       20000
     ]
+  },
+  "refunds": {
+    "min_amount_cents": 2000
   },
   "plans": {
     "developer": {
@@ -52,7 +55,8 @@
         "auto_deploy": true,
         "cloud_aggregated_view": "full"
       },
-      "max_orgs": 3
+      "max_orgs": 3,
+      "annual_base_cents": 79000
     },
     "enterprise": {
       "name": "enterprise",
