@@ -117,11 +117,12 @@ provider:
 
 | 命令 | 阿里云 | 腾讯云 | 火山引擎 |
 | --- | --- | --- | --- |
-| `validate` | ✅ | ✅ | ✅ |
-| `plan` / `diff` | ✅ | ✅ | ✅ |
+| `validate` / `show` / `schema` | ✅ | ✅ | ✅ |
+| `diff`（预览变更） | ✅ | ✅ | ✅ |
 | `deploy` / `destroy` | ✅ | ✅ | ✅ |
-| `local` | ✅（本地模拟） | ❌ | ❌ |
-| `show` | ✅ | ✅ | ✅ |
+| `local` | ✅（FC 原生模拟） | ✅（SCF 原生模拟） | ✅（veFaaS 原生模拟） |
+
+> `si plan` 已在框架 v0.9.4 移除，统一使用 `si diff`。`huawei` / `aws` 暂不支持上述云端命令（华为云目前仅能生成 Terraform 模板）。
 
 **地域与凭证**（按页面顶部的平台选择器切换）：
 
@@ -231,7 +232,7 @@ tags:
 
 ### backend
 
-状态后端。`si deploy` 依赖一份状态文件记录"上次部署了什么"来实现增量更新与删除回收。默认使用 ServerlessInsight 托管的 SAAS 状态后端（需 `si login` 或 `SI_API_KEY` 鉴权）；团队自管时可切换到对象存储：
+状态后端。`si deploy` 依赖一份状态文件记录"上次部署了什么"来实现增量更新与删除回收。默认使用 ServerlessInsight 托管的 SAAS 状态后端（需 `si login` 或 `SI_API_KEY` 鉴权）；团队自管时可切换到本地文件或对象存储：
 
 ```yaml
 backend:
@@ -243,15 +244,24 @@ backend:
 
 | 字段 | 类型 | 必填 | 说明 |
 |------|------|------|------|
-| `state_manager.type` | string | ❌ | `LOCAL`（本地文件）或 `BUCKET_STORE`（对象存储）；省略时用托管 SAAS |
+| `state_manager.type` | string | ✅ | `LOCAL`（本地文件）/ `BUCKET_STORE`（对象存储）/ `SAAS`（托管）；省略整个 `backend` 块时等价于 `SAAS` |
 | `state_manager.bucket` | string | ⚠️ | `BUCKET_STORE` 时必填 |
-| `state_manager.key` | string | ❌ | 状态文件路径 |
+| `state_manager.key` | string | ❌ | 状态文件路径（`BUCKET_STORE`） |
+
+配套的顶层字段 `org`：显式声明 `SAAS` 后端时**必填**，填写控制台组织 slug（小写字母、数字、`-`）。省略 `backend` 块时无需 `org`（零配置快速开始，由 API Key 决定归属组织）；`LOCAL` / `BUCKET_STORE` 下允许填写但不起作用。
+
+```yaml
+org: my-org          # 仅显式声明 SAAS 后端时必填
+backend:
+  state_manager:
+    type: SAAS
+```
 
 ## 资源类型
 
 ### functions
 
-函数是 ServerlessInsight 的核心资源。配置里的键名（如 `hello_world_fn`）是**引用名**，`events.triggers.backend` 等字段用它来指向函数；键内部的 `name` 才是云上的实际函数名，必填。
+函数是 ServerlessInsight 的核心资源。配置里的键名（如 `hello_world_fn`）是**引用名**，`events.triggers.backend` 等字段用它来指向函数；键内部的 `name` 才是云上的实际函数名，必填。函数名长度按供应商限制：阿里云 ≤ 64 字符、腾讯云 ≤ 60 字符（整体为 `${vars.*}` 模板引用时豁免），超出会在 `validate` 阶段报错。
 
 函数有两种部署形态，二选一：**代码包**（`code`）或**容器镜像**（`container`）。绝大多数业务用 `code`；依赖自定义运行时、原生库或需要长启动进程的场景用 `container`。
 
@@ -287,7 +297,7 @@ functions:
 | `domain` | object | ❌ | 函数级自定义域名 |
 | `storage` | object | ❌ | 磁盘与 NAS 挂载 |
 
-> `code` 与 `container` 二选一；两者都提供时以 `container` 为准的行为由供应商决定，不要依赖。
+> `code` 与 `container` 二选一；同函数同时声明两者（或都不声明）会在 `validate` 语义校验中直接报错。
 
 #### code - 代码部署
 
@@ -300,7 +310,7 @@ code:
 
 `runtime` 决定函数在云上的执行环境，`handler` 是"文件.导出函数"格式的入口，`path` 指向打包产物（相对项目根目录，通常放 `artifacts/`）。
 
-**运行时可选值**（按平台切换；`validate` / `plan` 阶段会按 `provider` 精确校验）：
+**运行时可选值**（按平台切换；`validate` / `diff` 阶段会按 `provider` 精确校验）：
 
 ::: platform aliyun
 **阿里云 FC**：`nodejs20` `nodejs18` `nodejs16` `nodejs14` `nodejs12` `nodejs10`，`python3.12` `python3.10` `python3.9` `python3.6`，`java11` `java8`，`php7.2`，`go1`，`dotnet_core3.1`
@@ -322,16 +332,18 @@ code:
 container:
   image: registry.cn-hangzhou.aliyuncs.com/my-repo/my-image:latest
   port: 9000
-  cmd: ["node", "server.js"]
+  cmd: node server.js
 ```
 
 | 字段 | 类型 | 必填 | 说明 |
 |------|------|------|------|
 | `image` | string | ✅ | 容器镜像地址（需提前推送到供应商可拉取的仓库） |
 | `port` | number | ✅ | 容器内 HTTP 服务监听端口 |
-| `cmd` | string[] | ❌ | 覆盖镜像默认启动命令 |
+| `cmd` | string | ❌ | 覆盖镜像默认启动命令 |
 
 容器模式下没有 `handler` 的概念，云平台把请求转发给容器内监听 `port` 的 HTTP 服务。
+
+> `code` 与 `container` 的取舍由 `validate` 语义校验强制：两者都提供（或都不提供）都会直接报错，而不是静默取其一。容器形态当前仅阿里云实现（container-only 函数部署时跳过代码包上传）。
 
 #### gpu
 
@@ -512,7 +524,7 @@ events:
 | `type` | string | ✅ | 仅 `API_GATEWAY` |
 | `triggers` | object[] | ✅ | 路由规则列表 |
 | `log` | boolean | ❌ | 是否启用网关日志 |
-| `network` | object | ❌ | 网关所在 VPC |
+| `network` | object | ❌ | 网关所在 VPC：`vpc_id` 必填，`subnet_ids` 必填且**至少 2 个** |
 | `domain` | object | ❌ | 自定义域名与证书 |
 
 ::: platform tencent
@@ -536,7 +548,9 @@ triggers:
 |------|------|------|------|
 | `method` | string | ✅ | `GET` / `POST` / `PUT` / `DELETE` / `ANY` |
 | `path` | string | ✅ | 路径，必须以 `/` 开头，支持 `*` 通配 |
-| `backend` | string | ✅ | 目标函数的**引用名**（`functions` 下的键名，不是 `name`） |
+| `backend` | string | ✅ | 目标函数的**引用名**（`functions` 下的键名，不是 `name`）；也接受显式模板形式 `${functions.<引用名>}`，`validate` 会校验其指向存在 |
+
+同 event 内 `method+path` 重复、生成的 apiName 重复、指向不存在的函数都会在 `validate` 语义校验中报错。
 
 > 旧版的 `type: HTTP`、`type: Timer`、`type: sqs` 等事件类型已从 schema 中移除，`validate` 会直接报错。定时与消息类触发能力请关注供应商能力矩阵。
 
@@ -620,10 +634,11 @@ databases:
 
 | 字段 | 类型 | 说明 |
 |------|------|------|
+| `security` | object | ✅ 必填；访问凭证，见下 |
+| `security.basic_auth.password` | string | ✅ 管理员密码（建议变量注入） |
+| `security.basic_auth.master_user` | string | 管理员用户名（可选） |
 | `cu` | object | 弹性算力范围：`min` / `max` |
 | `storage` | object | 存储容量范围：`min` / `max`（GB，整数） |
-| `security.basic_auth.master_user` | string | 管理员用户名 |
-| `security.basic_auth.password` | string | 管理员密码（建议变量注入） |
 | `network` | object | 访问网络，见下 |
 
 **network 字段**：
@@ -795,13 +810,15 @@ website:
 
 > 公网可访问需要 `security.acl: PUBLIC_READ`；`website` 只负责托管行为，域名与证书统一走顶层 `domain`。
 
-**iam - 桶资源策略**：跨账号或匿名访问控制，语句结构同函数 `iam.statements`（`effect` / `action` / `resource` 必填）：
+**iam - 桶资源策略**：跨账号或匿名访问控制。与函数 `iam.statements` 不同，桶策略语句**必须带 `principal`**（对象，键为被授权方如 `"*"` 或云服务标识，值为字符串），另有可选 `condition`：
 
 ```yaml
 iam:
   resource:
     statements:
       - effect: Allow
+        principal:
+          "*": "*"
         action:
           - oss:GetObject
         resource:
@@ -839,15 +856,16 @@ functions:
 
 ## 本地开发
 
-`si local` 把定义的函数拉到本地进程里跑，用真实的 handler 代码和本地的 HTTP 服务模拟云上行为，改代码不用反复部署（目前支持阿里云函数）：
+`si local` 把定义的函数拉到本地进程里跑，用真实的 handler 代码和本地 HTTP 服务模拟云上行为，改代码不用反复部署，也**不需要任何云凭证**。三个可部署平台的本地模拟均为供应商原生（阿里云 FC 事件 / 腾讯云 SCF 函数 URL 事件 / 火山引擎 veFaaS 事件），华为云等其余供应商仅提供通用调用通道：
 
 ```bash
 si local --stage dev
 ```
 
-- 本地服务监听 `4567` 端口，按 `events` 的路由规则转发请求
+- 本地服务监听 `4567` 端口（`SI_LOCALSTACK_SERVER_PORT` 可改），按 `events` 的路由规则转发请求
+- `/si_events/<event键>/<路径>` 按网关事件路由；`/si_functions/<函数键>/<路径>` 直接调用函数
 - `functions.*.triggers.timer` 会在本地按调度触发（si-cron 按 UTC 墙钟，`@every` 自服务启动起算），事件形状与云上一致
-- `--watch` 默认开启，保存代码即热重载
+- `--watch` 默认开启（`--no-watch` 关闭），保存代码即热重载
 - `--debug` 开启调试模式，可配合 IDE 断点
 
 ## 最佳实践

@@ -117,11 +117,12 @@ Providers you can actually deploy to today are **aliyun**, **tencent**, and **vo
 
 | Command | Aliyun | Tencent Cloud | Volcengine |
 | --- | --- | --- | --- |
-| `validate` | ✅ | ✅ | ✅ |
-| `plan` / `diff` | ✅ | ✅ | ✅ |
+| `validate` / `show` / `schema` | ✅ | ✅ | ✅ |
+| `diff` (preview changes) | ✅ | ✅ | ✅ |
 | `deploy` / `destroy` | ✅ | ✅ | ✅ |
-| `local` | ✅ (local emulation) | ❌ | ❌ |
-| `show` | ✅ | ✅ | ✅ |
+| `local` | ✅ (FC-native simulation) | ✅ (SCF-native simulation) | ✅ (veFaaS-native simulation) |
+
+> `si plan` was removed in framework v0.9.4 — use `si diff` instead. `huawei` / `aws` support none of the cloud commands yet (Huawei can currently only generate Terraform templates).
 
 **Regions and credentials** (switch via the platform selector at the top of the page):
 
@@ -231,7 +232,7 @@ tags:
 
 ### backend
 
-The state backend. `si deploy` relies on a state file recording what the last deployment created, enabling incremental updates and resource teardown. By default ServerlessInsight uses its managed SaaS state backend (authenticate via `si login` or `SI_API_KEY`); teams that self-manage can switch to object storage:
+The state backend. `si deploy` relies on a state file recording what the last deployment created, enabling incremental updates and resource teardown. By default ServerlessInsight uses its managed SaaS state backend (authenticate via `si login` or `SI_API_KEY`); teams that self-manage can switch to a local file or object storage:
 
 ```yaml
 backend:
@@ -243,15 +244,24 @@ backend:
 
 | Field | Type | Required | Description |
 |------|------|------|------|
-| `state_manager.type` | string | ❌ | `LOCAL` (local file) or `BUCKET_STORE` (object storage); omitted = managed SaaS |
+| `state_manager.type` | string | ✅ | `LOCAL` (local file) / `BUCKET_STORE` (object storage) / `SAAS` (managed); omitting the whole `backend` block is equivalent to `SAAS` |
 | `state_manager.bucket` | string | ⚠️ | required when `BUCKET_STORE` |
-| `state_manager.key` | string | ❌ | state file path |
+| `state_manager.key` | string | ❌ | state file path (`BUCKET_STORE`) |
+
+The companion top-level field `org` is **required** when a `SAAS` backend is declared explicitly: it is the Console organization slug (lowercase letters, digits, `-`). With no `backend` block, `org` is not needed (zero-config quick start — the API key decides the org); under `LOCAL` / `BUCKET_STORE` it is allowed but inert.
+
+```yaml
+org: my-org          # required only when a SAAS backend is declared explicitly
+backend:
+  state_manager:
+    type: SAAS
+```
 
 ## Resource Types
 
 ### functions
 
-Functions are the core resource. The config key (e.g. `hello_world_fn`) is the **reference name**; fields like `events.triggers.backend` point at functions by it. The inner `name` is the actual cloud function name and is required.
+Functions are the core resource. The config key (e.g. `hello_world_fn`) is the **reference name**; fields like `events.triggers.backend` point at functions by it. The inner `name` is the actual cloud function name and is required. Function-name length limits are provider-specific: Aliyun ≤ 64 chars, Tencent ≤ 60 chars (whole-value `${vars.*}` template references are exempt); violations fail at `validate`.
 
 A function has one of two deployment shapes, mutually exclusive: a **code package** (`code`) or a **container image** (`container`). Most business logic uses `code`; custom runtimes, native libraries, or long-running processes call for `container`.
 
@@ -287,7 +297,7 @@ functions:
 | `domain` | object | ❌ | function-level custom domain |
 | `storage` | object | ❌ | disk and NAS mounts |
 
-> `code` and `container` are mutually exclusive; providing both is not a supported combination.
+> `code` and `container` are mutually exclusive; declaring both (or neither) fails semantic validation at `validate`.
 
 #### code - Code Deployment
 
@@ -300,7 +310,7 @@ code:
 
 `runtime` selects the execution environment on the cloud, `handler` is the entry in `file.exportedFunction` form, and `path` points at the build artifact (relative to project root, usually under `artifacts/`).
 
-**Runtime values** (switch per platform; `validate` / `plan` checks against the chosen `provider`):
+**Runtime values** (switch per platform; `validate` / `diff` checks against the chosen `provider`):
 
 ::: platform aliyun
 **Aliyun FC**: `nodejs20` `nodejs18` `nodejs16` `nodejs14` `nodejs12` `nodejs10`, `python3.12` `python3.10` `python3.9` `python3.6`, `java11` `java8`, `php7.2`, `go1`, `dotnet_core3.1`
@@ -322,14 +332,14 @@ code:
 container:
   image: registry.cn-hangzhou.aliyuncs.com/my-repo/my-image:latest
   port: 9000
-  cmd: ["node", "server.js"]
+  cmd: node server.js
 ```
 
 | Field | Type | Required | Description |
 |------|------|------|------|
 | `image` | string | ✅ | image address (must be pullable by the provider) |
 | `port` | number | ✅ | HTTP port your service listens on inside the container |
-| `cmd` | string[] | ❌ | override the image's default entry command |
+| `cmd` | string | ❌ | override the image's default entry command |
 
 In container mode there is no `handler`; the platform forwards requests to the HTTP service listening on `port` inside your container.
 
@@ -512,7 +522,7 @@ events:
 | `type` | string | ✅ | `API_GATEWAY` only |
 | `triggers` | object[] | ✅ | routing rules |
 | `log` | boolean | ❌ | enable gateway logging |
-| `network` | object | ❌ | the VPC the gateway lives in |
+| `network` | object | ❌ | the VPC the gateway lives in: `vpc_id` required, `subnet_ids` required with **at least 2** entries |
 | `domain` | object | ❌ | custom domain and certificate |
 
 ::: platform tencent
@@ -536,7 +546,9 @@ triggers:
 |------|------|------|------|
 | `method` | string | ✅ | `GET` / `POST` / `PUT` / `DELETE` / `ANY` |
 | `path` | string | ✅ | must start with `/`; `*` wildcard supported |
-| `backend` | string | ✅ | target function's **reference name** (the key under `functions`, not its `name`) |
+| `backend` | string | ✅ | target function's **reference name** (the key under `functions`, not its `name`); the explicit template form `${functions.<ref>}` is also accepted and checked by `validate` |
+
+Duplicate `method+path` within one event, duplicate generated apiNames, and backends pointing at non-existent functions all fail semantic validation at `validate`.
 
 > Legacy event types (`type: HTTP`, `type: Timer`, `type: sqs`) have been removed from the schema and fail `validate`. Timer scheduling lives under `functions.triggers.timer` (see above); messaging triggers are not yet supported.
 
@@ -620,10 +632,11 @@ The `_HA_` variants are high-availability (primary-standby); prefer them in prod
 
 | Field | Type | Description |
 |------|------|------|
+| `security` | object | ✅ required; access credentials, see below |
+| `security.basic_auth.password` | string | ✅ admin password (inject via variable) |
+| `security.basic_auth.master_user` | string | admin username (optional) |
 | `cu` | object | elastic compute unit range: `min` / `max` |
 | `storage` | object | storage capacity range: `min` / `max` (GB, integers) |
-| `security.basic_auth.master_user` | string | admin username |
-| `security.basic_auth.password` | string | admin password (inject via variable) |
 | `network` | object | access network, see below |
 
 **network fields**:
@@ -795,13 +808,15 @@ website:
 
 > Public access requires `security.acl: PUBLIC_READ`; `website` only handles hosting behavior; domains and certificates go through the top-level `domain`.
 
-**iam - bucket resource policy**: cross-account or anonymous access control; statement structure mirrors function `iam.statements` (`effect` / `action` / `resource` required):
+**iam - bucket resource policy**: cross-account or anonymous access control. Unlike function `iam.statements`, bucket policy statements **must carry `principal`** (an object mapping the grantee — e.g. `"*"` or a cloud-service identifier — to a string), plus an optional `condition`:
 
 ```yaml
 iam:
   resource:
     statements:
       - effect: Allow
+        principal:
+          "*": "*"
         action:
           - oss:GetObject
         resource:
@@ -839,15 +854,16 @@ functions:
 
 ## Local Development
 
-`si local` runs the defined functions in local processes, using your real handler code behind a local HTTP server that simulates cloud behavior, so you can iterate without redeploying (currently Aliyun functions only):
+`si local` runs the defined functions in local processes, using your real handler code behind a local HTTP server that simulates cloud behavior, so you can iterate without redeploying — with **no cloud credentials at all**. All three deployable providers ship provider-native local simulation (Aliyun FC events / Tencent SCF function-URL events / Volcengine veFaaS events); other providers such as Huawei only get the generic invocation harness:
 
 ```bash
 si local --stage dev
 ```
 
-- Local server listens on port `4567`, routing requests per your `events` rules
+- Local server listens on port `4567` (change with `SI_LOCALSTACK_SERVER_PORT`), routing requests per your `events` rules
+- `/si_events/<event-key>/<path>` routes a gateway event; `/si_functions/<function-key>/<path>` invokes a function directly
 - `functions.*.triggers.timer` schedules fire locally too (si-cron against UTC wall-clock, `@every` counted from server start), with the same event shapes as the cloud
-- `--watch` is on by default; saving code hot-reloads
+- `--watch` is on by default (`--no-watch` disables it); saving code hot-reloads
 - `--debug` enables debug mode and IDE breakpoints
 
 ## Best Practices

@@ -24,7 +24,7 @@
 1. **检查 Node.js 版本**
    ```bash
    node --version
-   # 需要 >= 18.x
+   # 需要 >= 22.12
    ```
 
 2. **清理 npm 缓存**
@@ -59,18 +59,10 @@ npm install -g @geek-fun/serverlessinsight@latest
 
 ### Q: 配置文件应该放在哪里？
 
-**A:** 默认情况下，ServerlessInsight 会在当前工作目录查找 `serverlessinsight.yml`。你也可以：
-
-- 使用 `-f` 参数指定配置文件路径
-- 设置环境变量 `SI_CONFIG_FILE`
+**A:** 默认情况下，ServerlessInsight 会在当前工作目录查找 `serverlessinsight.yml`。使用 `-f` 参数指向其他配置文件路径即可：
 
 ```bash
-# 指定配置文件
 si deploy -f config/prod.yml
-
-# 使用环境变量
-export SI_CONFIG_FILE="config/prod.yml"
-si deploy
 ```
 
 ### Q: 如何管理多个项目的配置？
@@ -160,21 +152,9 @@ si deploy --stage dev
 
 **A:** 有两种方式：
 
-1. **在配置文件中定义多个 stage**
-   ```yaml
-   stages:
-     hangzhou:
-       region: cn-hangzhou
-     beijing:
-       region: cn-beijing
-   ```
-   然后指定 stage 部署：
-   ```bash
-   si deploy --stage hangzhou
-   si deploy --stage beijing
-   ```
+1. **修改配置里的 `provider.region`** —— `provider.region` 决定所有资源的落点，改完重新部署即指向新区域（旧区域已部署的资源仍在原地，需用旧配置 `si destroy` 或手动清理）。
 
-2. **使用命令行参数覆盖**
+2. **命令行参数覆盖**（优先级最高：`-r` > `SI_REGION` > `ALIYUN_REGION` > `provider.region`）：
    ```bash
    si deploy --region cn-beijing
    ```
@@ -197,19 +177,13 @@ si deploy --stage dev
 
 ### Q: 如何同时部署多个服务？
 
-**A:** 目前 ServerlessInsight 不支持同时部署多个服务，但可以通过脚本实现：
+**A:** 一份配置文件描述一个服务（`app` + `service`）。要部署多个服务，请每个服务维护一份配置（各自目录），然后依次部署：
 
 ```bash
 #!/bin/bash
-
-# 部署服务 A
-si deploy --stage dev
-
-# 部署服务 B
-si deploy --stage dev
-
-# 部署服务 C
-si deploy --stage dev
+cd services/api && si deploy --stage dev
+cd ../worker && si deploy --stage dev
+cd ../web && si deploy --stage dev
 ```
 
 ---
@@ -218,7 +192,7 @@ si deploy --stage dev
 
 ### Q: 本地运行提示端口被占用
 
-**A:** 本地开发端口固定为 `4567`，请先找到并停止占用该端口的进程，然后重新运行：
+**A:** 本地服务默认监听 `4567`。可以先释放端口，也可以用 `SI_LOCALSTACK_SERVER_PORT` 换一个端口：
 
 ```bash
 # 查找占用 4567 端口的进程
@@ -226,6 +200,9 @@ lsof -i :4567
 
 # 终止进程
 kill -9 <PID>
+
+# 或者换个端口
+SI_LOCALSTACK_SERVER_PORT=4568 si local --stage dev
 ```
 
 ### Q: 本地开发环境如何调试？
@@ -267,8 +244,8 @@ si local --stage dev --debug
    ```
 
 2. **检查文件变化**
-   - 确保修改的是 `src/` 目录下的文件
-   - 重新打包代码：`./scripts/package.sh`
+   - 确保修改的路径在配置 `code.path` 指向的目录内
+   - 必要时重新打包代码
 
 3. **重启本地环境**
    ```bash
@@ -320,8 +297,7 @@ si local --stage dev --debug
 **A:** 重新打包并部署：
 
 ```bash
-# 修改代码后
-./scripts/package.sh
+# 修改代码并重新打包后
 si deploy --stage dev
 ```
 
@@ -343,7 +319,7 @@ ServerlessInsight 会检测到代码变化并更新函数。
 
 1. **清理不用的资源**
    ```bash
-   si destroy --stage dev old-stack
+   si destroy --stage dev
    ```
 
 2. **申请提高限额**
@@ -425,16 +401,14 @@ functions:
 
 ### Q: 如何查看详细日志？
 
-**A:** 启用调试模式：
+**A:** 设置 `DEBUG` 环境变量（所有命令日志走 stderr，`--json` 结果数据走 stdout）：
 
 ```bash
-# 命令行参数
-si deploy --stage dev --debug
-
-# 或环境变量
-export SI_DEBUG=true
+export DEBUG=true
 si deploy --stage dev
 ```
+
+`--debug` 参数仅 `si local` 提供。
 
 ### Q: 部署卡在某个步骤不动
 
@@ -513,21 +487,25 @@ project/
 
 **A:** 使用 `stages`：
 
+每个 stage 就是一组普通标量值，通过 `${stages.<键>}` 引用——它们是变量，不是行为开关：
+
 ```yaml
 stages:
   dev:
-    region: cn-hangzhou
     memory: 512
-    debug: true
   test:
-    region: cn-shanghai
     memory: 1024
-    debug: false
   prod:
-    region: cn-beijing
     memory: 2048
-    debug: false
 ```
+
+```yaml
+functions:
+  api_fn:
+    memory: ${stages.memory}
+```
+
+指定环境部署用 `si deploy --stage dev`；部署区域来自 `provider.region`（或 `-r`），不来自 stage 键。
 
 ### Q: 如何降低 Serverless 成本？
 
@@ -537,9 +515,9 @@ stages:
    - 根据实际需求配置内存
    - 设置合理的超时时间
 
-2. **使用预留实例**
-   - 对于长期运行的应用
-   - 预留实例比按量付费更便宜
+2. **调优 Serverless 数据库的弹性 CU 区间**
+   - `cu.min` 调低可让空闲期成本趋近于零
+   - 按真实峰值设定 `cu.max`，避免超配
 
 3. **监控和分析**
    - 使用云供应商的成本分析工具
@@ -553,14 +531,7 @@ stages:
 
 **A:** 
 
-1. **多区域部署**
-   ```yaml
-   stages:
-     hangzhou:
-       region: cn-hangzhou
-     shanghai:
-       region: cn-shanghai
-   ```
+1. **多区域部署**：通过 `-r` / `provider.region` 把同一份配置部署到多个区域（每个 stage+region 组合各有一份状态）
 
 2. **配置健康检查**
 3. **使用负载均衡**

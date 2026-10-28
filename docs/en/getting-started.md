@@ -9,7 +9,7 @@ This guide walks a complete ServerlessInsight journey: installing the CLI, under
 
 ## 1. Install the CLI
 
-Prerequisites: Node.js >= 18, npm >= 8.
+Prerequisites: Node.js >= 22.12.
 
 ```bash
 npm install -g @geek-fun/serverlessinsight
@@ -63,7 +63,7 @@ functions:
 
 What each piece is saying:
 
-- `provider` decides where every resource lands. Deployable providers today are `aliyun`, `tencent`, and `volcengine` (`huawei` and `aws` are not yet deployable). Per-platform capability, region, and credential differences are covered in the [Configuration Reference](/en/reference).
+- `provider` decides where every resource lands. Deployable providers today are `aliyun`, `tencent`, and `volcengine` (`huawei` and `aws` are not yet deployable; Huawei can currently only generate Terraform templates). Per-platform capability, region, and credential differences are covered in the [Configuration Reference](/en/reference).
 - `app` and `service` must be static strings (lowercase letters, digits, `-`) because they must be known before variable resolution, and they prefix every cloud resource name.
 - In `functions`, the key `hello_world_fn` is the **reference name**; later, `events` uses it in `backend` to point at this function. The inner `name` is the actual cloud function name. A function takes one of two shapes: `code` (code package) or `container` (image), never both.
 - The `code` triple is all required: `runtime` is the cloud execution environment (validated per provider: Aliyun's `nodejs18`, Volcengine's `node20/v1`), `handler` is the `file.exportedFunction` entry, `path` points at the build artifact in `artifacts/`.
@@ -183,23 +183,26 @@ Full variable aliases and session tokens are in the [Configuration Reference](/e
 # Validate: runtimes, enums, and required fields are all checked here
 si validate
 
+# Preview changes: compares state and live resources, executes nothing
+si diff --stage dev
+
 # Package code into artifacts/ (or use your own build script)
 
-# Deploy
+# Deploy: shows the plan first, then applies after confirmation
 si deploy --stage dev
 ```
 
-`si deploy` diffs against the state file to decide "what changes this time": creates missing resources, updates changed ones, and tears down removed ones. The first deploy provisions everything; every later one is incremental.
+`si deploy` diffs against the state file to decide "what changes this time": creates missing resources, updates changed ones, and tears down removed ones. The first deploy provisions everything; every later one is incremental. Resources that already succeeded are kept after a partial failure — fix the issue and re-run to continue.
 
 ## 6. Local debugging
 
-Deploying on every change is too slow. `si local` runs your functions in local processes, with your real handler code answering requests (currently Aliyun functions only):
+Deploying on every change is too slow. `si local` runs your functions in local processes, with your real handler code answering requests — no cloud credentials needed. All three deployable providers ship provider-native local simulation (Aliyun FC / Tencent SCF / Volcengine veFaaS event shapes):
 
 ```bash
 si local --stage dev
 ```
 
-The local server listens on port `4567` and routes requests per your `events` rules; `--watch` is on by default so saving code hot-reloads; `--debug` works with IDE breakpoints.
+The local server listens on port `4567` (change with `SI_LOCALSTACK_SERVER_PORT`) and routes requests per your `events` rules; `functions.*.triggers.timer` schedules also fire locally per si-cron; `--watch` is on by default (`--no-watch` disables it) so saving code hot-reloads; `--debug` works with IDE breakpoints.
 
 ## 7. Clean up
 
