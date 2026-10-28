@@ -25,7 +25,7 @@ export const SECTION_EN = {
     'Keep development and production in the same configuration. Preview incremental changes against deployment state, then decide what to apply.',
   deliveryPoints: [
     'Separate environments with stages and variables.',
-    'Inspect resource changes with si plan or si diff.',
+    'Inspect resource changes with si diff.',
     'Track configuration changes in version control.'
   ],
   deliveryLink: 'Explore deployment planning',
@@ -136,7 +136,7 @@ export const SECTION_ZH: typeof SECTION_EN = {
   deliveryLead: '在同一份配置中管理开发和生产环境。依据部署状态预览增量变更，再决定执行哪些操作。',
   deliveryPoints: [
     '通过 stages 和变量区分环境。',
-    '使用 si plan 或 si diff 检查资源变更。',
+    '使用 si diff 预览资源变更。',
     '在版本控制中追踪配置变化。'
   ],
   deliveryLink: '了解部署计划',

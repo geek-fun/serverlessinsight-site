@@ -95,7 +95,7 @@ const T = computed(() =>
         lead: '切换部署目标只是换一个字段：provider.name。运行时标识自动映射为各云原生值，能力差异如实标注——支持的云厂商随版本持续增加。',
         f1: '腾讯云没有独立网关资源，HTTP 入口由函数 URL 触发器提供。',
         f2: '火山引擎暂不支持数据库与表格存储。',
-        note: 'si local 目前支持阿里云，si plan 暂不支持火山引擎——命令级差异见配置手册。华为云 / AWS 暂不可部署，配置枚举与 Terraform 模板生成已就绪。',
+        note: 'si local 提供三家云的供应商原生本地模拟；si plan 已移除，预览变更统一用 si diff，命令差异见 CLI 参考。华为云 / AWS 暂不可部署，配置枚举与 Terraform 模板生成已就绪。',
         refLink: '查看完整支持矩阵',
         refHref: '/reference'
       }
@@ -104,7 +104,7 @@ const T = computed(() =>
         lead: 'Switching deploy targets is one field: provider.name. Runtime identifiers map to each platform\u2019s native values — differences are stated honestly, and supported clouds keep growing with each release.',
         f1: 'Tencent Cloud has no standalone gateway resource; HTTP entry is served by function URL triggers.',
         f2: 'Databases and table storage are not yet available on Volcengine.',
-        note: 'si local currently supports Aliyun and si plan is unavailable on Volcengine — see the reference for command-level differences. Huawei Cloud / AWS are not yet deployable; their config enums and Terraform template generation are in place.',
+        note: 'si local ships provider-native simulation for all three clouds; si plan was removed, preview changes with si diff — see the CLI reference for command differences. Huawei Cloud / AWS are not yet deployable; their config enums and Terraform template generation are in place.',
         refLink: 'Full support matrix',
         refHref: '/reference'
       }
