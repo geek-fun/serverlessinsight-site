@@ -1,9 +1,9 @@
 ---
-title: Terms of Service
-description: ServerlessInsight Terms of Service
+title: "Terms of Service"
+description: "Read the ServerlessInsight terms covering service access, accounts, billing, and the rights and responsibilities of users and the service provider."
 layout: page
 sidebar: false
-outline: true
+outline: deep
 ---
 
 # Terms of Service

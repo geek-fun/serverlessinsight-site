@@ -1,6 +1,6 @@
 ---
-title: 快速开始
-description: 安装 ServerlessInsight CLI，理解配置模型，并部署你的第一个 Serverless 应用
+title: "快速开始"
+description: "安装 ServerlessInsight CLI，配置云厂商凭证，编写 serverlessinsight.yml，并通过校验和部署交付第一个 Serverless 应用。"
 ---
 
 # 快速开始

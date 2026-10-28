@@ -1,11 +1,11 @@
 ---
-title: 文档中心
-description: ServerlessInsight 文档导航
+title: "文档中心"
+description: "ServerlessInsight 文档：安装 si CLI，使用 serverlessinsight.yml 定义云资源，了解多云支持、配置校验、部署计划与本地开发。"
 ---
 
 # 文档中心
 
-欢迎使用 ServerlessInsight 文档中心。下面的入口按主题组织，帮助你从入门到精通。
+ServerlessInsight 是开源的 Serverless 基础设施即代码（IaC）工具与应用平台。使用 `serverlessinsight.yml` 声明函数、API 入口、数据库和对象存储，再通过 `si` CLI 校验配置，将资源部署到自己的云账号。第一次使用可阅读[快速开始](/getting-started.html)，字段说明见[配置手册](/reference.html)。
 
 ## 入门
 

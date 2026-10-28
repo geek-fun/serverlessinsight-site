@@ -1,9 +1,9 @@
 ---
-title: Refund Policy
-description: ServerlessInsight Refund Policy
+title: "Refund Policy"
+description: "Understand ServerlessInsight prepaid-balance refund rules, plan fees, consumed resource usage and how to contact billing support."
 layout: page
 sidebar: false
-outline: true
+outline: deep
 ---
 
 # Refund Policy

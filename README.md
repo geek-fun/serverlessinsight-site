@@ -210,6 +210,17 @@ ServerlessInsight 支持以下资源类型：
 
 Apache License 2.0
 
+## Website validation
+
+Build the site before running the regression tests, which inspect the generated files in `dist/`:
+
+```sh
+npm run docs:build
+npm test
+```
+
+CI runs these commands as separate **Build site** and **Run tests** steps.
+
 ## 🔗 链接
 
 - [官方网站](https://www.serverlessinsight.com)

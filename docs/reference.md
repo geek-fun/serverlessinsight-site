@@ -1,5 +1,7 @@
 ---
 outline: [2, 4]
+title: "Serverless YAML 配置手册"
+description: "查阅 serverlessinsight.yml 的供应商、变量、环境与资源字段，定义函数、API 事件、数据库、表和存储桶，并了解各云厂商支持差异。"
 ---
 
 # 配置手册

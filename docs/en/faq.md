@@ -1,3 +1,7 @@
+---
+title: "Frequently Asked Questions"
+description: "Answers to ServerlessInsight questions about installation, YAML configuration, cloud deployments, local development, resources, credentials and troubleshooting."
+---
 # Frequently Asked Questions (FAQ)
 
 Common questions and answers about working with ServerlessInsight.

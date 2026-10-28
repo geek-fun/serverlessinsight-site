@@ -1,6 +1,6 @@
 ---
-title: Getting Started
-description: Install the ServerlessInsight CLI, understand the configuration model, and deploy your first Serverless app
+title: "Getting Started"
+description: "Install ServerlessInsight, configure cloud credentials, write serverlessinsight.yml, validate your configuration and deploy your first serverless application."
 ---
 
 # Getting Started
