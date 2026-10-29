@@ -28,7 +28,7 @@ Common questions and answers about working with ServerlessInsight.
 1. **Check your Node.js version**
    ```bash
    node --version
-   # Requires >= 18.x
+   # Requires >= 22.12
    ```
 
 2. **Clear the npm cache**
@@ -141,21 +141,9 @@ If you need to start fresh instead:
 
 **A:** Two options:
 
-1. **Define multiple stages in your config**
-   ```yaml
-   stages:
-     hangzhou:
-       region: cn-hangzhou
-     beijing:
-       region: cn-beijing
-   ```
-   Then deploy with:
-   ```bash
-   si deploy --stage hangzhou
-   si deploy --stage beijing
-   ```
+1. **Change `provider.region` in your config** — `provider.region` decides where every resource lands; changing it and redeploying targets the new region (resources already deployed to the old region stay there and need `si destroy` with the old config or manual cleanup).
 
-2. **Override from the command line**
+2. **Override from the command line** (highest precedence: `-r` > `SI_REGION` > `ALIYUN_REGION` > `provider.region`):
    ```bash
    si deploy --region cn-beijing
    ```
@@ -172,11 +160,13 @@ If you need to start fresh instead:
 
 **A:** Not directly, but you can script it:
 
+One config file describes one service (`app` + `service`). To deploy several services, keep one config per service (in its own directory) and deploy each in turn:
+
 ```bash
 #!/bin/bash
-si deploy --stage dev service-a
-si deploy --stage dev service-b
-si deploy --stage dev service-c
+cd services/api && si deploy --stage dev
+cd ../worker && si deploy --stage dev
+cd ../web && si deploy --stage dev
 ```
 
 ---
@@ -185,11 +175,14 @@ si deploy --stage dev service-c
 
 ### Q: The local server says the port is already in use.
 
-**A:** The local port is fixed at `4567`. Find and stop the process using it, then run the command again:
+**A:** The local server listens on `4567` by default. Either free the port, or point `si local` at another port with `SI_LOCALSTACK_SERVER_PORT`:
 
 ```bash
 lsof -i :4567
 kill -9 <PID>
+
+# or use another port
+SI_LOCALSTACK_SERVER_PORT=4568 si local --stage dev
 ```
 
 ### Q: How do I debug locally?
@@ -230,7 +223,7 @@ export async function handler(event: any) {
    si local --stage dev --watch
    ```
 
-2. **Make sure you're editing files in the right directory**: only changes under `src/` are picked up. Re-package if needed: `./scripts/package.sh`
+2. **Make sure you're editing files in the right directory**: only changes under `src/` are picked up. Re-package your code if needed
 
 3. **Restart the local environment**
    ```bash
@@ -268,8 +261,7 @@ export async function handler(event: any) {
 **A:** Repackage and redeploy:
 
 ```bash
-# After making code changes
-./scripts/package.sh
+# After making code changes, rebuild your package, then:
 si deploy --stage dev
 ```
 
@@ -291,7 +283,7 @@ ServerlessInsight detects code changes and updates the function accordingly.
 
 1. **Clean up unused resources**
    ```bash
-   si destroy --stage dev old-stack
+   si destroy --stage dev
    ```
 
 2. **Request a quota increase** from your cloud provider: explain your use case and expected usage
@@ -369,13 +361,11 @@ functions:
 **A:** Enable debug mode:
 
 ```bash
-# As a flag
-si deploy --stage dev --debug
-
-# Or as an environment variable
-export SI_DEBUG=true
+export DEBUG=true
 si deploy --stage dev
 ```
+
+All commands log to stderr, and `--json` result data goes to stdout. The `--debug` option exists on `si local` only.
 
 ### Q: Deployment is stuck and not progressing.
 
@@ -438,30 +428,32 @@ project/
 
 **A:** Use `stages` in your config:
 
+Each stage holds plain scalar values that you reference via `${stages.<key>}` — they are variables, not behavioral switches:
+
 ```yaml
 stages:
   dev:
-    region: cn-hangzhou
     memory: 512
-    debug: true
   test:
-    region: cn-shanghai
     memory: 1024
-    debug: false
   prod:
-    region: cn-beijing
     memory: 2048
-    debug: false
 ```
 
-Deploy to a specific environment with `si deploy --stage dev`.
+```yaml
+functions:
+  api_fn:
+    memory: ${stages.memory}
+```
+
+Deploy to a specific environment with `si deploy --stage dev`; the region comes from `provider.region` (or `-r`), not from a stage key.
 
 ### Q: How do I keep serverless costs down?
 
 **A:**
 
 1. **Right-size your functions**: don't over-provision memory or timeout values
-2. **Consider provisioned instances** for long-running workloads: they're often cheaper than pay-per-use
+2. **Tune the elastic CU range of Serverless databases**: a lower `cu.min` keeps idle cost near zero; right-size `cu.max` instead of over-provisioning
 3. **Monitor spending**: use your cloud provider's cost analysis tools to find expensive functions
 4. **Optimize code**: shorter cold starts and faster execution mean less billed compute time
 
@@ -469,14 +461,7 @@ Deploy to a specific environment with `si deploy --stage dev`.
 
 **A:**
 
-1. **Deploy across multiple regions**
-   ```yaml
-   stages:
-     hangzhou:
-       region: cn-hangzhou
-     shanghai:
-       region: cn-shanghai
-   ```
+1. **Deploy the same config to multiple regions** by overriding `-r` / `provider.region` per deployment (keep one state per stage+region combination)
 
 2. **Set up health checks** on your functions and endpoints
 3. **Use load balancing** to distribute traffic

@@ -9,7 +9,7 @@ description: "安装 ServerlessInsight CLI，配置云厂商凭证，编写 serv
 
 ## 1. 安装 CLI
 
-前置条件：Node.js >= 18，npm >= 8。
+前置条件：Node.js >= 22.12。
 
 ```bash
 npm install -g @geek-fun/serverlessinsight
@@ -63,7 +63,7 @@ functions:
 
 逐段看这份配置在说什么：
 
-- `provider` 决定所有资源的落点。当前可部署的供应商为 `aliyun`、`tencent`、`volcengine`（`huawei` 与 `aws` 暂不可部署）。平台间的能力矩阵、地域与凭证差异见[配置手册](/reference)。
+- `provider` 决定所有资源的落点。当前可部署的供应商为 `aliyun`、`tencent`、`volcengine`（`huawei` 与 `aws` 暂不可部署，华为云目前仅能生成 Terraform 模板）。平台间的能力矩阵、地域与凭证差异见[配置手册](/reference)。
 - `app` 与 `service` 必须是静态字符串（小写字母、数字、`-`），因为它们要在解析变量之前就确定，并作为前缀出现在每个云资源的名字里。
 - `functions` 的键名 `hello_world_fn` 是**引用名**，后续 `events` 里的 `backend` 就用它指向这个函数；内部的 `name` 才是云上的实际函数名。函数支持两种形态：`code`（代码包）或 `container`（容器镜像），二选一。
 - `code` 三要素缺一不可：`runtime` 是云上的执行环境（按供应商校验，如阿里云的 `nodejs18`、火山引擎的 `node20/v1`），`handler` 是 `文件.导出函数` 格式的入口，`path` 指向 `artifacts/` 里的打包产物。
@@ -183,23 +183,26 @@ export VOLCENGINE_ACCESS_KEY_SECRET="your-access-key-secret"
 # 校验配置：运行时、枚举、必填字段都会在此检查
 si validate
 
+# 预览变更：对比状态与线上资源，不执行任何变更
+si diff --stage dev
+
 # 打包代码到 artifacts/（或使用你自己的构建脚本）
 
-# 部署
+# 部署：先展示计划，确认后执行
 si deploy --stage dev
 ```
 
-`si deploy` 依据状态文件计算"这次要改什么"：新建缺失的资源、更新变化的资源、回收删掉的资源。首次部署会全量创建，之后都是增量。
+`si deploy` 依据状态文件计算"这次要改什么"：新建缺失的资源、更新变化的资源、回收删掉的资源。首次部署会全量创建，之后都是增量；已成功的资源在部分失败后保留，修复问题后重试即可续跑。
 
 ## 6. 本地调试
 
-改一行代码就要部署一次，太慢。`si local` 把函数拉到本地进程运行，用真实的 handler 代码响应请求（目前支持阿里云函数）：
+改一行代码就要部署一次，太慢。`si local` 把函数拉到本地进程运行，用真实的 handler 代码响应请求，且不需要任何云凭证。三个可部署平台都有供应商原生的本地模拟（阿里云 FC / 腾讯云 SCF / 火山引擎 veFaaS 事件形态）：
 
 ```bash
 si local --stage dev
 ```
 
-本地服务监听 `4567` 端口，按 `events` 的路由规则转发请求；`--watch` 默认开启，保存代码即热重载；`--debug` 可配合 IDE 断点。
+本地服务监听 `4567` 端口（`SI_LOCALSTACK_SERVER_PORT` 可改），按 `events` 的路由规则转发请求；`functions.*.triggers.timer` 定时器也会在本地按 si-cron 真实触发；`--watch` 默认开启（`--no-watch` 关闭），保存代码即热重载；`--debug` 可配合 IDE 断点。
 
 ## 7. 清理资源
 

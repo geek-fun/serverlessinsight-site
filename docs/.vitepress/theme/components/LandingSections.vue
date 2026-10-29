@@ -55,7 +55,7 @@ const consoleScreenshot = computed(() => `/images/console-resources-${zh.value ?
         <pre><code>{{ stageExample }}</code></pre>
         <div class="si-change-preview">
           <div>
-            <code>si plan --stage prod</code><span>{{ t.changeExample }}</span>
+            <code>si diff --stage prod</code><span>{{ t.changeExample }}</span>
           </div>
           <p>
             <span>hello_world_fn</span><strong>memory</strong
@@ -71,7 +71,7 @@ const consoleScreenshot = computed(() => `/images/console-resources-${zh.value ?
             <ThemeIcon name="check" :size="18" /><span>{{ point }}</span>
           </li>
         </ul>
-        <a class="si-text-link" :href="`${link('cli')}#si-plan`"
+        <a class="si-text-link" :href="`${link('cli')}#si-diff`"
           >{{ t.deliveryLink }}<ThemeIcon name="arrow-up-right" :size="17"
         /></a>
       </div>
