@@ -155,6 +155,17 @@ Migrate legacy local / object-storage state to the ServerlessInsight Console (SA
 | `--dry-run` | Show the migration mapping and impact without writing anything |
 | `--rollback` | Clear the migration marker from the legacy state (explicit undo) |
 
+**Regional split (V3 → V4)**: deployment state is isolated by Service + Stage + Region; split a pre-regional aggregate once into scoped documents:
+
+```bash
+si migrate --to-regional --dry-run                    # classify, write nothing
+si migrate --to-regional                              # review → confirm → protected split
+si migrate --to-regional --bind-unknown-region cn-hangzhou   # explicit binding for resources without region evidence
+si migrate --to-regional --rollback-op-id <opId>      # reversible before any regional write
+```
+
+The split backs up the exact source document first (hash recorded), creates one V4 document per stage/region with an independent lineage (each written under its own scope lock; unknown-region resources land only in the explicitly bound region), and rewrites the legacy entry as a V4 tombstone (`version: 4.0` + `managedBy: regional`) — old CLIs refuse it through their version check before any mutation. A service-level provider binding is recorded too: the same service cannot be opened under a different provider in a new region. After the split, run `si diff`: it must report no unintended changes before the next deploy.
+
 ### si destroy
 
 ```bash

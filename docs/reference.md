@@ -249,6 +249,10 @@ backend:
 | `state_manager.type` | string | ✅ | `LOCAL`（本地文件）/ `BUCKET_STORE`（对象存储）/ `SAAS`（托管）；省略整个 `backend` 块时等价于 `SAAS` |
 | `state_manager.bucket` | string | ⚠️ | `BUCKET_STORE` 时必填 |
 | `state_manager.key` | string | ❌ | 状态文件路径（`BUCKET_STORE`） |
+| `state_manager.storageRegion` | string | ❌ | 状态存储固定区域（`BUCKET_STORE`）；显式设置后不随工作负载 `-r` 变化 |
+| `state_manager.storageProvider` | string | ❌ | 状态存储所用 provider（`BUCKET_STORE`）；缺省跟随工作负载 |
+
+部署状态按 **Service + Stage + Region** 隔离：每个范围一份独立的状态文档（本地为 `.serverlessinsight/states/<app>/<service>/<stage>/<region>/state.json`，对象存储为 `<key>.scopes/<app>/<service>/<stage>/<region>/state.json`），独立 lineage/serial/锁与备份。同一服务可并行部署到多个区域，互不覆盖。旧版聚合状态请用 `si migrate --to-regional` 一次性受保护拆分（详见 CLI 文档）。
 
 配套的顶层字段 `org`：显式声明 `SAAS` 后端时**必填**，填写控制台组织 slug（小写字母、数字、`-`）。省略 `backend` 块时无需 `org`（零配置快速开始，由 API Key 决定归属组织）；`LOCAL` / `BUCKET_STORE` 下允许填写但不起作用。
 
