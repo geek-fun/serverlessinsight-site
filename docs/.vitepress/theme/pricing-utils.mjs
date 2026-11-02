@@ -1,12 +1,7 @@
 /** Shared money display and annual billing calculations for marketing surfaces. */
 const CURRENCY_SYMBOLS = {USD: '$', CNY: '¥'}
 
-/**
- * Dual-currency display (#52 Phase M): the pricing API payload carries its own
- * `currency` (USD on the international line, CNY once the domestic console is
- * live) — unknown codes fall back to an ISO prefix so a new currency can never
- * render as a wrong symbol.
- */
+/** Payload-driven display currency; unknown codes fall back to an ISO prefix. */
 export function formatCents(cents, currency = 'USD') {
   if (cents == null || !Number.isFinite(cents)) return '—'
   const value = cents / 100

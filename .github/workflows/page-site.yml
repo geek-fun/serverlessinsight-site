@@ -69,8 +69,7 @@ jobs:
           ALIYUN_ACCESS_KEY_SECRET: ${{ secrets.ALIYUN_ACCESS_KEY_SECRET_PROD }}
           ALIYUN_REGION: singapore
 
-  # Job 2b: Deploy CN line (#52 Phase M) — mirrors the .com deploy job;
-  # version bump is the only gate for both lines.
+  # Job 2b: Deploy CN line
   deploy-cn:
     needs: build
     if: github.ref == 'refs/heads/master' && needs.build.outputs.should_release == 'true'

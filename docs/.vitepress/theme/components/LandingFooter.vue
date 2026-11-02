@@ -6,9 +6,6 @@ import {ICP_NUMBER, ICP_URL, PSB_NUMBER, PSB_SEARCH_URL, SITE_URL_CN, SITE_URL_I
 
 const {page} = useData()
 const isZh = computed(() => !page.value.relativePath.startsWith('en/'))
-// Deploy line is a build-time constant: the CN build carries the ICP/公安
-// filings and links back to the international site, and vice versa (#89 —
-// site switching stays user-initiated, footer links only).
 const isCn = __SITE_LINE__ === 'cn'
 const siblingUrl = isCn ? SITE_URL_INTL : SITE_URL_CN
 const siblingLabel = isCn ? '国际站 serverlessinsight.com' : '国内站 serverlessinsight.cn'
