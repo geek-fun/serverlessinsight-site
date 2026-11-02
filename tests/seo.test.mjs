@@ -328,3 +328,18 @@ test('No built page serves an internal link to a missing route or fragment', () 
     }
   }
 })
+
+test('The CN line build bakes the domestic origin into every SEO surface', async () => {
+  process.env.SITE_LINE = 'cn'
+  try {
+    const cnSeo = await import('../docs/.vitepress/seo.mjs?line=cn')
+    assert.equal(cnSeo.SITE_ORIGIN, 'https://www.serverlessinsight.cn')
+    const cnHooks = cnSeo.createSeoHooks()
+    const cnPage = page()
+    cnHooks.transformPageData(cnPage)
+    assert.equal(links(cnPage, 'canonical')[0][1].href, 'https://www.serverlessinsight.cn/en/docs.html')
+    assert.equal(meta(cnPage, 'og:url'), 'https://www.serverlessinsight.cn/en/docs.html')
+  } finally {
+    delete process.env.SITE_LINE
+  }
+})

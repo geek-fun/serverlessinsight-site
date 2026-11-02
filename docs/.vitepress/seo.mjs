@@ -1,4 +1,10 @@
-export const SITE_ORIGIN = 'https://www.serverlessinsight.com'
+// Deploy line is baked at build time: SITE_LINE=cn produces the domestic
+// build (Hangzhou bucket, serverlessinsight.cn — serverlessinsight-cn.yml),
+// default is the international build (Singapore bucket, .com). All canonical /
+// og / sitemap / JSON-LD URLs derive from SITE_ORIGIN, so the origin switch
+// here covers every SEO surface (#52 Phase M).
+const SITE_LINE = process.env.SITE_LINE === 'cn' ? 'cn' : 'intl'
+export const SITE_ORIGIN = SITE_LINE === 'cn' ? 'https://www.serverlessinsight.cn' : 'https://www.serverlessinsight.com'
 export const SITE_NAME = 'ServerlessInsight'
 export const SOCIAL_IMAGE = '/og.jpg'
 export const DEFAULT_DESCRIPTIONS = {

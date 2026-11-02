@@ -179,7 +179,14 @@ for (const locale of [
       assert.ok(descendants(group, (node) => node.tag === 'li').length >= 3)
     }
     const external = descendants(footer, (node) => node.tag === 'a' && attribute(node, 'href').startsWith('https://'))
-    assert.equal(external.length, 4)
+    // 4 group/social links + the cross-line sibling link (#89, user-initiated
+    // switching — no ICP anchors on the international build).
+    assert.equal(external.length, 5)
+    assert.ok(
+      external.some((anchor) => attribute(anchor, 'href') === 'https://www.serverlessinsight.cn'),
+      'intl footer links the domestic sibling site'
+    )
+    assert.ok(!text(footer).includes('ICP备'), 'intl footer carries no ICP filing')
     for (const anchor of external) {
       assert.equal(attribute(anchor, 'target'), '_blank')
       assert.ok(attribute(anchor, 'rel').includes('noopener'))

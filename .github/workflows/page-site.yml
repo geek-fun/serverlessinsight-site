@@ -69,9 +69,41 @@ jobs:
           ALIYUN_ACCESS_KEY_SECRET: ${{ secrets.ALIYUN_ACCESS_KEY_SECRET_PROD }}
           ALIYUN_REGION: singapore
 
-  # Job 3: Create Release (only after successful deployment)
+  # Job 2b: Deploy CN line (#52 Phase M) — mirrors the .com deploy job;
+  # version bump is the only gate for both lines.
+  deploy-cn:
+    needs: build
+    if: github.ref == 'refs/heads/master' && needs.build.outputs.should_release == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Use Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+          cache: 'npm'
+
+      - run: npm ci
+      - run: SITE_LINE=cn npm run docs:build
+
+      - name: Install ServerlessInsight
+        run: npm install -g @geek-fun/serverlessinsight
+
+      - name: Deploy to Aliyun By ServerlessInsight (.cn)
+        run: si deploy -f serverlessinsight-cn.yml --stage prod-cn --auto-approve
+        env:
+          ALIYUN_ACCESS_KEY_ID: ${{ secrets.ALIYUN_ACCESS_KEY_ID_PROD }}
+          ALIYUN_ACCESS_KEY_SECRET: ${{ secrets.ALIYUN_ACCESS_KEY_SECRET_PROD }}
+
+  # Job 3: Create Release (only after successful deployment of both lines)
   release:
-    needs: [build, deploy]
+    needs: [build, deploy, deploy-cn]
     if: github.ref == 'refs/heads/master' && needs.build.outputs.should_release == 'true'
     runs-on: ubuntu-latest
     permissions:

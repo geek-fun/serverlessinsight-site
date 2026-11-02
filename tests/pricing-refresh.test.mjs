@@ -8,11 +8,12 @@ const sourceUrl = new URL('../docs/.vitepress/theme/usePricing.ts', import.meta.
 const snapshot = JSON.parse(readFileSync(new URL('../docs/.vitepress/theme/pricing-data.json', import.meta.url)))
 const {code} = await transformWithEsbuild(readFileSync(sourceUrl, 'utf8'), sourceUrl.pathname, {format: 'cjs'})
 
-function createHarness(fetch) {
+function createHarness(fetch, siteLine = 'intl') {
   const mounted = []
   const unmounted = []
   const module = {exports: {}}
   runInNewContext(code, {
+    __SITE_LINE__: siteLine,
     module,
     exports: module.exports,
     structuredClone,
@@ -62,6 +63,17 @@ test('A successful refresh updates displayed prices and allowances with a cancel
   assert.equal(request.options.signal.aborted, false)
   harness.unmount()
   assert.equal(request.options.signal.aborted, true)
+})
+
+test('The CN line build targets the domestic console pricing API', async () => {
+  let request
+  const harness = createHarness(async (url) => {
+    request = {url}
+    return {ok: false, json: async () => ({})}
+  }, 'cn')
+  await harness.mount()
+  assert.equal(request.url, 'https://console.serverlessinsight.cn/api/v1/pricing')
+  assert.equal(harness.state.plans.team.monthly_base_cents, snapshot.plans.team.monthly_base_cents)
 })
 
 test('An HTTP error keeps the usable build-time snapshot without parsing the response', async () => {
