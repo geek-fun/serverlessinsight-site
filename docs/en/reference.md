@@ -249,6 +249,10 @@ backend:
 | `state_manager.type` | string | ✅ | `LOCAL` (local file) / `BUCKET_STORE` (object storage) / `SAAS` (managed); omitting the whole `backend` block is equivalent to `SAAS` |
 | `state_manager.bucket` | string | ⚠️ | required when `BUCKET_STORE` |
 | `state_manager.key` | string | ❌ | state file path (`BUCKET_STORE`) |
+| `state_manager.storageRegion` | string | ❌ | pin where state is stored (`BUCKET_STORE`); explicit settings never change when the workload `-r` changes |
+| `state_manager.storageProvider` | string | ❌ | provider SDK used for state storage (`BUCKET_STORE`); defaults to the workload provider |
+
+Deployment state is isolated by **Service + Stage + Region**: one independent state document per scope (LOCAL: `.serverlessinsight/states/<app>/<service>/<stage>/<region>/state.json`; bucket: `<key>.scopes/<app>/<service>/<stage>/<region>/state.json`) with independent lineage/serial/locks/backups. The same service can be deployed to several regions without overwriting state. Split a pre-regional aggregate once with `si migrate --to-regional` (see the CLI docs).
 
 The companion top-level field `org` is **required** when a `SAAS` backend is declared explicitly: it is the Console organization slug (lowercase letters, digits, `-`). With no `backend` block, `org` is not needed (zero-config quick start — the API key decides the org); under `LOCAL` / `BUCKET_STORE` it is allowed but inert.
 
