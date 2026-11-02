@@ -42,9 +42,6 @@ onUnmounted(() => {
 
 const pricing = usePricing()
 
-// Display currency is payload-driven (#52 Phase M): USD on the international
-// line, CNY once the domestic console API answers — the build-time snapshot
-// is USD, the mounted refresh overwrites both prices and currency together.
 const currency = computed(() => pricing.currency || 'USD')
 const fmt = (cents?: number | null): string => formatCents(cents, currency.value)
 

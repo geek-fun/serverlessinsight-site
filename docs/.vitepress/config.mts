@@ -16,9 +16,7 @@ const titleEn = SITE_NAME;
 const descEn = DEFAULT_DESCRIPTIONS.en;
 const seo = createSeoHooks();
 
-// CN line builds drop Google Analytics: mainland visitors cannot reach
-// googletagmanager.com and the hanging request delays onload. Site
-// verification metas stay — Baidu verification matters on .cn.
+// CN builds drop GA — googletagmanager.com is unreachable in mainland.
 const isCnLine = process.env.SITE_LINE === 'cn';
 const googleAnalytics = isCnLine
   ? []
@@ -35,8 +33,6 @@ export default defineConfig({
   lastUpdated: true,
   vite: {
     define: {
-      // Baked per build — the CN line (SITE_LINE=cn) is a separate artifact
-      // deployed to the Hangzhou bucket; theme modules branch on this const.
       __SITE_LINE__: JSON.stringify(isCnLine ? 'cn' : 'intl'),
     },
   },
