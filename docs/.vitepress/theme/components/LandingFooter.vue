@@ -2,9 +2,16 @@
 import {computed} from 'vue'
 import {useData} from 'vitepress'
 import BrandMark from './BrandMark.vue'
+import {ICP_NUMBER, ICP_URL, PSB_NUMBER, PSB_SEARCH_URL, SITE_URL_CN, SITE_URL_INTL} from '../compliance'
 
 const {page} = useData()
 const isZh = computed(() => !page.value.relativePath.startsWith('en/'))
+// Deploy line is a build-time constant: the CN build carries the ICP/公安
+// filings and links back to the international site, and vice versa (#89 —
+// site switching stays user-initiated, footer links only).
+const isCn = __SITE_LINE__ === 'cn'
+const siblingUrl = isCn ? SITE_URL_INTL : SITE_URL_CN
+const siblingLabel = isCn ? '国际站 serverlessinsight.com' : '国内站 serverlessinsight.cn'
 const link = (path: string) => `${isZh.value ? '/' : '/en/'}${path}.html`
 const year = new Date().getFullYear()
 const supportEmail = 'support@wentsen.com'
@@ -118,6 +125,16 @@ const groups = computed(() => [
       </div>
       <div class="si-footer__bottom">
         <span>© 2024–{{ year }} ServerlessInsight</span><span>Apache-2.0</span>
+        <a v-if="isCn" class="si-footer__filing" :href="ICP_URL" target="_blank" rel="noopener noreferrer">{{ ICP_NUMBER }}</a>
+        <a
+          v-if="isCn && PSB_NUMBER"
+          class="si-footer__filing"
+          :href="PSB_SEARCH_URL"
+          target="_blank"
+          rel="noopener noreferrer"
+          >{{ PSB_NUMBER }}</a
+        >
+        <a class="si-footer__sibling" :href="siblingUrl" target="_blank" rel="noopener noreferrer">{{ siblingLabel }}</a>
       </div>
     </div>
   </footer>

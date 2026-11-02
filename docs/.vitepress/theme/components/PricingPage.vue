@@ -14,7 +14,7 @@ import {useData} from 'vitepress'
 import {CONSOLE_LOGIN_URL} from '../console'
 import ThemeIcon from './ThemeIcon.vue'
 import {usePricing} from '../usePricing'
-import {formatUsd as fmtUsd, getAnnualBaseCents, getAnnualMonthlyUsd, getAnnualSavings} from '../pricing-utils.mjs'
+import {formatCents, getAnnualBaseCents, getAnnualMonthlyAmount, getAnnualSavings} from '../pricing-utils.mjs'
 
 // AGENTS.md: locale must come from the build-time relativePath (SSR-safe),
 // never from useData().lang / location inside slot-rendered components.
@@ -42,6 +42,12 @@ onUnmounted(() => {
 
 const pricing = usePricing()
 
+// Display currency is payload-driven (#52 Phase M): USD on the international
+// line, CNY once the domestic console API answers — the build-time snapshot
+// is USD, the mounted refresh overwrites both prices and currency together.
+const currency = computed(() => pricing.currency || 'USD')
+const fmt = (cents?: number | null): string => formatCents(cents, currency.value)
+
 const fmtAmr = (n: number): number => (Number.isInteger(n) ? n : Math.round(n * 100) / 100)
 const pl = (n: number | null | undefined, one: string, many: string = `${one}s`): string =>
   `${n ?? 0} ${(n ?? 0) === 1 ? one : many}`
@@ -50,7 +56,7 @@ const dev = computed(() => pricing.plans.developer)
 const team = computed(() => pricing.plans.team)
 
 const annualBaseCents = computed(() => getAnnualBaseCents(team.value))
-const annualMonthlyUsd = computed(() => getAnnualMonthlyUsd(team.value))
+const annualMonthlyAmt = computed(() => getAnnualMonthlyAmount(team.value, currency.value))
 const savePct = computed(() => getAnnualSavings(team.value))
 const monthsPaid = computed(() => Math.round((annualBaseCents.value ?? 0) / (team.value.monthly_base_cents || 1)))
 
@@ -67,24 +73,27 @@ const d = computed(() => {
   const devO = dev.value.overage?.amr_cents
   const teamO = team.value.overage?.amr_cents
   return {
+    currency: currency.value,
+    currencyLabel: ({USD: '美元', CNY: '人民币'})[currency.value] ?? currency.value,
+    freeAmt: formatCents(0, currency.value),
     devFreeAmr: dev.value.free_amr ?? 0,
     devMembers: dev.value.free_members ?? 0,
     devWorkspaces: dev.value.free_workspaces ?? 0,
-    devOverageUsd: fmtUsd(devO),
+    devOverageAmt: fmt(devO),
     devBudgetPct: dev.value.budget_cap?.default_alert_threshold_percent ?? 80,
     teamFreeAmr: team.value.free_amr ?? 0,
     teamMembers: team.value.free_members ?? 0,
     teamWorkspaces: team.value.free_workspaces ?? 0,
-    teamOverageUsd: fmtUsd(teamO),
-    teamMonthlyUsd: fmtUsd(team.value.monthly_base_cents),
-    teamValueUsd: fmtUsd((devO ?? 0) * (team.value.free_amr ?? 0)),
-    team80Usd: fmtUsd(
+    teamOverageAmt: fmt(teamO),
+    teamMonthlyAmt: fmt(team.value.monthly_base_cents),
+    teamValueAmt: fmt((devO ?? 0) * (team.value.free_amr ?? 0)),
+    team80Amt: fmt(
       Math.round(
         ((team.value.monthly_base_cents ?? 0) * (dev.value.budget_cap?.default_alert_threshold_percent ?? 80)) / 100
       )
     ),
-    annualUsd: fmtUsd(annualBaseCents.value),
-    annualMonthlyUsd: annualMonthlyUsd.value,
+    annualAmt: fmt(annualBaseCents.value),
+    annualMonthlyAmt: annualMonthlyAmt.value,
     savePct: savePct.value,
     monthsPaid: monthsPaid.value,
     workspaceWeight: pricing.workspace_weight_amr ?? 1,
@@ -103,10 +112,10 @@ const tx = computed(() => {
   const v = d.value
   return {
     overageDev: {
-      zh: `超出后 ${v.devOverageUsd} / AMR（需预存余额）`,
-      en: `${v.devOverageUsd} / AMR beyond quota (prepaid balance required)`
+      zh: `超出后 ${v.devOverageAmt} / AMR（需预存余额）`,
+      en: `${v.devOverageAmt} / AMR beyond quota (prepaid balance required)`
     },
-    overageTeam: {zh: `超出后 ${v.teamOverageUsd} / AMR`, en: `${v.teamOverageUsd} / AMR beyond quota`},
+    overageTeam: {zh: `超出后 ${v.teamOverageAmt} / AMR`, en: `${v.teamOverageAmt} / AMR beyond quota`},
     overageCustom: {zh: '超额单价按合同约定', en: 'Custom overage rate'},
     members1: {zh: `${v.devMembers} 名成员（硬配额）`, en: `${pl(v.devMembers, 'member')} (hard quota)`},
     members10: {zh: `${v.teamMembers} 名成员（硬配额）`, en: `${pl(v.teamMembers, 'member')} (hard quota)`},
@@ -131,8 +140,8 @@ const tx = computed(() => {
     supportTicket: {zh: '工单支持 · 1 个工作日', en: 'Tickets · 1 business day'},
     supportTam: {zh: '专属 TAM · 7×24', en: 'Dedicated TAM · 7×24'},
     teamValue: {
-      zh: `含 ${v.teamFreeAmr} AMR — 按 Developer 按量价折算价值 ${v.teamValueUsd}，仅需 ${v.teamMonthlyUsd}`,
-      en: `${v.teamFreeAmr} AMR included — worth ${v.teamValueUsd} at Developer pay-as-you-go rates, only ${v.teamMonthlyUsd}`
+      zh: `含 ${v.teamFreeAmr} AMR — 按 Developer 按量价折算价值 ${v.teamValueAmt}，仅需 ${v.teamMonthlyAmt}`,
+      en: `${v.teamFreeAmr} AMR included — worth ${v.teamValueAmt} at Developer pay-as-you-go rates, only ${v.teamMonthlyAmt}`
     }
   }
 })
@@ -143,7 +152,7 @@ const PLANS = computed(() => [
     featured: false,
     cta: {zh: '免费开始', en: 'Start for free'},
     href: CONSOLE_LOGIN_URL,
-    price: fmtUsd(dev.value.monthly_base_cents),
+    price: fmt(dev.value.monthly_base_cents),
     priceYear: '',
     period: {zh: '/月', en: '/mo'},
     periodYear: '',
@@ -164,10 +173,10 @@ const PLANS = computed(() => [
     featured: true,
     cta: {zh: '升级到 Team', en: 'Upgrade to Team'},
     href: CONSOLE_LOGIN_URL,
-    price: d.value.teamMonthlyUsd,
-    priceYear: d.value.annualMonthlyUsd,
+    price: d.value.teamMonthlyAmt,
+    priceYear: d.value.annualMonthlyAmt,
     period: {zh: '/月', en: '/mo'},
-    periodYear: {zh: `/月 · 按年计费 ${d.value.annualUsd}`, en: `/mo · ${d.value.annualUsd} billed yearly`},
+    periodYear: {zh: `/月 · 按年计费 ${d.value.annualAmt}`, en: `/mo · ${d.value.annualAmt} billed yearly`},
     quota: {zh: `含 ${d.value.teamFreeAmr} AMR`, en: `${d.value.teamFreeAmr} AMR included`},
     features: () => [
       {text: pick(tx.value.overageTeam), icon: 'coins'},
@@ -203,8 +212,8 @@ const PLANS = computed(() => [
 ])
 
 const saveLine = computed(() => ({
-  zh: `一次支付 ${d.value.annualUsd}/年，相当于按 ${d.value.monthsPaid} 个月计费 — 省 ${d.value.savePct}%`,
-  en: `Pay ${d.value.annualUsd}/year — billed as ${d.value.monthsPaid} months, save ${d.value.savePct}%`
+  zh: `一次支付 ${d.value.annualAmt}/年，相当于按 ${d.value.monthsPaid} 个月计费 — 省 ${d.value.savePct}%`,
+  en: `Pay ${d.value.annualAmt}/year — billed as ${d.value.monthsPaid} months, save ${d.value.savePct}%`
 }))
 
 // ── resource table (weights from the payload, labels stay editorial) ─────
@@ -300,8 +309,8 @@ const T = computed(() => {
     free: {zh: '免费', en: 'Free'},
     zeroGroup: {zh: '0 AMR — 以下永远免费', en: '0 AMR — the ones below are always free'},
     amrNote: {
-      zh: `超出额度后 1 AMR 单价：Developer ${v.devOverageUsd} · Team ${v.teamOverageUsd}；免费额度内 $0。价格以美元（USD）计。`,
-      en: `1 AMR beyond quota: Developer ${v.devOverageUsd} · Team ${v.teamOverageUsd} — $0 within the free quota. Prices in USD.`
+      zh: `超出额度后 1 AMR 单价：Developer ${v.devOverageAmt} · Team ${v.teamOverageAmt}；免费额度内 ${v.freeAmt}。价格以${v.currencyLabel}（${v.currency}）计。`,
+      en: `1 AMR beyond quota: Developer ${v.devOverageAmt} · Team ${v.teamOverageAmt} — ${v.freeAmt} within the free quota. Prices in ${v.currency}.`
     },
     enterpriseNote: {
       zh: 'Enterprise 单价按合同约定（≤ 目录价）。',
@@ -336,8 +345,8 @@ const T = computed(() => {
       ]
     },
     exampleNote: {
-      zh: `Developer 免费额度 ${v.devFreeAmr} AMR/月内为 $0；超出后按版本单价计费。价格以美元（USD）计。`,
-      en: `$0 within the Developer free quota of ${v.devFreeAmr} AMR/mo; beyond it the plan rate applies. Prices in USD.`
+      zh: `Developer 免费额度 ${v.devFreeAmr} AMR/月内为 ${v.freeAmt}；超出后按版本单价计费。价格以${v.currencyLabel}（${v.currency}）计。`,
+      en: `${v.freeAmt} within the Developer free quota of ${v.devFreeAmr} AMR/mo; beyond it the plan rate applies. Prices in ${v.currency}.`
     },
     faqTitle: {zh: '常见问题', en: 'FAQ'},
     faq: {
@@ -348,7 +357,7 @@ const T = computed(() => {
         ],
         [
           '什么时候升级 Team 更划算？',
-          `Team ${v.teamMonthlyUsd}/月含 ${v.teamFreeAmr} AMR — 按 Developer 按量价（${v.devOverageUsd}/AMR）折算价值 ${v.teamValueUsd}。当月账单接近 ${v.team80Usd}（Team 的 ${v.devBudgetPct}%）时控制台会自动提示升级；超出后每 AMR 仅 ${v.teamOverageUsd}，是 Developer 的一半。`
+          `Team ${v.teamMonthlyAmt}/月含 ${v.teamFreeAmr} AMR — 按 Developer 按量价（${v.devOverageAmt}/AMR）折算价值 ${v.teamValueAmt}。当月账单接近 ${v.team80Amt}（Team 的 ${v.devBudgetPct}%）时控制台会自动提示升级；超出后每 AMR 仅 ${v.teamOverageAmt}，是 Developer 的一半。`
         ],
         [
           '不绑卡如何付款？',
@@ -364,7 +373,7 @@ const T = computed(() => {
         ],
         [
           '有年付选项吗？',
-          `有 — Team 年付 ${v.annualUsd}/年（按 ${v.monthsPaid} 个月计费，省 ${v.savePct}%），在控制台账单页购买，自下个账期起覆盖 12 个月基础月费；覆盖期最后 30 天内可开启自动续费（从余额扣款），续费周期开始前也可取消并全额退回余额。`
+          `有 — Team 年付 ${v.annualAmt}/年（按 ${v.monthsPaid} 个月计费，省 ${v.savePct}%），在控制台账单页购买，自下个账期起覆盖 12 个月基础月费；覆盖期最后 30 天内可开启自动续费（从余额扣款），续费周期开始前也可取消并全额退回余额。`
         ]
       ],
       en: [
@@ -374,7 +383,7 @@ const T = computed(() => {
         ],
         [
           'When does upgrading to Team pay off?',
-          `Team costs ${v.teamMonthlyUsd}/month with ${v.teamFreeAmr} AMR included — worth ${v.teamValueUsd} at the Developer pay-as-you-go rate (${v.devOverageUsd}/AMR). When your monthly bill approaches ${v.team80Usd} (${v.devBudgetPct}% of Team), the console suggests upgrading; beyond the included ${v.teamFreeAmr} AMR each additional AMR is only ${v.teamOverageUsd}.`
+          `Team costs ${v.teamMonthlyAmt}/month with ${v.teamFreeAmr} AMR included — worth ${v.teamValueAmt} at the Developer pay-as-you-go rate (${v.devOverageAmt}/AMR). When your monthly bill approaches ${v.team80Amt} (${v.devBudgetPct}% of Team), the console suggests upgrading; beyond the included ${v.teamFreeAmr} AMR each additional AMR is only ${v.teamOverageAmt}.`
         ],
         [
           'How does payment work without a card?',
@@ -390,7 +399,7 @@ const T = computed(() => {
         ],
         [
           'Is there an annual option?',
-          `Yes — Team annual is ${v.annualUsd}/yr (billed as ${v.monthsPaid} months, save ${v.savePct}%). Purchase it from the console Billing tab: coverage starts the next billing period and lasts 12 months of the base fee. Auto-renewal from your balance can be enabled during the last 30 days, and a renewed period can be cancelled for a full balance refund before it begins.`
+          `Yes — Team annual is ${v.annualAmt}/yr (billed as ${v.monthsPaid} months, save ${v.savePct}%). Purchase it from the console Billing tab: coverage starts the next billing period and lasts 12 months of the base fee. Auto-renewal from your balance can be enabled during the last 30 days, and a renewed period can be cancelled for a full balance refund before it begins.`
         ]
       ]
     },

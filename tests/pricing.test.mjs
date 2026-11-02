@@ -1,8 +1,10 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 import {
+  formatCents,
   formatUsd,
   getAnnualBaseCents,
+  getAnnualMonthlyAmount,
   getAnnualMonthlyUsd,
   getAnnualSavings
 } from '../docs/.vitepress/theme/pricing-utils.mjs'
@@ -40,4 +42,15 @@ test('Free or more expensive annual pricing does not claim misleading savings', 
   assert.equal(getAnnualSavings({}), 0)
   assert.equal(getAnnualSavings({monthly_base_cents: 0}), 0)
   assert.equal(getAnnualSavings({monthly_base_cents: 100, annual_base_cents: 1300}), 0)
+})
+test('CNY display mirrors the USD formatting rules (#52 Phase M)', () => {
+  assert.equal(formatCents(0, 'CNY'), '¥0')
+  assert.equal(formatCents(7900, 'CNY'), '¥79')
+  assert.equal(formatCents(6599, 'CNY'), '¥65.99')
+  assert.equal(formatCents(5, 'CNY'), '¥0.05')
+  assert.equal(getAnnualMonthlyAmount({monthly_base_cents: 7900}, 'CNY'), '¥65.8')
+})
+test('Unknown currencies render an ISO prefix instead of a wrong symbol', () => {
+  assert.equal(formatCents(7900, 'EUR'), 'EUR 79')
+  assert.equal(formatCents(7900), '$79')
 })

@@ -16,9 +16,30 @@ const titleEn = SITE_NAME;
 const descEn = DEFAULT_DESCRIPTIONS.en;
 const seo = createSeoHooks();
 
+// CN line builds drop Google Analytics: mainland visitors cannot reach
+// googletagmanager.com and the hanging request delays onload. Site
+// verification metas stay — Baidu verification matters on .cn.
+const isCnLine = process.env.SITE_LINE === 'cn';
+const googleAnalytics = isCnLine
+  ? []
+  : [
+      ['script', {async: '', src: 'https://www.googletagmanager.com/gtag/js?id=G-FSJWB3QKGJ'}],
+      ['script', {}, `window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-FSJWB3QKGJ');`],
+    ];
+
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
   lastUpdated: true,
+  vite: {
+    define: {
+      // Baked per build — the CN line (SITE_LINE=cn) is a separate artifact
+      // deployed to the Hangzhou bucket; theme modules branch on this const.
+      __SITE_LINE__: JSON.stringify(isCnLine ? 'cn' : 'intl'),
+    },
+  },
   sitemap: {
     hostname: siteOrigin,
     transformItems: seo.transformSitemap,
@@ -58,12 +79,8 @@ export default defineConfig({
         ['meta', {property: 'og:site_name', content: titleZh}],
         ['meta', {name: 'baidu-site-verification', content: 'codeva-RxGXH1Uqch'}],
         ['meta', {name: 'google-site-verification', content: 'AZXIysKvXbgU83th3QJrI5ztjLlY3Yys9oav4uEQS6Y'}],
-        // Google Analytics
-        ['script', {async: '', src: 'https://www.googletagmanager.com/gtag/js?id=G-FSJWB3QKGJ'}],
-        ['script', {}, `window.dataLayer = window.dataLayer || [];
-function gtag(){dataLayer.push(arguments);}
-gtag('js', new Date());
-gtag('config', 'G-FSJWB3QKGJ');`],
+        // Google Analytics (omitted on CN line builds)
+        ...googleAnalytics,
       ],
       themeConfig: {
         // https://vitepress.dev/reference/default-theme-config
@@ -114,12 +131,8 @@ gtag('config', 'G-FSJWB3QKGJ');`],
         ['meta', {property: 'og:site_name', content: titleEn}],
         ['meta', {name: 'baidu-site-verification', content: 'codeva-RxGXH1Uqch'}],
         ['meta', {name: 'google-site-verification', content: 'AZXIysKvXbgU83th3QJrI5ztjLlY3Yys9oav4uEQS6Y'}],
-        // Google Analytics
-        ['script', {async: '', src: 'https://www.googletagmanager.com/gtag/js?id=G-FSJWB3QKGJ'}],
-        ['script', {}, `window.dataLayer = window.dataLayer || [];
-function gtag(){dataLayer.push(arguments);}
-gtag('js', new Date());
-gtag('config', 'G-FSJWB3QKGJ');`],
+        // Google Analytics (omitted on CN line builds)
+        ...googleAnalytics,
       ],
       themeConfig: {
         // https://vitepress.dev/reference/default-theme-config

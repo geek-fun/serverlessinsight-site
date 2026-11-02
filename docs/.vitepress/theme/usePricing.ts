@@ -1,8 +1,12 @@
 import {onMounted, onUnmounted, reactive} from 'vue'
 import initialPricing from './pricing-data.json'
 
-export const PRICING_API = 'https://console.serverlessinsight.com/api/v1/pricing'
+export const PRICING_API =
+  __SITE_LINE__ === 'cn'
+    ? 'https://console.serverlessinsight.cn/api/v1/pricing'
+    : 'https://console.serverlessinsight.com/api/v1/pricing'
 type Pricing = typeof initialPricing & {
+  currency?: string
   plans: {team: typeof initialPricing.plans.team & {annual_base_cents?: number}}
 }
 

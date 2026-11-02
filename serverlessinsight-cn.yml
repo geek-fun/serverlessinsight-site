@@ -1,0 +1,38 @@
+version: 0.1.0
+
+provider:
+  name: aliyun
+  region: cn-hangzhou
+
+app: serverlessinsight
+service: serverlessinsight-site
+
+stages:
+  prod-cn:
+    site_bucket_name: serverlessinsight-site-bucket-prod-cn
+
+# The state bucket must already exist in cn-hangzhou. Keep the site state key
+# separate from other services sharing this state bucket.
+backend:
+  state_manager:
+    type: BUCKET_STORE
+    bucket: wentsen-serverless-insight-state-prod-cn
+    key: serverlessinsight/serverlessinsight-site/state.json
+
+tags:
+  owner: wentsen
+  group: serverlessinsight
+
+buckets:
+  si_spa_site_bucket:
+    name: ${stages.site_bucket_name}
+    security:
+      acl: PUBLIC_READ
+    domain:
+      domain_name: serverlessinsight.cn
+      certificate_id: '28184605'
+      protocol: HTTPS
+      www_bind_apex: true
+    website:
+      code: dist
+      index: index.html
