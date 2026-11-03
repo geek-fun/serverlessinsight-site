@@ -3,10 +3,11 @@ import {computed} from 'vue'
 import {useData} from 'vitepress'
 import BrandMark from './BrandMark.vue'
 import {ICP_NUMBER, ICP_URL, PSB_NUMBER, PSB_SEARCH_URL, SITE_URL_CN, SITE_URL_INTL} from '../compliance'
+import { isCnLine } from '../site-line'
 
 const {page} = useData()
 const isZh = computed(() => !page.value.relativePath.startsWith('en/'))
-const isCn = __SITE_LINE__ === 'cn'
+const isCn = isCnLine
 const siblingUrl = isCn ? SITE_URL_INTL : SITE_URL_CN
 const siblingLabel = isCn ? '国际站 serverlessinsight.com' : '国内站 serverlessinsight.cn'
 const link = (path: string) => `${isZh.value ? '/' : '/en/'}${path}.html`
@@ -27,13 +28,16 @@ const t = computed(() =>
         cases: '实践案例',
         faq: '常见问题',
         support: '技术支持',
+        company: '公司',
         community: '社区',
         github: 'GitHub 仓库',
         issues: 'GitHub Issues',
         legal: '法务',
         privacy: '隐私政策',
         terms: '服务条款',
-        refund: '退款政策'
+        refund: '退款政策',
+        about: '关于我们',
+        contact: '联系我们'
       }
     : {
         tagline: 'Full-stack serverless, across clouds.',
@@ -48,13 +52,16 @@ const t = computed(() =>
         cases: 'Case studies',
         faq: 'FAQ',
         support: 'Support',
+        company: 'Company',
         community: 'Community',
         github: 'GitHub repository',
         issues: 'GitHub Issues',
         legal: 'Legal',
         privacy: 'Privacy policy',
         terms: 'Terms of service',
-        refund: 'Refund policy'
+        refund: 'Refund policy',
+        about: 'About us',
+        contact: 'Contact us'
       }
 )
 const groups = computed(() => [
@@ -82,8 +89,19 @@ const groups = computed(() => [
     links: [
       {label: t.value.github, href: 'https://github.com/geek-fun/serverlessinsight'},
       {label: t.value.issues, href: 'https://github.com/geek-fun/serverlessinsight/issues'},
-      {label: 'X (Twitter)', href: 'https://x.com/Blankll31075'},
-      {label: 'YouTube', href: 'https://www.youtube.com/@geekfun-club'}
+      ...(isCn
+        ? []
+        : [
+            {label: 'X (Twitter)', href: 'https://x.com/Blankll31075'},
+            {label: 'YouTube', href: 'https://www.youtube.com/@geekfun-club'}
+          ])
+    ]
+  },
+  {
+    title: t.value.company,
+    links: [
+      {label: t.value.about, href: link('about')},
+      {label: t.value.contact, href: link('contact')}
     ]
   },
   {

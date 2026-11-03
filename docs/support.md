@@ -24,16 +24,6 @@ ServerlessInsight 提供多种支持渠道，帮助您解决使用过程中遇�
 - **响应时间**: 1-5 个工作日
 - **语言**: 中文 / 英文
 
-#### 社交媒体
-- **Twitter**: [@Blankll31075](https://x.com/Blankll31075)
-  - 获取最新更新和公告
-  - 响应时间：1-2 个工作日
-
-- **YouTube**: [GeekFun Club](https://www.youtube.com/@geekfun-club)
-  - 教程视频
-  - 产品演示
-  - 最佳实践分享
-
 #### 邮件支持
 - **邮箱**: support@wentsen.com
 - **用途**: 一般咨询、合作洽谈
@@ -356,7 +346,7 @@ si deploy --stage dev --debug
 
 ### 社区支持
 - **时间**: 全天候（志愿者响应时间可能不同）
-- **渠道**: GitHub, Twitter, Email
+- **渠道**: GitHub, Email
 
 ### 商业支持
 - **标准支持**: 工作日 9:00-18:00 (北京时间)

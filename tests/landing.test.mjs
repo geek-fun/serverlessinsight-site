@@ -171,12 +171,21 @@ for (const locale of [
   test(`${locale.language}: footer groups are labeled and external links open safely`, () => {
     const footer = byClass(page, 'si-footer')[0]
     const groups = descendants(footer, (node) => node.tag === 'nav')
-    assert.equal(groups.length, 4)
-    assert.equal(new Set(groups.map((group) => attribute(group, 'aria-label'))).size, 4)
+    // Product / Resources / Company / Community / Legal
+    assert.equal(groups.length, 5)
+    assert.equal(new Set(groups.map((group) => attribute(group, 'aria-label'))).size, 5)
+    // Company groups the corporate pages, not the resource links.
+    const company = groups.find((group) => ['公司', 'Company'].includes(attribute(group, 'aria-label')))
+    assert.ok(company, 'footer has a Company group')
+    const companyLinks = descendants(company, (node) => node.tag === 'a').map((node) => attribute(node, 'href'))
+    assert.ok(companyLinks.some((href) => /about\.html$/.test(href)))
+    assert.ok(companyLinks.some((href) => /contact\.html$/.test(href)))
     for (const group of groups) {
       assert.equal(attribute(group, 'aria-label'), text(descendants(group, (node) => node.tag === 'h2')[0]))
       assert.equal(descendants(group, (node) => node.tag === 'ul').length, 1)
-      assert.ok(descendants(group, (node) => node.tag === 'li').length >= 3)
+      // The Company group is legitimately two pages (about + contact).
+      const isCompany = ['公司', 'Company'].includes(attribute(group, 'aria-label'))
+      assert.ok(descendants(group, (node) => node.tag === 'li').length >= (isCompany ? 2 : 3))
     }
     const external = descendants(footer, (node) => node.tag === 'a' && attribute(node, 'href').startsWith('https://'))
     // 4 group/social links + the cross-line sibling link (#89, user-initiated
@@ -438,7 +447,7 @@ for (const prefix of ['/', '/en/']) {
     )
     assert.ok(descendants(pricingPage, (node) => node.tag === 'details').length >= 4)
     const footer = byClass(page, 'si-footer')[0]
-    assert.equal(descendants(footer, (node) => node.tag === 'nav').length, 4)
+    assert.equal(descendants(footer, (node) => node.tag === 'nav').length, 5)
     assert.ok(descendants(footer, (node) => attribute(node, 'src') === '/logo-dark.png').length)
     assert.ok(descendants(footer, (node) => attribute(node, 'href') === `${prefix}#cloud-support`).length)
   })

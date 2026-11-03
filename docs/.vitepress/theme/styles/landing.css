@@ -699,7 +699,7 @@
 }
 .si-footer__grid {
   display: grid;
-  grid-template-columns: minmax(0, 1.6fr) repeat(4, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1.5fr) repeat(5, minmax(0, 1fr));
   gap: 36px;
 }
 .si-footer .si-wordmark {
@@ -857,7 +857,7 @@
   }
   .si-footer__grid {
     gap: 28px;
-    grid-template-columns: minmax(0, 1.4fr) repeat(4, minmax(0, 1fr));
+    grid-template-columns: minmax(0, 1.3fr) repeat(5, minmax(0, 1fr));
   }
 }
 @media (max-width: 959px) {
@@ -1000,7 +1000,7 @@
     font-size: 15px;
   }
   .si-footer__grid {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(5, minmax(0, 1fr));
   }
   .si-footer__brand {
     grid-column: 1 / -1;

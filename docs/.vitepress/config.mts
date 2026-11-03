@@ -28,12 +28,26 @@ gtag('js', new Date());
 gtag('config', 'G-FSJWB3QKGJ');`],
     ];
 
+// X/YouTube are unreachable in mainland China — the CN build lists GitHub only.
+const socialLinks = [
+  {icon: 'github', link: 'https://github.com/geek-fun/serverlessinsight'},
+  ...(isCnLine
+    ? []
+    : [
+        {icon: 'twitter', link: 'https://x.com/Blankll31075'},
+        {icon: 'youtube', link: 'https://www.youtube.com/@geekfun-club'},
+      ]),
+];
+
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
   lastUpdated: true,
   vite: {
     define: {
       __SITE_LINE__: JSON.stringify(isCnLine ? 'cn' : 'intl'),
+      // import.meta.env is Vite's own channel — `define` on a bare identifier
+      // is only applied by the esbuild pass in build mode, so dev needs this.
+      'import.meta.env.SITE_LINE': JSON.stringify(isCnLine ? 'cn' : 'intl'),
     },
   },
   sitemap: {
@@ -104,15 +118,13 @@ export default defineConfig({
               {text: '支持服务', link: '/support.html'},
               {text: '常见问题', link: '/faq.html'},
               {text: '实践案例', link: '/case-study.html'},
+              {text: '关于我们', link: '/about.html'},
+              {text: '联系我们', link: '/contact.html'},
             ]
           }
         ],
 
-        socialLinks: [
-          {icon: 'github', link: 'https://github.com/geek-fun/serverlessinsight'},
-          {icon: 'twitter', link: 'https://x.com/Blankll31075'},
-          {icon: 'youtube', link: 'https://www.youtube.com/@geekfun-club'}
-        ]
+        socialLinks
       },
     },
     en: {
@@ -152,15 +164,13 @@ export default defineConfig({
               {text: 'Support', link: '/en/support.html'},
               {text: 'FAQ', link: '/en/faq.html'},
               {text: 'Case Studies', link: '/en/case-study.html'},
+              {text: 'About us', link: '/en/about.html'},
+              {text: 'Contact us', link: '/en/contact.html'},
             ]
           }
         ],
 
-        socialLinks: [
-          {icon: 'github', link: 'https://github.com/geek-fun/serverlessinsight'},
-          {icon: 'twitter', link: 'https://x.com/Blankll31075'},
-          {icon: 'youtube', link: 'https://www.youtube.com/@geekfun-club'}
-        ]
+        socialLinks
       },
     }
   }
