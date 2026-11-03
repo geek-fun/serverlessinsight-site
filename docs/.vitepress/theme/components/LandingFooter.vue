@@ -85,13 +85,6 @@ const groups = computed(() => [
     ]
   },
   {
-    title: t.value.company,
-    links: [
-      {label: t.value.about, href: link('about')},
-      {label: t.value.contact, href: link('contact')}
-    ]
-  },
-  {
     title: t.value.community,
     links: [
       {label: t.value.github, href: 'https://github.com/geek-fun/serverlessinsight'},
@@ -102,6 +95,13 @@ const groups = computed(() => [
             {label: 'X (Twitter)', href: 'https://x.com/Blankll31075'},
             {label: 'YouTube', href: 'https://www.youtube.com/@geekfun-club'}
           ])
+    ]
+  },
+  {
+    title: t.value.company,
+    links: [
+      {label: t.value.about, href: link('about')},
+      {label: t.value.contact, href: link('contact')}
     ]
   },
   {
