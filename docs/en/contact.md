@@ -2,6 +2,14 @@
 title: "Contact us"
 description: "How to reach ServerlessInsight: support, business enquiries, billing and refund questions, and the open-source community."
 ---
+<script setup>
+import {CONSOLE_URL} from '../.vitepress/theme/console'
+import {ICP_NUMBER, ICP_URL, SITE_URL_CN, SITE_URL_INTL} from '../.vitepress/theme/compliance'
+import {isCnLine} from '../.vitepress/theme/site-line'
+
+const siteUrl = isCnLine ? SITE_URL_CN : SITE_URL_INTL
+</script>
+
 # Contact us
 
 ## Support and enquiries
@@ -26,9 +34,11 @@ Core capabilities are open source — contribute through GitHub:
 
 This website is operated by the ServerlessInsight team.
 
-- ICP filing: 滇ICP备2025072614号-6
-- Site: https://www.serverlessinsight.cn
-- Console: https://console.serverlessinsight.cn
+<ul>
+  <li v-if="isCnLine">ICP filing: <a :href="ICP_URL" target="_blank" rel="noopener noreferrer">{{ ICP_NUMBER }}</a></li>
+  <li>Site: <a :href="siteUrl">{{ siteUrl }}</a></li>
+  <li>Console: <a :href="CONSOLE_URL">{{ CONSOLE_URL }}</a></li>
+</ul>
 
 ## More
 

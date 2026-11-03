@@ -2,6 +2,14 @@
 title: "联系我们"
 description: "ServerlessInsight 的联系方式：技术支持、商务合作、账单与退款咨询，以及开源社区入口。"
 ---
+<script setup>
+import {CONSOLE_URL} from './.vitepress/theme/console'
+import {ICP_NUMBER, ICP_URL, SITE_URL_CN, SITE_URL_INTL} from './.vitepress/theme/compliance'
+import {isCnLine} from './.vitepress/theme/site-line'
+
+const siteUrl = isCnLine ? SITE_URL_CN : SITE_URL_INTL
+</script>
+
 # 联系我们
 
 ## 支持与咨询
@@ -26,9 +34,11 @@ description: "ServerlessInsight 的联系方式：技术支持、商务合作、
 
 本网站由 ServerlessInsight 团队运营。
 
-- ICP 备案号：滇ICP备2025072614号-6
-- 站点：https://www.serverlessinsight.cn
-- 控制台：https://console.serverlessinsight.cn
+<ul>
+  <li v-if="isCnLine">ICP 备案号：<a :href="ICP_URL" target="_blank" rel="noopener noreferrer">{{ ICP_NUMBER }}</a></li>
+  <li>站点：<a :href="siteUrl">{{ siteUrl }}</a></li>
+  <li>控制台：<a :href="CONSOLE_URL">{{ CONSOLE_URL }}</a></li>
+</ul>
 
 ## 更多入口
 

@@ -164,6 +164,8 @@ export default defineConfig({
               {text: 'Support', link: '/en/support.html'},
               {text: 'FAQ', link: '/en/faq.html'},
               {text: 'Case Studies', link: '/en/case-study.html'},
+              {text: 'About us', link: '/en/about.html'},
+              {text: 'Contact us', link: '/en/contact.html'},
             ]
           }
         ],
