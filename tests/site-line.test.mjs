@@ -25,6 +25,8 @@ function evaluateInLine(code, siteLine) {
     require(name) {
       if (name === 'vue') return {reactive: (v) => v, onMounted: () => {}, onUnmounted: () => {}}
       if (name === './pricing-data.json') return {plans: {}}
+      if (name === './site-line') return {SITE_LINE: siteLine, isCnLine: siteLine === 'cn'}
+      if (name === '../site-line') return {SITE_LINE: siteLine, isCnLine: siteLine === 'cn'}
       throw new Error(`Unexpected dependency: ${name}`)
     }
   })

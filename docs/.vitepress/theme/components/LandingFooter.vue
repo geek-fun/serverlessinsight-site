@@ -3,10 +3,11 @@ import {computed} from 'vue'
 import {useData} from 'vitepress'
 import BrandMark from './BrandMark.vue'
 import {ICP_NUMBER, ICP_URL, PSB_NUMBER, PSB_SEARCH_URL, SITE_URL_CN, SITE_URL_INTL} from '../compliance'
+import { isCnLine } from '../site-line'
 
 const {page} = useData()
 const isZh = computed(() => !page.value.relativePath.startsWith('en/'))
-const isCn = __SITE_LINE__ === 'cn'
+const isCn = isCnLine
 const siblingUrl = isCn ? SITE_URL_INTL : SITE_URL_CN
 const siblingLabel = isCn ? '国际站 serverlessinsight.com' : '国内站 serverlessinsight.cn'
 const link = (path: string) => `${isZh.value ? '/' : '/en/'}${path}.html`

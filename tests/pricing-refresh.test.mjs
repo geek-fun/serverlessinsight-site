@@ -20,6 +20,7 @@ function createHarness(fetch, siteLine = 'intl') {
     AbortController,
     fetch,
     require(name) {
+      if (name === './site-line') return {SITE_LINE: siteLine, isCnLine: siteLine === 'cn'}
       if (name === 'vue') {
         return {
           reactive: (value) => value,

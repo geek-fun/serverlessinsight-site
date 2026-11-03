@@ -45,6 +45,9 @@ export default defineConfig({
   vite: {
     define: {
       __SITE_LINE__: JSON.stringify(isCnLine ? 'cn' : 'intl'),
+      // import.meta.env is Vite's own channel — `define` on a bare identifier
+      // is only applied by the esbuild pass in build mode, so dev needs this.
+      'import.meta.env.SITE_LINE': JSON.stringify(isCnLine ? 'cn' : 'intl'),
     },
   },
   sitemap: {
