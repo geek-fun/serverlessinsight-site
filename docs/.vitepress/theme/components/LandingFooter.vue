@@ -28,6 +28,7 @@ const t = computed(() =>
         cases: '实践案例',
         faq: '常见问题',
         support: '技术支持',
+        company: '公司',
         community: '社区',
         github: 'GitHub 仓库',
         issues: 'GitHub Issues',
@@ -51,6 +52,7 @@ const t = computed(() =>
         cases: 'Case studies',
         faq: 'FAQ',
         support: 'Support',
+        company: 'Company',
         community: 'Community',
         github: 'GitHub repository',
         issues: 'GitHub Issues',
@@ -79,7 +81,12 @@ const groups = computed(() => [
       {label: t.value.docs, href: link('docs')},
       {label: t.value.cases, href: link('case-study')},
       {label: t.value.faq, href: link('faq')},
-      {label: t.value.support, href: link('support')},
+      {label: t.value.support, href: link('support')}
+    ]
+  },
+  {
+    title: t.value.company,
+    links: [
       {label: t.value.about, href: link('about')},
       {label: t.value.contact, href: link('contact')}
     ]
