@@ -1,5 +1,7 @@
 // Deploy line is baked at build time; every SEO URL derives from SITE_ORIGIN.
-const SITE_LINE = process.env.SITE_LINE === 'cn' ? 'cn' : 'intl'
+// This module is also bundled into the client, where `process` does not exist —
+// guard the Node-only lookup so the browser gets the default instead of dying.
+const SITE_LINE = typeof process !== 'undefined' && process.env?.SITE_LINE === 'cn' ? 'cn' : 'intl'
 export const SITE_ORIGIN = SITE_LINE === 'cn' ? 'https://www.serverlessinsight.cn' : 'https://www.serverlessinsight.com'
 export const SITE_NAME = 'ServerlessInsight'
 export const SOCIAL_IMAGE = '/og.jpg'
