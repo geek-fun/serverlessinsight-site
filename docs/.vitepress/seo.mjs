@@ -20,7 +20,9 @@ export const LOCALIZED_PAGES = new Set([
   'case-study.md',
   'terms.md',
   'privacy.md',
-  'refund-policy.md'
+  'refund-policy.md',
+  'about.md',
+  'contact.md'
 ])
 const UTILITY_PAGES = new Set(['404.md', 'CONTRIBUTING.md', 'case-study/serverlessInsight-depseek.md'])
 const DOCUMENTATION_PAGES = new Set([

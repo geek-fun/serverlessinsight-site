@@ -24,16 +24,6 @@ We encourage users to get help and share experiences through community channels:
 - **Response time**: 1-5 business days
 - **Language**: English / Chinese
 
-#### Social Media
-- **Twitter**: [@Blankll31075](https://x.com/Blankll31075)
-  - Latest updates and announcements
-  - Response time: 1-2 business days
-
-- **YouTube**: [GeekFun Club](https://www.youtube.com/@geekfun-club)
-  - Tutorial videos
-  - Product demos
-  - Best practice sharing
-
 #### Email Support
 - **Email**: support@wentsen.com
 - **Purpose**: General inquiries, partnership discussions
@@ -353,7 +343,7 @@ We value your feedback to improve the product:
 
 ### Community Support
 - **Hours**: 24/7 (volunteer response times may vary)
-- **Channels**: GitHub, Twitter, Email
+- **Channels**: GitHub, Email
 
 ### Commercial Support
 - **Standard**: Business days 9:00-18:00 (Beijing time)

@@ -33,7 +33,9 @@ const t = computed(() =>
         legal: '法务',
         privacy: '隐私政策',
         terms: '服务条款',
-        refund: '退款政策'
+        refund: '退款政策',
+        about: '关于我们',
+        contact: '联系我们'
       }
     : {
         tagline: 'Full-stack serverless, across clouds.',
@@ -54,7 +56,9 @@ const t = computed(() =>
         legal: 'Legal',
         privacy: 'Privacy policy',
         terms: 'Terms of service',
-        refund: 'Refund policy'
+        refund: 'Refund policy',
+        about: 'About us',
+        contact: 'Contact us'
       }
 )
 const groups = computed(() => [
@@ -74,7 +78,9 @@ const groups = computed(() => [
       {label: t.value.docs, href: link('docs')},
       {label: t.value.cases, href: link('case-study')},
       {label: t.value.faq, href: link('faq')},
-      {label: t.value.support, href: link('support')}
+      {label: t.value.support, href: link('support')},
+      {label: t.value.about, href: link('about')},
+      {label: t.value.contact, href: link('contact')}
     ]
   },
   {
@@ -82,8 +88,12 @@ const groups = computed(() => [
     links: [
       {label: t.value.github, href: 'https://github.com/geek-fun/serverlessinsight'},
       {label: t.value.issues, href: 'https://github.com/geek-fun/serverlessinsight/issues'},
-      {label: 'X (Twitter)', href: 'https://x.com/Blankll31075'},
-      {label: 'YouTube', href: 'https://www.youtube.com/@geekfun-club'}
+      ...(isCn
+        ? []
+        : [
+            {label: 'X (Twitter)', href: 'https://x.com/Blankll31075'},
+            {label: 'YouTube', href: 'https://www.youtube.com/@geekfun-club'}
+          ])
     ]
   },
   {

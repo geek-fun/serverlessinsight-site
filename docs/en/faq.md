@@ -488,8 +488,6 @@ Deploy to a specific environment with `si deploy --stage dev`; the region comes 
 **A:**
 
 - **GitHub Discussions**: [discussions](https://github.com/geek-fun/serverlessinsight/discussions)
-- **Twitter**: [@Blankll31075](https://x.com/Blankll31075)
-- **YouTube**: [GeekFun Club](https://www.youtube.com/@geekfun-club)
 
 ### Q: How do I get technical support?
 

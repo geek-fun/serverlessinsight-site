@@ -562,8 +562,6 @@ functions:
 **A:** 
 
 - **GitHub Discussions**: [discussions](https://github.com/geek-fun/serverlessinsight/discussions)
-- **Twitter**: [@Blankll31075](https://x.com/Blankll31075)
-- **YouTube**: [GeekFun Club](https://www.youtube.com/@geekfun-club)
 
 ### Q: 如何获取技术支持？
 
