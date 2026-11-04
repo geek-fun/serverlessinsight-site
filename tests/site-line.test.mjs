@@ -52,8 +52,11 @@ for (const [line, consoleUrl] of [
 test('Compliance constants carry the CN filings and cross-line entry points', async () => {
   const compliance = evaluateInLine(await compile('docs/.vitepress/theme/compliance.ts'), 'cn')
   assert.match(compliance.ICP_NUMBER, /^滇ICP备\d+号-\d+$/)
-  assert.equal(compliance.PSB_NUMBER, '')
+  assert.match(compliance.PSB_NUMBER, /^滇公网安备\d+号$/)
   assert.ok(compliance.ICP_URL.includes('beian.miit.gov.cn'))
+  // The PSB link must resolve to this site's record, not the generic search page.
+  assert.ok(compliance.PSB_SEARCH_URL.includes('beian.mps.gov.cn/#/query/webSearch'))
+  assert.ok(compliance.PSB_SEARCH_URL.includes(compliance.PSB_NUMBER.match(/\d+/)[0]))
   assert.equal(compliance.SITE_URL_CN, 'https://www.serverlessinsight.cn')
   assert.equal(compliance.SITE_URL_INTL, 'https://www.serverlessinsight.com')
 })
