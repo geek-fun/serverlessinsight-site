@@ -9,6 +9,7 @@ import PlatformSelector from './PlatformSelector.vue'
 import SiteFooter from './SiteFooter.vue'
 import LandingHeader from './LandingHeader.vue'
 import LandingFooter from './LandingFooter.vue'
+import CnSiteSuggestion from './CnSiteSuggestion.vue'
 
 useSiteMotion()
 const {page, frontmatter} = useData()
@@ -28,6 +29,7 @@ const hasTranslation = computed(() => LOCALIZED_PAGES.has(page.value.relativePat
 </script>
 
 <template>
+  <CnSiteSuggestion />
   <div v-if="isLanding" class="si-marketing" @keydown="closeNavigationOnEscape">
     <a class="si-skip-link" href="#VPContent">{{ isZh ? '跳转到主要内容' : 'Skip to content' }}</a>
     <LandingHeader />
