@@ -112,8 +112,10 @@ provider:
 | API 网关 / 事件 | API Gateway | 无独立网关（函数 URL） | API Gateway |
 | 数据库 | RDS Serverless、ES Serverless | TDSQL-C Serverless、ES Serverless | — |
 | 表格存储 | TableStore | — | — |
-| CDN | 支持（OSS + APIGW） | 不支持 | 不支持 |
-| 自定义域名 | 支持 | 支持（DNSPod） | 仅 APIGW 域名 |
+| CDN 加速（域名 `cdn`） | ✅（bucket 域名 + 网关域名） | ✅（仅 bucket 域名） | ✅（仅 bucket 域名；网关域名 `cdn` fail-fast） |
+| 自定义域名 | bucket 域名 / 网关域名 / 函数 `domains` | bucket 域名 / 函数 `domains` | bucket 域名 / 网关域名（函数 `domains` 不支持，fail-fast） |
+
+> 不支持的组合会在 `si validate` 阶段直接报错，部署不会继续；per-provider 取值与证书形态见[cdn 配置](#cdn-配置)和各资源的域名小节。
 
 **命令支持差异**：
 
@@ -434,7 +436,7 @@ triggers:
 | `auth_type` | string | ✅ | `public`（公网匿名访问）或 `iam`（需签名鉴权） |
 | `access` | string[] | ❌ | 网络访问类型：`public`（公网）/ `internal`（内网），至少一项 |
 
-> 函数级 HTTP 触发器适合简单场景；需要路径路由、自定义域名、限流等能力时，改用 `events`（API 网关）。
+> 函数级 HTTP 触发器适合简单场景。需要按路径分发流量或绑定自定义域名时，使用 `domains`（见下）；需要方法级鉴权、限流、请求校验等网关能力时，改用 `events`（API 网关）。
 
 #### triggers.timer - 函数级定时触发器
 
@@ -467,20 +469,39 @@ si-cron 语义要点：
 - 触发器按 `name` 登记进状态文件：再次 `deploy` 幂等；在云控制台手工删除/修改触发器会被漂移检测发现并在下次部署收敛。
 - `@every` 按日历场整除表达（如 `45s`、`90m` 无法表达会报错）；天级以上间隔锚定日历边界，属近似等价。
 
-#### domain - 函数级自定义域名
+#### domains - 函数级自定义域名绑定
+
+函数自定义域名以 `domains` 绑定列表声明（旧的单对象 `domain` 字段已移除，schema 会直接拒绝）。声明 `domains` 的前提是函数已有 `triggers.http` 且 `auth_type: public`（声明了 `access` 时须含 `public`），因为域名路由经由函数 URL 生效：
 
 ```yaml
-domain:
-  domain_name: api.example.com
-  certificate_id: 12345678-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-  protocol: HTTPS
+functions:
+  fn_api:
+    triggers:
+      http:
+        auth_type: public
+        access: [public]
+    domains:
+      - domain_name: api.example.com
+        path: /api/*                # 可选，默认 '/*'
+        certificate_id: 12345678-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+        protocol: HTTPS             # 标量，或数组 ['HTTP', 'HTTPS']
+      - domain_name: static.example.com
+        certificate_body: ${vars.fullchain_pem}
+        certificate_private_key: ${vars.key_pem}
+        protocol: [HTTP, HTTPS]
 ```
 
 | 字段 | 类型 | 必填 | 说明 |
 |------|------|------|------|
-| `domain_name` | string | ✅ | 自定义域名（需已备案并解析到供应商） |
-| `certificate_id` | string | ❌ | 已上传的 SSL 证书 ID |
-| `protocol` | string | ❌ | `HTTP` 或 `HTTPS` |
+| `domain_name` | string | ✅ | 自定义域名（需已备案并解析到供应商）；泛域名（`*.example.com`）仅阿里云支持（单个 `*`，仅限首标签），腾讯云会直接拒绝 |
+| `path` | string | ❌ | 路由路径，默认 `/*`；`*` 至多出现一次且仅末尾（如 `/api/*`） |
+| `certificate_id` | string | ⚠️ | 证书 ID（两种证书形态二选一） |
+| `certificate_body` + `certificate_private_key` | string | ⚠️ | 证书内容 + 私钥，支持 `${vars.*}`（不支持 `${file(...)}`） |
+| `protocol` | string / string[] | ❌ | 默认 `HTTPS`；标量 `HTTPS` 或数组 `['HTTP', 'HTTPS']` |
+
+**跨函数合并路由**：同一 `domain_name` 可出现在多个函数下（路径不得完全重复），si 把它们合并成**一个**云侧域名资源。云上按"精确 > 最长前缀"匹配，与声明顺序无关，嵌套前缀（`/api/*` + `/*`）是合法的兜底写法。同一域名的所有绑定必须声明相同的证书与 `protocol`，不一致在 `validate` 报错。域名归属按栈判定：删除函数只摘除它的路由，最后一个绑定移除时域名资源才删除，再次部署后 `diff` 为空。
+
+> Provider 支持：阿里云 ✅ / 腾讯云 ✅ / 火山引擎 ❌ fail-fast（veFaaS 无域名 API；如需域名应改用 APIG 触发器 + APIG 域名，即 `events` 模型）。
 
 #### storage - 磁盘与 NAS
 
@@ -534,7 +555,7 @@ events:
 :::
 
 ::: platform volcengine
-自定义域名仅限 API 网关场景（函数级 `domain` 暂不可用）；域名证书能力与阿里云一致。
+自定义域名仅限 API 网关场景（veFaaS 函数不支持 `domains`）；域名证书能力与阿里云一致，网关域名的 `cdn` 配置暂不支持。
 :::
 
 #### triggers - 路由规则
@@ -585,7 +606,7 @@ domain:
 cdn:
   enabled: true
   cdn_type: web
-  scope: domestic
+  scope: chinese_mainland
   cache_ttl: 3600
   origin_protocol: follow
   force_redirect_https: true
@@ -594,13 +615,33 @@ cdn:
 | 字段 | 类型 | 说明 |
 |------|------|------|
 | `enabled` | boolean | 是否启用 |
-| `cdn_type` | string | `web`（页面）/ `download`（下载）/ `video`（音视频） |
-| `scope` | string | `domestic`（国内）/ `overseas`（海外）/ `global`（全球） |
+| `cdn_type` | string | 加速类型，per-provider 取值见下 |
+| `scope` | string | `chinese_mainland`（中国大陆）/ `overseas`（海外）/ `global`（全球，默认）；旧值 `domestic` 已迁移为 `chinese_mainland`，继续使用会在 `validate` 报迁移错误 |
 | `cache_ttl` | number | 缓存时间（秒） |
 | `ignore_query_string` | boolean | 缓存是否忽略查询参数 |
 | `origin_protocol` | string | 回源协议：`http` / `https` / `follow` |
 | `compression` | boolean | 智能压缩 |
-| `force_redirect_https` | boolean | 强制 HTTPS 跳转 |
+| `force_redirect_https` | boolean | 强制 HTTPS 跳转（需要证书，否则 `validate` 报错） |
+
+**能力矩阵**：
+
+| 路径 | 阿里云 | 腾讯云 | 火山引擎 |
+| --- | --- | --- | --- |
+| bucket 域名 `cdn` | ✅ | ✅ | ✅ |
+| 网关（event）域名 `cdn` | ✅ | ❌ fail-fast | ❌ fail-fast |
+
+**`cdn_type` per-provider 取值**（三家共有的 `web` 为默认值）：
+
+| si 值 | 阿里云 | 腾讯云 | 火山引擎 |
+| --- | --- | --- | --- |
+| `web` | ✅ | ✅ | ✅ |
+| `download` | ✅ | ✅ | ✅ |
+| `video` | ✅ | ❌ | ✅ |
+| `media` | ❌ | ✅ | ❌ |
+| `hybrid` | ❌ | ✅ | ❌ |
+| `dynamic` | ❌ | ✅ | ❌ |
+
+其他 per-provider 差异：`chinese_mainland` / `global` 需要域名已 ICP 备案，`overseas` 不需要；火山引擎 `overseas` / `global` 加速区域与泛域名需向供应商提工单开通；更新时省略的选项恢复 si 默认值，不沿用上一次部署的值。
 
 ### databases
 
@@ -749,10 +790,9 @@ buckets:
     security:
       acl: PRIVATE
       sse_algorithm: KMS
-    domain:
-      domain_name: static.example.com
-      certificate_id: 12345678-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-      protocol: HTTPS
+    domains:
+      - domain_name: static.example.com
+        certificate_id: 12345678-xxxx-xxxx-xxxx-xxxxxxxxxxxx
 ```
 
 | 字段 | 类型 | 必填 | 说明 |
@@ -761,7 +801,8 @@ buckets:
 | `storage` | object | ❌ | `class` 必填：存储类型（透传供应商，如 `STANDARD` / `IA` / `ARCHIVE`） |
 | `versioning` | object | ❌ | `status` 必填：版本控制（透传供应商，阿里云为 `Enabled` / `Suspended`） |
 | `security` | object | ❌ | ACL 与加密，见下 |
-| `domain` | object | ❌ | 自定义域名（推荐用法，见下） |
+| `accelerate` | boolean | ❌ | 桶级传输加速（默认 `false`） |
+| `domains` | object[] | ❌ | 自定义域名绑定列表（见下） |
 | `website` | object | ❌ | 静态网站托管，见下 |
 | `iam` | object | ❌ | 桶资源策略 |
 
@@ -774,27 +815,31 @@ buckets:
 | `sse_algorithm` | string | 服务端加密：`AES256` / `KMS` |
 | `sse_kms_master_key_id` | string | KMS 密钥 ID（`sse_algorithm: KMS` 时使用） |
 
-**domain - 自定义域名（推荐）**：支持字符串简写或对象。对象形态可配证书与 CDN：
+**domains - 自定义域名绑定列表**：bucket 的自定义域名以 `domains` 列表声明，每条绑定独立配置证书与 CDN。旧的单对象 `domain`、`website.domain` 别名与 `www_bind_apex` 已移除，www 主机作为独立绑定声明：
 
 ```yaml
-domain: cdn.example.com        # 简写
-
-domain:                        # 完整形态
-  domain_name: static.example.com
-  protocol: HTTPS
-  certificate_id: 12345678-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-  www_bind_apex: true
-  accelerate: true             # OSS 传输加速
-  cdn:
-    enabled: true
-    cdn_type: web
-    scope: domestic
-    cache_ttl: 3600
-    origin_protocol: follow
-    force_redirect_https: true
+buckets:
+  site:
+    name: your-bucket
+    website:
+      code: dist
+      index: index.html
+    accelerate: false            # 可选：桶级传输加速
+    domains:
+      - domain_name: example.com
+        certificate_id: cert-123
+        cdn:
+          enabled: true
+          cdn_type: web
+          scope: chinese_mainland
+      - domain_name: www.example.com   # 独立绑定，取代旧的 www_bind_apex
+        certificate_id: cert-123
+        cdn: true
 ```
 
-证书配置与 `events.domain` 相同：`certificate_id` 与（`certificate_body` + `certificate_private_key`）互斥。`cdn` 字段结构同[events 的 cdn](#cdn-配置)。
+绑定按规范化主机名识别：列表顺序不影响变更；重复主机名、以及被同列表泛域名覆盖的精确主机名都会在 `validate` 报错（需要拆到两个桶）。绑定字段：`domain_name` 必填；证书两种形态互斥（`certificate_id` 或 `certificate_body` + `certificate_private_key`）；`cdn` 结构同[cdn 配置](#cdn-配置)，三家 bucket 域名都支持 CDN 加速。
+
+> per-provider 注意：火山引擎直连（非 CDN）绑定只接受 `certificate_id`（TOS 无桶域名证书上传 API，内联 PEM 在 `validate` 拒绝），其 CDN 绑定与腾讯云 CDN 回源目前都要求桶可公网读（跨服务回源授权未自动化）；两家 CDN 绑定管理的 CNAME 记录分别要求域名 zone 托管在火山 DNS（TrafficRoute）或腾讯 DNSPod；指向其他目标的既有记录 si 不会改写，只警告并留给人工处理。
 
 **website - 静态网站托管**：
 
@@ -808,9 +853,8 @@ website:
 |------|------|------|------|
 | `code` | string | ✅ | 网站产物目录 / 代码包路径 |
 | `index` | string | ❌ | 默认首页（默认 index.html） |
-| `domain` | string / object | ❌ | ⚠️ 已废弃：改用顶层 `domain` 字段 |
 
-> 公网可访问需要 `security.acl: PUBLIC_READ`；`website` 只负责托管行为，域名与证书统一走顶层 `domain`。
+> 公网可访问需要 `security.acl: PUBLIC_READ`；`website` 只负责托管行为，域名与证书统一走顶层 `domains` 列表（旧 `website.domain` 已移除）。
 
 **iam - 桶资源策略**：跨账号或匿名访问控制。与函数 `iam.statements` 不同，桶策略语句**必须带 `principal`**（对象，键为被授权方如 `"*"` 或云服务标识，值为字符串），另有可选 `condition`：
 
