@@ -155,6 +155,17 @@ si migrate -s dev --rollback                          # 清除迁移标记（显
 | `--dry-run` | 只展示迁移映射与影响，不写入任何内容 |
 | `--rollback` | 清除源状态上的迁移标记（显式撤销迁移） |
 
+**区域状态拆分（V3 → V4）**：部署状态按 Service + Stage + Region 隔离后，旧版聚合状态需一次性拆分为区域文档：
+
+```bash
+si migrate --to-regional --dry-run                    # 分类盘点，不写入
+si migrate --to-regional                              # 审查 → 确认 → 受保护拆分
+si migrate --to-regional --bind-unknown-region cn-hangzhou   # 为无区域证据的资源显式绑定
+si migrate --to-regional --rollback-op-id <opId>      # 未发生区域写入前可回滚
+```
+
+拆分会先备份原始文档（哈希记录），为每个 stage/region 生成独立 lineage 的 V4 文档（各自持锁，未知地域资源只进入显式绑定的地域），并把旧版条目改写为 V4 墓碑（`version: 4.0` + `managedBy: regional`）——旧版 CLI 会因版本检查在任何变更前拒绝该条目。同时写入服务级 provider 绑定：同一 Service 在任何新地域都不能更换 provider。拆分后用 `si diff` 验证：必须报告无任何非预期变更后才可继续部署。
+
 ### si destroy
 
 ```bash
