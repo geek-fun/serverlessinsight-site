@@ -112,8 +112,10 @@ Providers you can actually deploy to today are **aliyun**, **tencent**, and **vo
 | API gateway / events | API Gateway | no standalone gateway (function URL) | API Gateway |
 | Databases | RDS Serverless, ES Serverless | TDSQL-C Serverless, ES Serverless | — |
 | Table storage | TableStore | — | — |
-| CDN | yes (OSS + APIGW) | no | no |
-| Custom domains | yes | yes (DNSPod) | APIGW domains only |
+| CDN acceleration (domain `cdn`) | ✅ (bucket domains + gateway domains) | ✅ (bucket domains only) | ✅ (bucket domains only; gateway-domain `cdn` fail-fast) |
+| Custom domains | bucket domains / gateway domains / function `domains` | bucket domains / function `domains` | bucket domains / gateway domains (function `domains` unsupported, fail-fast) |
+
+> Unsupported combinations fail at `si validate`, so deploy never proceeds with an ineffective domain/CDN config; per-provider values and certificate forms are covered in [cdn configuration](#cdn-configuration) and each resource's domain section.
 
 **Command support differences**:
 
@@ -436,7 +438,7 @@ triggers:
 | `auth_type` | string | ✅ | `public` (anonymous public access) or `iam` (signature-authenticated) |
 | `access` | string[] | ❌ | network access types: `public` / `internal`, at least one |
 
-> Function-level HTTP triggers fit simple cases; for path routing, custom domains, and rate limiting, use `events` (API gateway) instead.
+> Function-level HTTP triggers fit simple cases. To dispatch different paths to different functions with custom domains, use `domains` (below); for per-route auth, rate limiting, and request validation, use `events` (API gateway) instead.
 
 #### triggers.timer - Function-level Timer Trigger
 
@@ -469,20 +471,39 @@ si-cron semantics:
 - Triggers are registered by `name` in the state file: re-deploys are idempotent, and triggers deleted or edited in the cloud console are caught by drift detection and converge on the next deploy.
 - `@every` maps to calendar-dividing step expressions (`45s`, `90m` etc. fail as inexpressible); day-and-above intervals are anchored to calendar boundaries — an approximation by design.
 
-#### domain - Function-level Custom Domain
+#### domains - Function Custom Domain Bindings
+
+Function custom domains are declared as a `domains` binding list (the legacy single-object `domain` field was removed and is rejected by the schema). Declaring `domains` requires `triggers.http` with `auth_type: public` (and `access` including `public` when declared), because the domain routes through the function URL:
 
 ```yaml
-domain:
-  domain_name: api.example.com
-  certificate_id: 12345678-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-  protocol: HTTPS
+functions:
+  fn_api:
+    triggers:
+      http:
+        auth_type: public
+        access: [public]
+    domains:
+      - domain_name: api.example.com
+        path: /api/*                # optional, defaults to '/*'
+        certificate_id: 12345678-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+        protocol: HTTPS             # scalar, or ['HTTP', 'HTTPS']
+      - domain_name: static.example.com
+        certificate_body: ${vars.fullchain_pem}
+        certificate_private_key: ${vars.key_pem}
+        protocol: [HTTP, HTTPS]
 ```
 
 | Field | Type | Required | Description |
 |------|------|------|------|
-| `domain_name` | string | ✅ | custom domain (registered and pointed at the provider) |
-| `certificate_id` | string | ❌ | uploaded SSL certificate ID |
-| `protocol` | string | ❌ | `HTTP` or `HTTPS` |
+| `domain_name` | string | ✅ | custom domain (registered and pointed at the provider); wildcards (`*.example.com`) are supported on Aliyun only (single `*`, first label); Tencent rejects them |
+| `path` | string | ❌ | route path, defaults to `/*`; `*` may appear at most once and only trailing (e.g. `/api/*`) |
+| `certificate_id` | string | ⚠️ | certificate ID (one of the two certificate forms) |
+| `certificate_body` + `certificate_private_key` | string | ⚠️ | certificate content + private key, supports `${vars.*}` (no `${file(...)}`) |
+| `protocol` | string / string[] | ❌ | defaults to `HTTPS`; scalar `HTTPS` or array `['HTTP', 'HTTPS']` |
+
+**Cross-function merged routes**: the same `domain_name` may appear under multiple functions (paths must not duplicate exactly); si merges their routes into **one** cloud-side domain resource. Cloud matching is "exact > longest prefix", independent of declaration order, and nested prefixes (`/api/*` + `/*`) are a legitimate catch-all pattern. All bindings of one domain must declare the same certificate and `protocol`; mismatches fail at `validate`. Domain ownership is stack-level: removing a function only removes its routes, and the domain resource is deleted when the last binding is removed; a follow-up `diff` after deploy is empty.
+
+> Provider support: Aliyun ✅ / Tencent ✅ / Volcengine ❌ fail-fast (veFaaS has no domain API; use an APIG trigger with an APIG domain instead — the `events` model).
 
 #### storage - Disk and NAS
 
@@ -536,7 +557,7 @@ events:
 :::
 
 ::: platform volcengine
-Custom domains are limited to the API gateway scenario (function-level `domain` is not available yet); certificate handling matches Aliyun.
+Custom domains are limited to the API gateway scenario (veFaaS functions do not support `domains`); certificate handling matches Aliyun, and gateway-domain `cdn` is not supported.
 :::
 
 #### triggers - Routing Rules
@@ -587,7 +608,7 @@ Or simply `cdn: true` for defaults:
 cdn:
   enabled: true
   cdn_type: web
-  scope: domestic
+  scope: chinese_mainland
   cache_ttl: 3600
   origin_protocol: follow
   force_redirect_https: true
@@ -596,13 +617,33 @@ cdn:
 | Field | Type | Description |
 |------|------|------|
 | `enabled` | boolean | enable CDN |
-| `cdn_type` | string | `web` / `download` / `video` |
-| `scope` | string | `domestic` / `overseas` / `global` |
+| `cdn_type` | string | acceleration type, per-provider values below |
+| `scope` | string | `chinese_mainland` / `overseas` / `global` (default); the legacy `domestic` value was renamed to `chinese_mainland` and now fails `validate` with a migration error |
 | `cache_ttl` | number | cache duration (seconds) |
 | `ignore_query_string` | boolean | exclude query strings from cache keys |
 | `origin_protocol` | string | origin protocol: `http` / `https` / `follow` |
 | `compression` | boolean | smart compression |
-| `force_redirect_https` | boolean | force HTTPS redirect |
+| `force_redirect_https` | boolean | force HTTPS redirect (requires a certificate, otherwise `validate` fails) |
+
+**Capability matrix**:
+
+| Path | Aliyun | Tencent Cloud | Volcengine |
+| --- | --- | --- | --- |
+| Bucket-domain `cdn` | ✅ | ✅ | ✅ |
+| Gateway (event) domain `cdn` | ✅ | ❌ fail-fast | ❌ fail-fast |
+
+**Per-provider `cdn_type` values** (`web` is the default and works on all three):
+
+| si value | Aliyun | Tencent Cloud | Volcengine |
+| --- | --- | --- | --- |
+| `web` | ✅ | ✅ | ✅ |
+| `download` | ✅ | ✅ | ✅ |
+| `video` | ✅ | ❌ | ✅ |
+| `media` | ❌ | ✅ | ❌ |
+| `hybrid` | ❌ | ✅ | ❌ |
+| `dynamic` | ❌ | ✅ | ❌ |
+
+Other per-provider notes: `chinese_mainland` / `global` require an ICP filing for the domain, `overseas` does not; volcengine `overseas` / `global` scopes and wildcard domains require a provider ticket; omitted options restore their si defaults on update rather than keeping the previous value.
 
 ### databases
 
@@ -751,10 +792,9 @@ buckets:
     security:
       acl: PRIVATE
       sse_algorithm: KMS
-    domain:
-      domain_name: static.example.com
-      certificate_id: 12345678-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-      protocol: HTTPS
+    domains:
+      - domain_name: static.example.com
+        certificate_id: 12345678-xxxx-xxxx-xxxx-xxxxxxxxxxxx
 ```
 
 | Field | Type | Required | Description |
@@ -763,7 +803,8 @@ buckets:
 | `storage` | object | ❌ | `class` required: storage class (provider-passthrough, e.g. `STANDARD` / `IA` / `ARCHIVE`) |
 | `versioning` | object | ❌ | `status` required: versioning (provider-passthrough; Aliyun uses `Enabled` / `Suspended`) |
 | `security` | object | ❌ | ACL and encryption, see below |
-| `domain` | object | ❌ | custom domain (recommended, see below) |
+| `accelerate` | boolean | ❌ | bucket-level transfer acceleration (default `false`) |
+| `domains` | object[] | ❌ | custom domain binding list (see below) |
 | `website` | object | ❌ | static website hosting, see below |
 | `iam` | object | ❌ | bucket resource policy |
 
@@ -776,27 +817,31 @@ buckets:
 | `sse_algorithm` | string | server-side encryption: `AES256` / `KMS` |
 | `sse_kms_master_key_id` | string | KMS key ID (used with `sse_algorithm: KMS`) |
 
-**domain - custom domain (recommended)**: a plain string or an object. The object form adds certificates and CDN:
+**domains - custom domain binding list**: bucket custom domains are declared as a `domains` list, each binding carrying its own certificate and CDN configuration. The legacy single-object `domain`, the `website.domain` alias and `www_bind_apex` were removed; declare the www host as its own binding:
 
 ```yaml
-domain: cdn.example.com        # shorthand
-
-domain:                        # full form
-  domain_name: static.example.com
-  protocol: HTTPS
-  certificate_id: 12345678-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-  www_bind_apex: true
-  accelerate: true             # OSS transfer acceleration
-  cdn:
-    enabled: true
-    cdn_type: web
-    scope: domestic
-    cache_ttl: 3600
-    origin_protocol: follow
-    force_redirect_https: true
+buckets:
+  site:
+    name: your-bucket
+    website:
+      code: dist
+      index: index.html
+    accelerate: false            # optional: bucket-level transfer acceleration
+    domains:
+      - domain_name: example.com
+        certificate_id: cert-123
+        cdn:
+          enabled: true
+          cdn_type: web
+          scope: chinese_mainland
+      - domain_name: www.example.com   # explicit binding, replaces www_bind_apex
+        certificate_id: cert-123
+        cdn: true
 ```
 
-Certificate rules match `events.domain`: `certificate_id` and (`certificate_body` + `certificate_private_key`) are mutually exclusive. The `cdn` object is the same as the [events cdn](#cdn-configuration).
+Bindings are identified by normalized hostname: reordering the list produces no changes; duplicate hostnames, and an exact hostname covered by a wildcard entry in the same list, fail at `validate` (split such bindings across two buckets). Binding fields: `domain_name` required; the two certificate forms are mutually exclusive (`certificate_id`, or `certificate_body` + `certificate_private_key`); the `cdn` object is the same as [cdn configuration](#cdn-configuration), and bucket-domain CDN works on all three providers.
+
+> Per-provider notes: volcengine direct (non-CDN) bindings only accept `certificate_id` (TOS has no certificate-upload API for bucket domains; inline PEM is rejected at `validate`); on volcengine CDN bindings and Tencent CDN origins the bucket must currently be publicly readable (cross-service origin authorization is not automated); the CNAME records si manages require the domain's zone to be hosted in Volcengine DNS (TrafficRoute) or Tencent DNSPod respectively; a record pointing elsewhere is never overwritten, and si only warns and leaves it for manual correction.
 
 **website - static website hosting**:
 
@@ -810,9 +855,8 @@ website:
 |------|------|------|------|
 | `code` | string | ✅ | website build output / code package path |
 | `index` | string | ❌ | default index page (index.html) |
-| `domain` | string / object | ❌ | ⚠️ deprecated: use the top-level `domain` field |
 
-> Public access requires `security.acl: PUBLIC_READ`; `website` only handles hosting behavior; domains and certificates go through the top-level `domain`.
+> Public access requires `security.acl: PUBLIC_READ`; `website` only handles hosting behavior; domains and certificates go through the top-level `domains` list (the legacy `website.domain` was removed).
 
 **iam - bucket resource policy**: cross-account or anonymous access control. Unlike function `iam.statements`, bucket policy statements **must carry `principal`** (an object mapping the grantee — e.g. `"*"` or a cloud-service identifier — to a string), plus an optional `condition`:
 
