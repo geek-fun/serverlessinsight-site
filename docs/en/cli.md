@@ -155,16 +155,17 @@ Migrate legacy local / object-storage state to the ServerlessInsight Console (SA
 | `--dry-run` | Show the migration mapping and impact without writing anything |
 | `--rollback` | Clear the migration marker from the legacy state (explicit undo) |
 
-**Regional split (V3 → V4)**: deployment state is isolated by Service + Stage + Region; split a pre-regional aggregate once into scoped documents:
+**Automatic state upgrade (V3 → V4)**: deployment state is isolated by Service + Stage + Provider + Region, and every scope shares one V4 aggregate document (LOCAL: `.serverlessinsight/state-<app>-<service>.json`; Bucket Store: the exact configured `key`), where each stage/provider/region partition maintains its own lineage/serial and resource lists.
+
+Legacy V3 aggregate state needs **no standalone migration**: `si deploy`, `si destroy` and `si migrate` upgrade it in place automatically (under the same whole-file/key lock) before continuing with the requested operation:
 
 ```bash
-si migrate --to-regional --dry-run                    # classify, write nothing
-si migrate --to-regional                              # review → confirm → protected split
-si migrate --to-regional --bind-unknown-region cn-hangzhou   # explicit binding for resources without region evidence
-si migrate --to-regional --rollback-op-id <opId>      # reversible before any regional write
+si deploy -s dev                                       # state upgrades automatically before deploying
+si destroy -s dev                                      # state upgrades automatically before destroying
+si deploy -s dev --bind-unknown-region cn-hangzhou     # explicit binding for resources without region evidence
 ```
 
-The split backs up the exact source document first (hash recorded), creates one V4 document per stage/region with an independent lineage (each written under its own scope lock; unknown-region resources land only in the explicitly bound region), and rewrites the legacy entry as a V4 tombstone (`version: 4.0` + `managedBy: regional`) — old CLIs refuse it through their version check before any mutation. A service-level provider binding is recorded too: the same service cannot be opened under a different provider in a new region. After the split, run `si diff`: it must report no unintended changes before the next deploy.
+The upgrade first keeps a hash-verified backup, journal and report (under `.serverlessinsight/` for the LOCAL backend); re-running the same operation resumes after an interruption. `si diff` / `si show` are read-only and never modify stored state. The CLI never guesses historical regions from YAML or filenames — if the legacy state contains resources without region evidence (hand-edited or externally written state), the upgrade refuses and asks for an explicit `--bind-unknown-region <region>`.
 
 ### si destroy
 

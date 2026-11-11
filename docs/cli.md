@@ -155,16 +155,17 @@ si migrate -s dev --rollback                          # 清除迁移标记（显
 | `--dry-run` | 只展示迁移映射与影响，不写入任何内容 |
 | `--rollback` | 清除源状态上的迁移标记（显式撤销迁移） |
 
-**区域状态拆分（V3 → V4）**：部署状态按 Service + Stage + Region 隔离后，旧版聚合状态需一次性拆分为区域文档：
+**状态自动升级（V3 → V4）**：部署状态按 Service + Stage + Provider + Region 隔离，所有范围共用同一份 V4 聚合状态文档（本地为 `.serverlessinsight/state-<app>-<service>.json`，对象存储为配置的 `key`），每个 stage/provider/region 分区各自维护 lineage/serial 与资源清单。
+
+旧版 V3 聚合状态**无需单独迁移**：`si deploy`、`si destroy` 与 `si migrate` 会在原有位置自动完成升级（复用同一把整文件/整 key 锁），然后继续当前操作：
 
 ```bash
-si migrate --to-regional --dry-run                    # 分类盘点，不写入
-si migrate --to-regional                              # 审查 → 确认 → 受保护拆分
-si migrate --to-regional --bind-unknown-region cn-hangzhou   # 为无区域证据的资源显式绑定
-si migrate --to-regional --rollback-op-id <opId>      # 未发生区域写入前可回滚
+si deploy -s dev                                       # 部署前自动升级状态
+si destroy -s dev                                      # 销毁前自动升级状态
+si deploy -s dev --bind-unknown-region cn-hangzhou     # 为无区域证据的资源显式绑定
 ```
 
-拆分会先备份原始文档（哈希记录），为每个 stage/region 生成独立 lineage 的 V4 文档（各自持锁，未知地域资源只进入显式绑定的地域），并把旧版条目改写为 V4 墓碑（`version: 4.0` + `managedBy: regional`）——旧版 CLI 会因版本检查在任何变更前拒绝该条目。同时写入服务级 provider 绑定：同一 Service 在任何新地域都不能更换 provider。拆分后用 `si diff` 验证：必须报告无任何非预期变更后才可继续部署。
+升级前会先保留哈希校验的原始备份、升级日志与报告（`LOCAL` 后端位于 `.serverlessinsight/` 目录），中断后重跑同一操作即可续跑；`si diff` / `si show` 为只读预览，不会改动已存储的状态。CLI 绝不会从 YAML 或文件名猜测历史区域——若旧状态中存在无区域证据的资源（手工编辑或外部工具写入所致），升级会明确拒绝并提示使用 `--bind-unknown-region <region>` 显式绑定。
 
 ### si destroy
 
