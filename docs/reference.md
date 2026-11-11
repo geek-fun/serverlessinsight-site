@@ -254,7 +254,7 @@ backend:
 | `state_manager.storageRegion` | string | ❌ | 状态存储固定区域（`BUCKET_STORE`）；显式设置后不随工作负载 `-r` 变化 |
 | `state_manager.storageProvider` | string | ❌ | 状态存储所用 provider（`BUCKET_STORE`）；缺省跟随工作负载 |
 
-部署状态按 **Service + Stage + Region** 隔离：每个范围一份独立的状态文档（本地为 `.serverlessinsight/states/<app>/<service>/<stage>/<region>/state.json`，对象存储为 `<key>.scopes/<app>/<service>/<stage>/<region>/state.json`），独立 lineage/serial/锁与备份。同一服务可并行部署到多个区域，互不覆盖。旧版聚合状态请用 `si migrate --to-regional` 一次性受保护拆分（详见 CLI 文档）。
+部署状态按 **Service + Stage + Provider + Region** 隔离：同一份 V4 聚合状态文档内，每个 stage/provider/region 各持有独立分区（各自的 lineage/serial 与资源清单），全部分区共用原始位置与同一把锁（本地为 `.serverlessinsight/state-<app>-<service>.json`，对象存储为配置的 `key`）。同一服务可并行部署到多个 provider/region，互不覆盖；写入只合并选中分区，兄弟分区的变更原样保留。旧版 V3 聚合状态会在 `si deploy` / `si destroy` / `si migrate` 时自动原位升级，无需单独迁移命令（详见 CLI 文档）。
 
 配套的顶层字段 `org`：显式声明 `SAAS` 后端时**必填**，填写控制台组织 slug（小写字母、数字、`-`）。省略 `backend` 块时无需 `org`（零配置快速开始，由 API Key 决定归属组织）；`LOCAL` / `BUCKET_STORE` 下允许填写但不起作用。
 
